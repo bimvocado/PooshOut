@@ -1,29 +1,27 @@
 using System;
 using UnityEngine;
 
-public class GameManager : MonoBehaviour
+/// <summary>
+/// 게임 전체 흐름을 관리하는 총괄 매니저.
+/// 지금 게임이 어느 상태(타이틀/스테이지 플레이 중/엔딩)인지 들고 있고,
+/// 상태가 바뀔 때 OnStateChanged 이벤트로 알려줌.
+/// </summary>
+public class GameManager : Singleton<GameManager>
 {
-    public static GameManager Instance { get; private set; }
-
-    public enum GameState { Title, Playing, Ending }
-    public GameState CurrentState { get; private set; } = GameState.Title;
-
-    public event Action<GameState> OnStateChanged;
-
-    private void Awake()
+    // 게임의 큰 흐름 상태
+    public enum GameState
     {
-        // 독립형 싱글톤 세팅
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject); // 씬이 넘어가도 파괴되지 않음
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
+        Title,      // 타이틀 화면
+        Playing,    // 스테이지 플레이 중
+        Ending      // 엔딩/결과 화면
     }
 
+    public GameState CurrentState { get; private set; } = GameState.Title;
+
+    // 상태가 바뀔 때 발행되는 이벤트. UI 등이 구독해서 반응.
+    public event Action<GameState> OnStateChanged;
+
+    /// <summary>상태를 바꾸고 구독자들에게 알림.</summary>
     public void SetState(GameState newState)
     {
         if (CurrentState == newState) return;
@@ -32,6 +30,8 @@ public class GameManager : MonoBehaviour
         Debug.Log($"[GameManager] 상태 변경 → {newState}");
         OnStateChanged?.Invoke(newState);
     }
+
+    // --- 편의 함수들 (다른 스크립트에서 읽기 쉽게) ---
 
     public void GoToTitle() => SetState(GameState.Title);
     public void StartPlaying() => SetState(GameState.Playing);

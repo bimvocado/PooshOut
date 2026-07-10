@@ -13,19 +13,14 @@ using UnityEngine;
 /// 오직 Stage 4 클리어 후 엔딩 화면으로 전환되는 타이밍(페이드아웃 중)에 딱 1회만 호출할 것.
 /// 플레이 중 데이터는 PurificationSystem 등 메모리에만 들고 있기.
 /// </summary>
-public class SaveLoadManager : MonoBehaviour
+public class SaveLoadManager : Singleton<SaveLoadManager>
 {
-    public static SaveLoadManager Instance { get; private set; }
-
     private const string FileName = "leaderboard.json";
+
     private string FilePath => Path.Combine(Application.persistentDataPath, FileName);
+
     private LeaderboardData _cached;
 
-    private void Awake()
-    {
-        if (Instance == null) Instance = this;
-        else Destroy(gameObject);
-    }
     /// <summary>순위표 불러오기 (파일 없으면 빈 순위표 생성).</summary>
     public LeaderboardData LoadLeaderboard()
     {
@@ -43,13 +38,16 @@ public class SaveLoadManager : MonoBehaviour
         }
         return _cached;
     }
+
     /// <summary>기록 하나 추가하고 저장. 추가 후 정화도 내림차순 정렬.</summary>
     public void AddEntry(PlayerData entry)
     {
         LeaderboardData board = LoadLeaderboard();
         board.entries.Add(entry);
+
         // 정화도 높은 순으로 정렬 (내림차순)
         board.entries.Sort((a, b) => b.purity.CompareTo(a.purity));
+
         Save();
     }
 

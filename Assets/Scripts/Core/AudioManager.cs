@@ -5,25 +5,14 @@ using UnityEngine;
 /// 지금은 사운드 파일이 없어도 구조만 잡아둠. (파일은 나중에 인스펙터에서 연결)
 /// 다른 스크립트에서 AudioManager.Instance.PlaySfx(clip) 식으로 호출.
 /// </summary>
-public class AudioManager : MonoBehaviour
+public class AudioManager : Singleton<AudioManager>
 {
-    public static AudioManager Instance { get; private set; }
+    [SerializeField] private AudioSource bgmSource;   // 배경음 재생용 (루프)
+    [SerializeField] private AudioSource sfxSource;   // 효과음 재생용 (원샷)
 
-    [SerializeField] private AudioSource bgmSource; // 배경음 재생용 (루프)
-    [SerializeField] private AudioSource sfxSource; // 효과음 재생용 (원샷)
-
-    private void Awake()
+    protected override void Awake()
     {
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else
-        {
-            Destroy(gameObject);
-            return;
-        }
+        base.Awake();
 
         // AudioSource 가 인스펙터에서 연결 안 됐으면 자동 생성 (초보 안전장치)
         if (bgmSource == null)
