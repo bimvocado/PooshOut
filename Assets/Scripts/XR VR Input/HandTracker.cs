@@ -3,10 +3,8 @@ using UnityEngine;
 /// <summary>
 /// 양손(컨트롤러) 위치 추적.
 ///
-/// ★ Meta SDK / XRI 공용 스크립트 — 코드 수정 없이 둘 다 지원.
-///   차이는 인스펙터에서 어떤 오브젝트를 드래그하느냐 뿐:
-///   - Meta SDK 선택 시: OVRCameraRig > TrackingSpace > LeftHandAnchor / RightHandAnchor
-///   - XRI 선택 시:      XR Origin > Camera Offset > Left Controller / Right Controller
+/// ★ XRI 기준: 인스펙터에서 XR Origin > Camera Offset > Left Controller / Right Controller
+///   오브젝트를 각각 leftHandAnchor / rightHandAnchor에 드래그하면 됨.
 /// </summary>
 public class HandTracker : MonoBehaviour
 {
