@@ -3,10 +3,8 @@ using UnityEngine;
 /// <summary>
 /// 머리(헤드셋) 위치 추적 + 키 기준선(캘리브레이션) 관리.
 ///
-/// ★ Meta SDK / XRI 공용 스크립트 — 코드 수정 없이 둘 다 지원.
-///   차이는 인스펙터에서 어떤 오브젝트를 드래그하느냐 뿐:
-///   - Meta SDK 선택 시: OVRCameraRig > TrackingSpace > CenterEyeAnchor 를 headAnchor에 드래그
-///   - XRI 선택 시:      XR Origin > Camera Offset > Main Camera 를 headAnchor에 드래그
+/// ★ XRI 기준: 인스펙터에서 XR Origin > Camera Offset > Main Camera 오브젝트를
+///   headAnchor에 드래그하면 됨.
 /// </summary>
 public class HeadTracker : MonoBehaviour
 {
