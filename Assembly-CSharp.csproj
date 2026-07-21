@@ -81,6 +81,7 @@
     <Compile Include="Assets\Scripts\Stage4\DiveController.cs" />
     <Compile Include="Assets\Scripts\Stage1\BubbleItem.cs" />
     <Compile Include="Assets\Scripts\XR VR Input\HeadTracker.cs" />
+    <Compile Include="Assets\Scripts\Stage1\DebugRailInput.cs" />
     <Compile Include="Assets\Scripts\Player\PlayerController.cs" />
     <Compile Include="Assets\Scripts\Stage1\RailMover.cs" />
     <Compile Include="Assets\TutorialInfo\Scripts\Readme.cs" />
