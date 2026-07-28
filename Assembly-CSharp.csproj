@@ -61,9 +61,10 @@
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.0.49f1\Editor\Data\Tools\Unity.SourceGenerators\Unity.UIToolkit.SourceGenerator.dll" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Scripts\Stage3\MicrobeSpawner.cs" />
     <Compile Include="Assets\Scripts\Stage4\EndingSequence.cs" />
+    <Compile Include="Assets\Scripts\Stage3\new\MicrobeSpawner.cs" />
     <Compile Include="Assets\Scripts\Stage3\TransformVisual.cs" />
+    <Compile Include="Assets\Scripts\Stage3\new\PlayerShooter.cs" />
     <Compile Include="Assets\Scripts\Stage1\PollutantObject.cs" />
     <Compile Include="Assets\Scripts\XR VR Input\XRInputHandler.cs" />
     <Compile Include="Assets\Scripts\Core\AudioManager.cs" />
@@ -71,8 +72,10 @@
     <Compile Include="Assets\Scripts\Stage4\RingGate.cs" />
     <Compile Include="Assets\Scripts\Stage1\HandleController.cs" />
     <Compile Include="Assets\Scripts\Core\SmokeTest.cs" />
+    <Compile Include="Assets\Scripts\Stage3\new\MouseShootInput.cs" />
     <Compile Include="Assets\Scripts\Data\LeaderboardData.cs" />
     <Compile Include="Assets\Scripts\Core\StageManager.cs" />
+    <Compile Include="Assets\Scripts\Stage3\new\MicrobeTarget.cs" />
     <Compile Include="Assets\Scripts\Core\ScoreManager.cs" />
     <Compile Include="Assets\Scripts\Stage3\Stage3Manager.cs" />
     <Compile Include="Assets\Scripts\XR VR Input\HandTracker.cs" />
@@ -81,13 +84,14 @@
     <Compile Include="Assets\Scripts\Stage4\DiveController.cs" />
     <Compile Include="Assets\Scripts\Stage1\BubbleItem.cs" />
     <Compile Include="Assets\Scripts\XR VR Input\HeadTracker.cs" />
+    <Compile Include="Assets\Scripts\Stage3\new\Bullet.cs" />
     <Compile Include="Assets\Scripts\Stage1\DebugRailInput.cs" />
+    <Compile Include="Assets\Scripts\Stage3\new\VRShootInput.cs" />
     <Compile Include="Assets\Scripts\Player\PlayerController.cs" />
     <Compile Include="Assets\Scripts\Stage1\RailMover.cs" />
     <Compile Include="Assets\TutorialInfo\Scripts\Readme.cs" />
     <Compile Include="Assets\Scripts\Stage4\RingSpawner.cs" />
     <Compile Include="Assets\Scripts\Stage1\Stage1Manager.cs" />
-    <Compile Include="Assets\Scripts\Stage3\MicrobeTarget.cs" />
     <Compile Include="Assets\Scripts\Stage2\SedimentationController.cs" />
     <Compile Include="Assets\Scripts\XR VR Input\PoseDetector.cs" />
     <Compile Include="Assets\Scripts\Core\PurificationSystem.cs" />
@@ -102,6 +106,7 @@
     <Compile Include="Assets\Scripts\Core\Singleton.cs" />
     <Compile Include="Assets\Scripts\Data\PlayerData.cs" />
     <Compile Include="Assets\Scripts\Stage2\PoseGateSpawner.cs" />
+    <Compile Include="Assets\Scripts\Stage3\new\IShootInput.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />
