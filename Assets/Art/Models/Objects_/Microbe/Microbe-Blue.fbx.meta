@@ -3,7 +3,22 @@ guid: ade6932b7228e9d48a8293c8662b9b8d
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Microbe-Black
+    second: {fileID: 2100000, guid: bdb62a0318674624da2074a894a5f770, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Microbe-Body-001
+    second: {fileID: 2100000, guid: 936d27ee1533dce409363b5d6023e2c9, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Microbe-Pink
+    second: {fileID: 2100000, guid: 14d84a93a5c0c014ebf1701a31e38c1e, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

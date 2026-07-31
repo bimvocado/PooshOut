@@ -20,12 +20,23 @@ public class MicrobeTarget : MonoBehaviour {
     [SerializeField] private float purityRewardOnReach = 2f;
     [SerializeField] private AudioClip decomposeSfx;
 
+    [Header("접근 중 크기 변화")]
+    [SerializeField] private float minScaleRatio = 0.2f; // 도달 직전 최소 크기(원래 크기 대비 비율)
+    [SerializeField] private AnimationCurve shrinkCurve = AnimationCurve.Linear(0f, 0f, 1f, 1f); // t(진행률) -> 축소 정도
+
     private MicrobeSpawner _owner;
     private Transform _playerTarget;
     private State _state = State.Waiting;
 
+    private Vector3 _originalScale;
+    private float _initialDistance;
+
     private void Reset() {
         GetComponent<Collider>().isTrigger = true;
+    }
+
+    private void Awake() {
+        _originalScale = transform.localScale;
     }
 
     public void Initialize(MicrobeSpawner owner, Transform playerTarget) {
@@ -48,7 +59,22 @@ public class MicrobeTarget : MonoBehaviour {
         transform.position = Vector3.MoveTowards(
             transform.position, _playerTarget.position, approachSpeed * Time.deltaTime);
 
-        if (Vector3.Distance(transform.position, _playerTarget.position) <= arriveDistance) {
+        float currentDistance = Vector3.Distance(transform.position, _playerTarget.position);
+
+        // 진행률 계산 (0: 처음 맞은 위치, 1: 도달 지점)
+        float t = 0f;
+        if (_initialDistance > arriveDistance) {
+            t = 1f - Mathf.Clamp01((currentDistance - arriveDistance) / (_initialDistance - arriveDistance));
+        }
+        else {
+            t = 1f;
+        }
+
+        float shrinkT = shrinkCurve.Evaluate(t);
+        float scaleRatio = Mathf.Lerp(1f, minScaleRatio, shrinkT);
+        transform.localScale = _originalScale * scaleRatio;
+
+        if (currentDistance <= arriveDistance) {
             Reach();
         }
     }
@@ -58,6 +84,13 @@ public class MicrobeTarget : MonoBehaviour {
         Debug.Log($"[MicrobeTarget] Hit() 호출됨, 현재 상태: {_state}");
         if (_state != State.Waiting) return;
         _state = State.Approaching;
+
+        if (_playerTarget != null) {
+            _initialDistance = Vector3.Distance(transform.position, _playerTarget.position);
+        }
+
+        GetComponent<MicrobeFloatMotion>()?.StopFloating(); // 접근 시작하면 진동 멈춤
+
         Debug.Log($"[MicrobeTarget] Approaching으로 전환, playerTarget = {_playerTarget}");
     }
 

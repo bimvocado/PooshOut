@@ -62,6 +62,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6d22a50b826ca224fb21e149dfbdbe3f, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3823278761848595175}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6d22a50b826ca224fb21e149dfbdbe3f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6809443883950564994}
   m_SourcePrefab: {fileID: 100100000, guid: 6d22a50b826ca224fb21e149dfbdbe3f, type: 3}
 --- !u!1 &3367198545730155456 stripped
 GameObject:
@@ -87,10 +90,10 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.8
+  m_Radius: 1.1
   m_Height: 1.8
   m_Direction: 1
-  m_Center: {x: 0, y: 0.9, z: 0}
+  m_Center: {x: 0, y: 0.8, z: 0}
 --- !u!114 &3823278761848595175
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -104,7 +107,49 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   lifeTime: 2
-  approachSpeed: 3
+  approachSpeed: 8
   arriveDistance: 0.5
   purityRewardOnReach: 2
   decomposeSfx: {fileID: 0}
+  minScaleRatio: 0.2
+  shrinkCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 2
+      outSlope: 2
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+--- !u!114 &6809443883950564994
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3367198545730155456}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7116f8d7321cc88428a3222a03edcbe7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  floatAmplitude: 0.15
+  floatSpeed: 3
+  randomizePhase: 1
+  amplitudeJitter: 0.05
+  speedJitter: 0.3

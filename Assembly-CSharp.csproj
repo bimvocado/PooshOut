@@ -91,6 +91,7 @@
     <Compile Include="Assets\Scripts\Stage1\RailMover.cs" />
     <Compile Include="Assets\TutorialInfo\Scripts\Readme.cs" />
     <Compile Include="Assets\Scripts\Stage4\RingSpawner.cs" />
+    <Compile Include="Assets\Scripts\Stage3\new\MicrobeFloatMotion.cs" />
     <Compile Include="Assets\Scripts\Stage1\Stage1Manager.cs" />
     <Compile Include="Assets\Scripts\Stage2\SedimentationController.cs" />
     <Compile Include="Assets\Scripts\XR VR Input\PoseDetector.cs" />
