@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 /// 게임 시작 시 1회 실행하는 키 캘리브레이션.
 ///
@@ -15,6 +16,14 @@ using UnityEngine;
 ///   2. HMD가 충분히 안정(거의 안 움직임)될 때까지 대기
 ///   3. 안정 상태로 몇 초 유지되면 그 순간 HMD Y값을 캡처
 ///   4. 이상치(너무 낮음/높음)면 재측정 유도, 정상이면 저장 후 완료
+///
+/// + 측정 결과는 이 씬의 HeadTracker뿐 아니라 GameManager(Singleton, 씬 전환에도 유지)에도 저장함.
+///   이후 다른 스테이지 씬으로 넘어가면, 그 씬의 HeadTracker.Start()가
+///   GameManager에서 이 값을 읽어와서 재캘리브레이션 없이 그대로 사용함.
+///
+/// ⚠️ TEMP: autoLoadNextScene 관련 부분은 실기기 테스트(CalibrationTestScene → HeeWonScene)용 임시 코드.
+///   나중에 진짜 게임 흐름(타이틀→캘리브레이션→Stage1...)이 StageManager 등으로 짜이면
+///   이 스위치를 끄거나 이 블록을 지우면 됨.
 public class CalibrationController : MonoBehaviour
 {
     [Header("참조")]
@@ -39,6 +48,16 @@ public class CalibrationController : MonoBehaviour
     [Tooltip("측정 실패 시 사용할 아동 표준 키")]
     [SerializeField] private float fallbackHeight = 1.3f;
 
+    [Header("⚠️ TEMP - 실기기 테스트용 자동 씬 전환 (나중에 제거/교체 예정)")]
+    [Tooltip("체크하면 캘리브레이션 완료 후 자동으로 다음 씬으로 전환함. 최종 흐름 붙기 전까지만 사용.")]
+    [SerializeField] private bool autoLoadNextScene = true;
+
+    [Tooltip("전환할 씬 이름 (Build Settings에 등록되어 있어야 함)")]
+    [SerializeField] private string nextSceneName = "HeeWonScene";
+
+    [Tooltip("완료 텍스트를 보여줄 시간(초). 이 시간 지난 뒤 씬 전환.")]
+    [SerializeField] private float sceneLoadDelay = 2f;
+
     // 측정 결과
     public float CalibratedHeight { get; private set; }
     public bool IsCalibrated { get; private set; }
@@ -49,6 +68,7 @@ public class CalibrationController : MonoBehaviour
     public event Action OnRemeasureRequested;     // 이상치 → 재측정 유도
 
     private Vector3 _lastPosition;
+    private float _debugLogTimer;
 
     /// 외부(게임 시작 매니저 등)에서 호출.
     public void StartCalibration()
@@ -69,7 +89,6 @@ public class CalibrationController : MonoBehaviour
         OnCalibrationStart?.Invoke();
         Debug.Log("[Calibration] 측정 시작 - 앞을 보고 가만히 서주세요");
 
-        // 측정 성공할 때까지 반복 (이상치면 재시도)
         while (!IsCalibrated)
         {
             float measured = 0f;
@@ -79,14 +98,20 @@ public class CalibrationController : MonoBehaviour
             float stableTimer = 0f;
             _lastPosition = hmdTransform.position;
 
-            // ── 안정 상태 유지 감지 ──
             while (elapsed < maxWaitTime)
             {
                 elapsed += Time.deltaTime;
 
-                // 프레임 간 이동 속도로 "가만히 있는지" 판정
                 float speed = (hmdTransform.position - _lastPosition).magnitude / Mathf.Max(Time.deltaTime, 1e-5f);
                 _lastPosition = hmdTransform.position;
+
+                // ⚠️ TEMP DEBUG: 0.3초마다 실시간 Y값/속도 출력 (원인 파악되면 지울 것)
+                _debugLogTimer += Time.deltaTime;
+                if (_debugLogTimer >= 0.3f)
+                {
+                    _debugLogTimer = 0f;
+                    Debug.Log($"[CalibDebug] hmd.localPos.y={hmdTransform.localPosition.y:F3}, hmd.worldPos.y={hmdTransform.position.y:F3}, XROrigin.y={hmdTransform.root.position.y:F3}, speed={speed:F3}");
+                }
 
                 if (speed < stableSpeedThreshold)
                 {
@@ -100,28 +125,24 @@ public class CalibrationController : MonoBehaviour
                 }
                 else
                 {
-                    stableTimer = 0f; // 움직이면 리셋
+                    stableTimer = 0f;
                 }
 
-                Debug.Log($"speed={speed:F4}, y={hmdTransform.position.y:F4}");
                 yield return null;
             }
 
-            // ── 결과 검증 ──
             if (measuredOk && measured >= minValidHeight && measured <= maxValidHeight)
             {
                 ApplyResult(measured, isFallback: false);
             }
             else if (measuredOk)
             {
-                // 측정은 됐지만 범위 밖 (앉아있거나 점프한 경우 등)
                 Debug.LogWarning($"[Calibration] 측정값 {measured:F2}m 이 유효 범위를 벗어남 - 재측정 유도");
                 OnRemeasureRequested?.Invoke();
-                yield return new WaitForSeconds(1.5f); // 안내 후 잠깐 대기, 다시 while 루프
+                yield return new WaitForSeconds(1.5f);
             }
             else
             {
-                // 제한 시간 내 안정 상태를 못 잡음 → 표준 키로 폴백
                 Debug.LogWarning("[Calibration] 시간 초과 - 표준 키로 폴백");
                 ApplyResult(fallbackHeight, isFallback: true);
             }
@@ -130,18 +151,44 @@ public class CalibrationController : MonoBehaviour
 
     private void ApplyResult(float height, bool isFallback)
     {
-        // 최종 안전 클램프 (혹시 모를 예외까지 방어)
         CalibratedHeight = Mathf.Clamp(height, minValidHeight, maxValidHeight);
         IsCalibrated = true;
 
-        // HeadTracker에 기준선 전달 (스쿼트/포즈 판정이 이 값을 씀)
         if (headTracker != null)
         {
             headTracker.SetBaselineHeight(CalibratedHeight);
         }
 
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.SetCalibratedHeight(CalibratedHeight);
+        }
+        else
+        {
+            Debug.LogWarning("[Calibration] GameManager.Instance가 없어서 씬 전환 시 값이 유지되지 않음. 씬에 GameManager가 있는지 확인 필요.");
+        }
+
         Debug.Log($"[Calibration] 완료 - 키={CalibratedHeight:F2}m{(isFallback ? " (폴백)" : "")}");
         OnCalibrationDone?.Invoke(CalibratedHeight);
+
+        if (autoLoadNextScene)
+        {
+            StartCoroutine(LoadNextSceneAfterDelay());
+        }
+    }
+
+    private IEnumerator LoadNextSceneAfterDelay()
+    {
+        Debug.Log($"[Calibration] {sceneLoadDelay}초 후 '{nextSceneName}' 씬으로 전환 (테스트용)");
+        yield return new WaitForSeconds(sceneLoadDelay);
+
+        if (string.IsNullOrEmpty(nextSceneName))
+        {
+            Debug.LogWarning("[Calibration] nextSceneName이 비어있어서 씬 전환 안 함");
+            yield break;
+        }
+
+        SceneManager.LoadScene(nextSceneName);
     }
 
     /// 플레이 도중 재측정이 필요할 때(헤드셋 밀림 등) 외부에서 호출.

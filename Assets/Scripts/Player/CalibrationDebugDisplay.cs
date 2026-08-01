@@ -2,16 +2,38 @@ using UnityEngine;
 using TMPro;
 
 /// 캘리브레이션 진행 상황/결과를 화면에 텍스트로 표시 (테스트/디버그용).
-///
-/// 세팅:
-/// 1. World Space Canvas 생성 (GameObject > UI > Canvas, Render Mode를 World Space로 변경)
-///    - 플레이어 눈높이 근처, 살짝 앞쪽에 위치시키면 보기 편함 (예: Position Z = 1~1.5)
-/// 2. Canvas 하위에 TextMeshPro - Text 오브젝트 생성
-/// 3. 이 스크립트를 Canvas나 별도 빈 오브젝트에 붙이고, calibrationController / debugText 연결
+/// 측정 완료 후 hideDelay초 뒤 자동으로 캔버스를 숨김.
 public class CalibrationDebugDisplay : MonoBehaviour
 {
     [SerializeField] private CalibrationController calibrationController;
     [SerializeField] private TextMeshProUGUI debugText;
+
+    [Header("완료 후 자동 숨김")]
+    [Tooltip("측정 완료 텍스트가 뜬 뒤 이 시간(초)이 지나면 자동으로 캔버스를 숨김")]
+    [SerializeField] private float hideDelay = 2f;
+
+    [Tooltip("숨길 대상. 비워두면 이 스크립트가 붙은 오브젝트 자신을 숨김")]
+    [SerializeField] private GameObject targetToHide;
+
+    private bool _hideScheduled;
+
+    private void OnEnable()
+    {
+        if (calibrationController != null)
+        {
+            calibrationController.OnCalibrationDone += HandleCalibrationDone;
+        }
+        _hideScheduled = false;
+    }
+
+    private void OnDisable()
+    {
+        if (calibrationController != null)
+        {
+            calibrationController.OnCalibrationDone -= HandleCalibrationDone;
+        }
+        CancelInvoke(nameof(HideDisplay));
+    }
 
     private void Update()
     {
@@ -26,6 +48,24 @@ public class CalibrationDebugDisplay : MonoBehaviour
         {
             debugText.text = "준비 중이에요...\n앞을 보고 잠깐만 가만히 있어주세요!";
             debugText.color = Color.yellow;
+            _hideScheduled = false;
+            if (targetToHide != null && !targetToHide.activeSelf)
+            {
+                targetToHide.SetActive(true);
+            }
         }
+    }
+
+    private void HandleCalibrationDone(float height)
+    {
+        if (_hideScheduled) return;
+        _hideScheduled = true;
+        Invoke(nameof(HideDisplay), hideDelay);
+    }
+
+    private void HideDisplay()
+    {
+        GameObject target = targetToHide != null ? targetToHide : gameObject;
+        target.SetActive(false);
     }
 }

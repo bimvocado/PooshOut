@@ -4,6 +4,10 @@ using UnityEngine;
 ///
 /// ★ XRI 기준: 인스펙터에서 XR Origin > Camera Offset > Main Camera 오브젝트를
 ///   headAnchor에 드래그하면 됨.
+///
+/// + 씬이 시작되면 GameManager(Singleton, 씬 전환에도 유지됨)에 이미 캘리브레이션된 값이
+///   있는지 자동으로 확인해서 가져옴. 즉 캘리브레이션은 게임 시작 시 딱 한 번만 하면,
+///   이후 스테이지 씬이 바뀌어도 그 씬의 새 HeadTracker가 자동으로 값을 이어받음.
 public class HeadTracker : MonoBehaviour
 {
     [Header("머리 앵커 (리그의 카메라 오브젝트를 드래그)")]
@@ -21,6 +25,17 @@ public class HeadTracker : MonoBehaviour
     /// 기준선 대비 현재 머리 높이 차이. (음수 = 기준보다 낮아짐 = 스쿼트 중)
     public float HeightOffsetFromBaseline =>
         IsCalibrated ? HeadPosition.y - BaselineHeight : 0f;
+
+    private void Start()
+    {
+        // 이 씬에 CalibrationController가 없어도, 이전 씬에서 이미 측정한 값이
+        // GameManager에 남아있으면 그걸 그대로 이어받음.
+        if (!IsCalibrated && GameManager.Instance != null && GameManager.Instance.IsHeightCalibrated)
+        {
+            SetBaselineHeight(GameManager.Instance.CalibratedHeight);
+            Debug.Log($"[HeadTracker] GameManager로부터 캘리브레이션 값 이어받음. 기준 높이 = {BaselineHeight:F2}m");
+        }
+    }
 
     /// 현재 머리 높이를 기준선으로 저장 (키 캘리브레이션).
     /// 게임 시작 시 플레이어가 편하게 서 있을 때 호출.
@@ -45,7 +60,6 @@ public class HeadTracker : MonoBehaviour
 
     /// 외부(CalibrationController)에서 안정성 검증을 마친 키 값을 주입.
     /// Calibrate()는 즉시 캡처용 간이 버전이고, 이건 대기/검증 로직을 거친 값을 받는 용도.
-    
     public void SetBaselineHeight(float height)
     {
         BaselineHeight = height;
