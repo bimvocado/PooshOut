@@ -12,7 +12,7 @@ public class MicrobeTarget : MonoBehaviour {
     private enum State { Waiting, Approaching, Resolved }
 
     [Header("대기")]
-    [SerializeField] private float lifeTime = 2f; // 안 맞고 버티는 시간
+    [SerializeField] private float lifeTime = 3f; // 안 맞고 버티는 시간
 
     [Header("피격 후 접근")]
     [SerializeField] private float approachSpeed = 5f;    // 플레이어에게 다가가는 속도

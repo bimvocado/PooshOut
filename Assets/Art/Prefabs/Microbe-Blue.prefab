@@ -58,6 +58,18 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: ade6932b7228e9d48a8293c8662b9b8d, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: ade6932b7228e9d48a8293c8662b9b8d, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: ade6932b7228e9d48a8293c8662b9b8d, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: ade6932b7228e9d48a8293c8662b9b8d, type: 3}
       propertyPath: m_LocalPosition.x
       value: 5.34
       objectReference: {fileID: 0}
@@ -142,7 +154,7 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 1.1
+  m_Radius: 0.5
   m_Height: 1.8
   m_Direction: 1
   m_Center: {x: 0, y: 0.8, z: 0}
@@ -159,7 +171,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   lifeTime: 2
-  approachSpeed: 8
+  approachSpeed: 5
   arriveDistance: 0.5
   purityRewardOnReach: 2
   decomposeSfx: {fileID: 0}
