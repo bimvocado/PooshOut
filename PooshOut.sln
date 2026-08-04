@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp", "Assembly-CSharp.csproj", "{6C00E17C-96D6-EC16-60AE-AF6C35CD2ECF}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.XR.Interaction.Toolkit.Samples.StarterAssets", "Unity.XR.Interaction.Toolkit.Samples.StarterAssets.csproj", "{6168F3E0-F122-7D1D-37D9-8534F9F2B79C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.XR.Interaction.Toolkit.Samples.StarterAssets.Editor", "Unity.XR.Interaction.Toolkit.Samples.StarterAssets.Editor.csproj", "{513DDC38-C5C9-324D-B6C3-6E58E8B91994}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp", "Assembly-CSharp.csproj", "{6C00E17C-96D6-EC16-60AE-AF6C35CD2ECF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp-Editor", "Assembly-CSharp-Editor.csproj", "{B32E2FFF-20B0-FDF4-3264-D761804F0DAF}"
 EndProject
@@ -17,10 +17,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{6C00E17C-96D6-EC16-60AE-AF6C35CD2ECF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6C00E17C-96D6-EC16-60AE-AF6C35CD2ECF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6C00E17C-96D6-EC16-60AE-AF6C35CD2ECF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6C00E17C-96D6-EC16-60AE-AF6C35CD2ECF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6168F3E0-F122-7D1D-37D9-8534F9F2B79C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6168F3E0-F122-7D1D-37D9-8534F9F2B79C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6168F3E0-F122-7D1D-37D9-8534F9F2B79C}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -29,6 +25,10 @@ Global
 		{513DDC38-C5C9-324D-B6C3-6E58E8B91994}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{513DDC38-C5C9-324D-B6C3-6E58E8B91994}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{513DDC38-C5C9-324D-B6C3-6E58E8B91994}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6C00E17C-96D6-EC16-60AE-AF6C35CD2ECF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6C00E17C-96D6-EC16-60AE-AF6C35CD2ECF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6C00E17C-96D6-EC16-60AE-AF6C35CD2ECF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6C00E17C-96D6-EC16-60AE-AF6C35CD2ECF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B32E2FFF-20B0-FDF4-3264-D761804F0DAF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B32E2FFF-20B0-FDF4-3264-D761804F0DAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B32E2FFF-20B0-FDF4-3264-D761804F0DAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
