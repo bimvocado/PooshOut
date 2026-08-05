@@ -1,19 +1,9 @@
 fileFormatVersion: 2
-guid: 725bf708a5451714aa29776be14b97f2
+guid: 8074a14348267724f8799b4840ebeb25
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
-  externalObjects:
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: STAGE1_Light
-    second: {fileID: 2100000, guid: 1a2b45e6fbe4f9e408be732814235033, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: STAGE1_Neon
-    second: {fileID: 2100000, guid: 1a2b45e6fbe4f9e408be732814235033, type: 2}
+  externalObjects: {}
   materials:
     materialImportMode: 2
     materialName: 0

@@ -38,6 +38,10 @@ public class RailCourse : MonoBehaviour
             return;
         }
 
-        if (railMover != null) railMover.SetWaypoints(combined);
+        if (railMover != null) 
+        {
+            railMover.SetWaypoints(combined);
+            railMover.StartMoving();
+        }
     }
 }
