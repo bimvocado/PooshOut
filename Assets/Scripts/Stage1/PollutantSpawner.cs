@@ -4,13 +4,15 @@ using UnityEngine;
 
 /// <summary>
 /// 레일 진행 경로를 따라 버블/오염물을 일정 간격으로 생성.
-/// RailMover 앞쪽 지점을 기준으로 좌우로 흩뿌려 배치한다.
+/// RailMover의 스플라인 상에서 "앞쪽 지점"을 물어봐서 배치하기 때문에
+/// 곡선 구간에서도 파이프 벽 밖(혹은 안쪽)에 스폰되지 않는다.
+/// 오브젝트는 풀링되어 재사용되며, 플레이어가 못 맞고 지나친 아이템은
+/// 일정 시간 후 자동으로 풀에 반환된다.
 /// </summary>
 public class PollutantSpawner : MonoBehaviour
 {
     [Header("참조")]
     [SerializeField] private RailMover railMover;
-    [SerializeField] private Transform spawnAheadPoint; // 없으면 railMover 앞쪽을 계산해서 사용
 
     [Header("프리팹")]
     [SerializeField] private GameObject bubblePrefab;
@@ -18,24 +20,46 @@ public class PollutantSpawner : MonoBehaviour
 
     [Header("스폰 설정")]
     [SerializeField] private float spawnInterval = 1.2f;
-    [SerializeField] private float lateralSpread = 1.5f;
+    [SerializeField] private float lateralSpread = 1f;
     [SerializeField] private float aheadDistance = 8f;
     [Range(0f, 1f)]
     [SerializeField] private float bubbleRatio = 0.5f; // 버블이 나올 확률 (나머지는 오염물)
 
+    [Header("회수(풀링) 설정")]
+    [SerializeField] private float maxLifetime = 15f;   // 못 맞고 지나친 아이템 강제 회수 시간
+    [SerializeField] private float cleanupInterval = 0.5f;
+
     private Coroutine _spawnRoutine;
+    private Coroutine _cleanupRoutine;
+
+    private readonly Dictionary<GameObject, Queue<GameObject>> _pools = new Dictionary<GameObject, Queue<GameObject>>();
+    private readonly List<ActiveItem> _active = new List<ActiveItem>();
+
+    private struct ActiveItem
+    {
+        public GameObject instance;
+        public GameObject prefab;
+        public float spawnTime;
+    }
 
     public void StartSpawning()
     {
-        if (_spawnRoutine != null) return;
-        _spawnRoutine = StartCoroutine(SpawnLoop());
+        if (_spawnRoutine == null) _spawnRoutine = StartCoroutine(SpawnLoop());
+        if (_cleanupRoutine == null) _cleanupRoutine = StartCoroutine(CleanupLoop());
     }
 
     public void StopSpawning()
     {
-        if (_spawnRoutine == null) return;
-        StopCoroutine(_spawnRoutine);
-        _spawnRoutine = null;
+        if (_spawnRoutine != null)
+        {
+            StopCoroutine(_spawnRoutine);
+            _spawnRoutine = null;
+        }
+        if (_cleanupRoutine != null)
+        {
+            StopCoroutine(_cleanupRoutine);
+            _cleanupRoutine = null;
+        }
     }
 
     private IEnumerator SpawnLoop()
@@ -48,23 +72,74 @@ public class PollutantSpawner : MonoBehaviour
         }
     }
 
+    private IEnumerator CleanupLoop()
+    {
+        var wait = new WaitForSeconds(cleanupInterval);
+        while (true)
+        {
+            yield return wait;
+            RecycleFinishedItems();
+        }
+    }
+
     private void SpawnOne()
     {
         if (railMover == null) return;
-
-        Vector3 basePos = spawnAheadPoint != null
-            ? spawnAheadPoint.position
-            : railMover.transform.position + railMover.transform.forward * aheadDistance;
-
-        float lateral = Random.Range(-lateralSpread, lateralSpread);
-        Vector3 spawnPos = basePos + railMover.transform.right * lateral;
 
         bool spawnBubble = Random.value < bubbleRatio || pollutantPrefabs.Count == 0;
         GameObject prefab = spawnBubble
             ? bubblePrefab
             : pollutantPrefabs[Random.Range(0, pollutantPrefabs.Count)];
-
         if (prefab == null) return;
-        Instantiate(prefab, spawnPos, Quaternion.identity);
+
+        Vector3 centerPos = railMover.GetPositionAheadOf(aheadDistance);
+        Vector3 tangent = railMover.GetTangentAheadOf(aheadDistance);
+        Vector3 lateralDir = Vector3.Cross(Vector3.up, tangent).normalized;
+
+        float lateral = Random.Range(-lateralSpread, lateralSpread);
+        Vector3 spawnPos = centerPos + lateralDir * lateral;
+
+        GameObject instance = GetFromPool(prefab);
+        instance.transform.SetPositionAndRotation(spawnPos, Quaternion.LookRotation(tangent, Vector3.up));
+
+        instance.GetComponent<BubbleItem>()?.ResetItem();
+        instance.GetComponent<PollutantObject>()?.ResetItem();
+
+        instance.SetActive(true);
+        _active.Add(new ActiveItem { instance = instance, prefab = prefab, spawnTime = Time.time });
+    }
+
+    private GameObject GetFromPool(GameObject prefab)
+    {
+        if (!_pools.TryGetValue(prefab, out Queue<GameObject> queue))
+        {
+            queue = new Queue<GameObject>();
+            _pools[prefab] = queue;
+        }
+
+        return queue.Count > 0 ? queue.Dequeue() : Instantiate(prefab, transform);
+    }
+
+    private void RecycleFinishedItems()
+    {
+        for (int i = _active.Count - 1; i >= 0; i--)
+        {
+            ActiveItem item = _active[i];
+            if (item.instance == null)
+            {
+                _active.RemoveAt(i);
+                continue;
+            }
+
+            bool consumed = !item.instance.activeSelf; // Bubble/Pollutant가 접촉 시 스스로 비활성화함
+            bool expired = Time.time - item.spawnTime > maxLifetime;
+
+            if (consumed || expired)
+            {
+                if (!consumed) item.instance.SetActive(false);
+                _pools[item.prefab].Enqueue(item.instance);
+                _active.RemoveAt(i);
+            }
+        }
     }
 }

@@ -14,13 +14,15 @@ using UnityEngine;
 [RequireComponent(typeof(CharacterController))]
 public class RailMover : MonoBehaviour
 {
-    [Header("경로 (순서대로 지나갈 지점들)")]
+    [Header("경로 (RailCourse가 자동으로 채워줌, 직접 넣어도 됨)")]
     [SerializeField] private List<Transform> waypoints = new List<Transform>();
+    [SerializeField] private int samplesPerSegment = 12; // 스플라인 샘플링 밀도 (구간당)
 
     [Header("이동 설정")]
     [SerializeField] private float forwardSpeed = 3f;
-    [SerializeField] private float lateralRange = 1.5f;
+    [SerializeField] private float lateralRange = 1.2f;    // 파이프 중심 기준 좌우 클램프 반경
     [SerializeField] private float lateralSmoothing = 5f;
+    [SerializeField] private float rotationSmoothing = 6f; // 시점 회전 스무딩 (코너 멀미 방지)
 
     [Header("CharacterController 기본값 (플레이어 캡슐 크기)")]
     [SerializeField] private float defaultRadius = 0.3f;
@@ -38,11 +40,22 @@ public class RailMover : MonoBehaviour
     /// <summary>RingGate 등에서 일시적으로 가속시킬 때 사용.</summary>
     public float ForwardSpeed { get => forwardSpeed; set => forwardSpeed = value; }
     /// <summary>0~1, 스포너가 앞쪽 스폰 위치를 계산할 때 참고용.</summary>
-    public float NormalizedProgress { get; private set; }
+    public float NormalizedProgress => _totalLength > 0f ? Mathf.Clamp01(_distanceTraveled / _totalLength) : 0f;
+    public float DistanceTraveled => _distanceTraveled;
+    public float TotalLength => _totalLength;
+    public float LateralOffset => _currentLateral;
 
     public event Action OnReachedEnd;
 
-    private int _targetIndex = 1;
+    private struct Sample
+    {
+        public Vector3 position;
+        public float cumulativeDistance;
+    }
+
+    private readonly List<Sample> _samples = new List<Sample>();
+    private float _totalLength;
+    private float _distanceTraveled;
     private float _lateralInput;
     private float _currentLateral;
     private Vector3 _railPosition; // 좌우 오프셋을 뺀 레일 중심 위치
@@ -78,6 +91,34 @@ public class RailMover : MonoBehaviour
             // 최초 배치는 텔레포트라 직접 대입해도 안전 (CharacterController는 이후 Move()로만 이동)
             transform.position = _railPosition;
         }
+
+        _distanceTraveled = 0f;
+        SampleAt(0f, out Vector3 startPos, out Vector3 startTangent);
+        transform.SetPositionAndRotation(startPos, Quaternion.LookRotation(startTangent, Vector3.up));
+    }
+
+    private Vector3 GetCatmullRomPoint(int segmentIndex, float t)
+    {
+        Vector3 p0 = GetWaypoint(segmentIndex - 1);
+        Vector3 p1 = GetWaypoint(segmentIndex);
+        Vector3 p2 = GetWaypoint(segmentIndex + 1);
+        Vector3 p3 = GetWaypoint(segmentIndex + 2);
+
+        float t2 = t * t;
+        float t3 = t2 * t;
+
+        return 0.5f * (
+            2f * p1 +
+            (-p0 + p2) * t +
+            (2f * p0 - 5f * p1 + 4f * p2 - p3) * t2 +
+            (-p0 + 3f * p1 - 3f * p2 + p3) * t3
+        );
+    }
+
+    private Vector3 GetWaypoint(int index)
+    {
+        index = Mathf.Clamp(index, 0, waypoints.Count - 1);
+        return waypoints[index].position;
     }
 
     /// <summary>캡슐 기본 크기 세팅. headTracker가 있으면 이후 Update에서 매 프레임 덮어씀.</summary>
@@ -92,29 +133,58 @@ public class RailMover : MonoBehaviour
 
     private void Update()
     {
-        if (!IsMoving || waypoints.Count < 2) return;
+        if (!IsMoving || _samples.Count < 2) return;
 
-        Transform target = waypoints[_targetIndex];
-        Vector3 toTarget = target.position - _railPosition;
+        _distanceTraveled += forwardSpeed * Time.deltaTime;
 
-        if (toTarget.magnitude < 0.05f)
+        bool reachedEnd = _distanceTraveled >= _totalLength;
+        if (reachedEnd) _distanceTraveled = _totalLength;
+
+        ApplyTransform();
+
+        if (reachedEnd)
         {
-            _targetIndex++;
-            if (_targetIndex >= waypoints.Count)
-            {
-                IsMoving = false;
-                OnReachedEnd?.Invoke();
-                return;
-            }
-            target = waypoints[_targetIndex];
-            toTarget = target.position - _railPosition;
+            IsMoving = false;
+            OnReachedEnd?.Invoke();
+        }
+    }
+
+    private void ApplyTransform()
+    {
+        SampleAt(_distanceTraveled, out Vector3 centerPos, out Vector3 forwardDir);
+
+        // 상하 이동 없음: up과의 외적이라 결과 벡터는 항상 수평(y=0)이 보장됨.
+        Vector3 lateralDir = Vector3.Cross(Vector3.up, forwardDir).normalized;
+
+        float targetLateral = _lateralInput * lateralRange;
+        _currentLateral = Mathf.Lerp(_currentLateral, targetLateral, Time.deltaTime * lateralSmoothing);
+        _currentLateral = Mathf.Clamp(_currentLateral, -lateralRange, lateralRange); // 경로 중심 기준 좌우 클램핑
+
+        transform.position = centerPos + lateralDir * _currentLateral;
+
+        Quaternion targetRot = Quaternion.LookRotation(forwardDir, Vector3.up);
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * rotationSmoothing);
+    }
+
+    /// <summary>이진 탐색으로 누적 거리에 해당하는 스플라인 상의 위치/진행방향을 구함.</summary>
+    private void SampleAt(float distance, out Vector3 position, out Vector3 tangent)
+    {
+        distance = Mathf.Clamp(distance, 0f, _totalLength);
+
+        int lo = 0, hi = _samples.Count - 1;
+        while (lo < hi)
+        {
+            int mid = (lo + hi) / 2;
+            if (_samples[mid].cumulativeDistance < distance) lo = mid + 1;
+            else hi = mid;
         }
 
-        Vector3 forwardDir = toTarget.normalized;
-        _railPosition += forwardDir * (forwardSpeed * Time.deltaTime);
+        int upperIndex = Mathf.Max(lo, 1);
+        Sample upper = _samples[upperIndex];
+        Sample lower = _samples[upperIndex - 1];
 
-        Vector3 lateralDir = Vector3.Cross(Vector3.up, forwardDir);
-        _currentLateral = Mathf.Lerp(_currentLateral, _lateralInput * lateralRange, Time.deltaTime * lateralSmoothing);
+        float segmentLength = upper.cumulativeDistance - lower.cumulativeDistance;
+        float t = segmentLength > 0.0001f ? (distance - lower.cumulativeDistance) / segmentLength : 0f;
 
         SyncCapsuleToHead(); // Move() 호출 전에 캡슐을 실제 머리 위치로 맞춰야 그 프레임 충돌 판정에 반영됨
 
@@ -122,7 +192,22 @@ public class RailMover : MonoBehaviour
         _controller.Move(targetPosition - transform.position);
         transform.rotation = Quaternion.LookRotation(forwardDir, Vector3.up);
 
-        NormalizedProgress = (float)_targetIndex / (waypoints.Count - 1);
+        Vector3 delta = upper.position - lower.position;
+        tangent = delta.sqrMagnitude > 0.0001f ? delta.normalized : transform.forward;
+    }
+
+    /// <summary>현재 위치보다 aheadDistance 만큼 앞선 스플라인 상의 위치 (스포너용).</summary>
+    public Vector3 GetPositionAheadOf(float aheadDistance)
+    {
+        SampleAt(_distanceTraveled + aheadDistance, out Vector3 pos, out _);
+        return pos;
+    }
+
+    /// <summary>현재 위치보다 aheadDistance 만큼 앞선 지점의 진행 방향 (스포너용).</summary>
+    public Vector3 GetTangentAheadOf(float aheadDistance)
+    {
+        SampleAt(_distanceTraveled + aheadDistance, out _, out Vector3 tangent);
+        return tangent;
     }
 
     /// <summary>

@@ -13,6 +13,8 @@ public class Stage1Manager : MonoBehaviour
     [SerializeField] private PollutantSpawner spawner;
     [SerializeField] private float clearThreshold = 30f; // 이 정화도 미만이면 클리어 실패
 
+    private bool _subscribedToRailEnd;
+
     private void OnEnable()
     {
         if (StageManager.Instance != null)
@@ -24,7 +26,11 @@ public class Stage1Manager : MonoBehaviour
         if (StageManager.Instance != null)
             StageManager.Instance.OnStageChanged -= HandleStageChanged;
 
-        if (railMover != null) railMover.OnReachedEnd -= HandleRailEnd;
+        if (railMover != null && _subscribedToRailEnd)
+        {
+            railMover.OnReachedEnd -= HandleRailEnd;
+            _subscribedToRailEnd = false;
+        }
     }
 
     private void Start()
@@ -51,7 +57,11 @@ public class Stage1Manager : MonoBehaviour
 
         if (railMover != null)
         {
-            railMover.OnReachedEnd += HandleRailEnd;
+            if (!_subscribedToRailEnd)
+            {
+                railMover.OnReachedEnd += HandleRailEnd;
+                _subscribedToRailEnd = true;
+            }
             railMover.StartMoving();
         }
         spawner?.StartSpawning();
@@ -60,7 +70,11 @@ public class Stage1Manager : MonoBehaviour
     private void StopStage()
     {
         spawner?.StopSpawning();
-        if (railMover != null) railMover.OnReachedEnd -= HandleRailEnd;
+        if (railMover != null && _subscribedToRailEnd)
+        {
+            railMover.OnReachedEnd -= HandleRailEnd;
+            _subscribedToRailEnd = false;
+        }
     }
 
     private void HandleRailEnd()
