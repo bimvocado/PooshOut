@@ -1,55 +1,125 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// 방류 구간의 UV/섬유 필터 링을 미리 배치된 지점에 순서대로 생성.
+/// 16개 타일 중 매 웨이브마다 2~3개를 랜덤으로 골라 링을 스폰하는 매니저.
+/// - 직전 웨이브에서 스폰된 타일은 이번 웨이브에서 제외
+/// - 고정 간격(waveInterval)마다 반복
+/// 
+/// 세팅 방법:
+/// 1. 빈 오브젝트에 이 스크립트 추가 (예: "RingSpawner")
+/// 2. tiles 배열에 16개 타일(TileController가 붙은 오브젝트)을 순서대로 드래그
+/// 3. ringPrefab에 링 프리팹 연결
+/// 4. spawnHeight: 타일 기준 얼마나 위에서 링이 떨어질지
 /// </summary>
-public class RingSpawner : MonoBehaviour
-{
-    [SerializeField] private GameObject uvRingPrefab;
-    [SerializeField] private GameObject fiberRingPrefab;
-    [SerializeField] private List<Transform> spawnPoints = new List<Transform>();
-    [SerializeField] private float intervalBetweenRings = 1.5f;
+public class RingSpawner : MonoBehaviour {
+    [Header("타일 참조 (16개)")]
+    [SerializeField] private TileController[] tiles;
 
-    public event Action OnAllRingsSpawned;
+    [Header("링 스폰 설정")]
+    [SerializeField] private GameObject ringPrefab;
+    [SerializeField] private float spawnHeight = 5f;
+    [SerializeField] private float waveInterval = 3f;
+    [SerializeField] private int minSpawnCount = 2;
+    [SerializeField] private int maxSpawnCount = 3; // inclusive
+    [SerializeField] private Vector3 spawnRotationEuler = new Vector3(90f, 0f, 0f); // 링이 눕도록 회전 (X축 90도 기본값)
 
-    private readonly List<RingGate> _spawnedRings = new List<RingGate>();
-    public IReadOnlyList<RingGate> SpawnedRings => _spawnedRings;
+    private float _timer;
+    private List<int> _lastWaveIndices = new List<int>();
+    private bool _isSpawning;
 
-    public void StartSpawning()
-    {
-        StopAllCoroutines();
-        _spawnedRings.Clear();
-        StartCoroutine(SpawnSequence());
-    }
-
-    private IEnumerator SpawnSequence()
-    {
-        var wait = new WaitForSeconds(intervalBetweenRings);
-        foreach (Transform point in spawnPoints)
-        {
-            SpawnRingAt(point);
-            yield return wait;
+    private void Awake() {
+        // 타일 인덱스 세팅 (Ring 판정 등에서 활용 가능)
+        for (int i = 0; i < tiles.Length; i++) {
+            if (tiles[i] != null) {
+                tiles[i].TileIndex = i;
+            }
         }
-        OnAllRingsSpawned?.Invoke();
     }
 
-    private void SpawnRingAt(Transform point)
-    {
-        if (point == null) return;
+    private void Start() {
+        // 별도의 매니저가 없으면 자동으로 스폰 시작
+        StartSpawning();
+    }
 
-        bool useUv = UnityEngine.Random.value < 0.5f || fiberRingPrefab == null;
-        GameObject prefab = useUv ? uvRingPrefab : fiberRingPrefab;
-        if (prefab == null) return;
+    private void Update() {
+        if (!_isSpawning) return;
 
-        GameObject instance = Instantiate(prefab, point.position, point.rotation);
-        RingGate gate = instance.GetComponent<RingGate>();
-        if (gate != null)
-        {
-            gate.SetRingType(useUv ? RingGate.RingType.UV : RingGate.RingType.Fiber);
-            _spawnedRings.Add(gate);
+        _timer += Time.deltaTime;
+
+        if (_timer >= waveInterval) {
+            _timer = 0f;
+            SpawnWave();
+        }
+    }
+
+    /// <summary>
+    /// 외부(Stage4Manager 등)에서 스폰을 시작할 때 호출.
+    /// </summary>
+    public void StartSpawning() {
+        _isSpawning = true;
+        _timer = 0f;
+    }
+
+    /// <summary>
+    /// 외부에서 스폰을 멈출 때 호출.
+    /// </summary>
+    public void StopSpawning() {
+        _isSpawning = false;
+    }
+
+    private void SpawnWave() {
+        if (tiles == null || tiles.Length == 0 || ringPrefab == null) return;
+
+        int spawnCount = Random.Range(minSpawnCount, maxSpawnCount + 1);
+        List<int> chosenIndices = PickRandomTileIndices(spawnCount);
+
+        foreach (int index in chosenIndices) {
+            SpawnRingAt(tiles[index]);
+        }
+
+        _lastWaveIndices = chosenIndices;
+    }
+
+    private List<int> PickRandomTileIndices(int count) {
+        // 직전 웨이브에서 쓴 타일 제외한 후보 목록 생성
+        List<int> candidates = new List<int>();
+        for (int i = 0; i < tiles.Length; i++) {
+            if (!_lastWaveIndices.Contains(i)) {
+                candidates.Add(i);
+            }
+        }
+
+        // 혹시 후보가 부족하면(타일 개수가 너무 적을 때 등) 전체 타일로 대체
+        if (candidates.Count < count) {
+            candidates.Clear();
+            for (int i = 0; i < tiles.Length; i++) candidates.Add(i);
+        }
+
+        List<int> result = new List<int>();
+        for (int i = 0; i < count && candidates.Count > 0; i++) {
+            int randIndex = Random.Range(0, candidates.Count);
+            result.Add(candidates[randIndex]);
+            candidates.RemoveAt(randIndex);
+        }
+
+        return result;
+    }
+
+    private void SpawnRingAt(TileController tile) {
+        if (tile == null) return;
+
+        // 타일 점등
+        tile.SetLit(true);
+
+        // 타일 바로 위, spawnHeight 만큼 띄운 위치에서 스폰
+        Vector3 spawnPos = tile.transform.position + Vector3.up * spawnHeight;
+        Quaternion spawnRotation = Quaternion.Euler(spawnRotationEuler);
+        GameObject ringObj = Instantiate(ringPrefab, spawnPos, spawnRotation);
+
+        Ring ring = ringObj.GetComponent<Ring>();
+        if (ring != null) {
+            ring.Init(tile);
         }
     }
 }
