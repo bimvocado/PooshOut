@@ -13,8 +13,11 @@ public class StageManager : Singleton<StageManager>
 
     public int CurrentStage { get; private set; } = FirstStage;
 
-    // 스테이지가 바뀔 때 발행 (UI 안내, 정화봇 진입 멘트 등이 나중에 구독)
+    // 스테이지가 바뀔 때 발행 (UI 안내, 정화봇 진입 멘트 등이 구독)
     public event Action<int> OnStageChanged;
+
+    // 스테이지를 클리어한 순간 발행 (인자는 방금 클리어한 스테이지 번호). 정화봇 클리어 피드백이 구독.
+    public event Action<int> OnStageCleared;
 
     /// <summary>특정 스테이지로 설정.</summary>
     public void SetStage(int stage)
@@ -30,6 +33,9 @@ public class StageManager : Singleton<StageManager>
     /// <summary>다음 스테이지로. 마지막이면 true 반환(= 엔딩 신호).</summary>
     public bool AdvanceStage()
     {
+        int clearedStage = CurrentStage;
+        OnStageCleared?.Invoke(clearedStage);
+
         if (CurrentStage >= LastStage)
         {
             Debug.Log("[StageManager] 마지막 스테이지 클리어 → 엔딩");
