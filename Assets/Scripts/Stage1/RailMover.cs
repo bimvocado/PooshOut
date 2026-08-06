@@ -58,7 +58,6 @@ public class RailMover : MonoBehaviour
     private float _distanceTraveled;
     private float _lateralInput;
     private float _currentLateral;
-    private Vector3 _railPosition; // 좌우 오프셋을 뺀 레일 중심 위치
     private CharacterController _controller;
 
     private void Awake()
@@ -85,14 +84,11 @@ public class RailMover : MonoBehaviour
     {
         ConfigureController();
 
-        if (waypoints.Count > 0)
-        {
-            _railPosition = waypoints[0].position;
-            // 최초 배치는 텔레포트라 직접 대입해도 안전 (CharacterController는 이후 Move()로만 이동)
-            transform.position = _railPosition;
-        }
+        if (_samples.Count < 2) BuildSamples(); // RailCourse가 Awake에서 이미 채웠다면 재사용
+        if (_samples.Count < 2) return; // 웨이포인트가 없으면 대기
 
         _distanceTraveled = 0f;
+        // 최초 배치는 텔레포트라 직접 대입해도 안전 (이후 이동은 ApplyTransform에서 CharacterController.Move()로만 처리)
         SampleAt(0f, out Vector3 startPos, out Vector3 startTangent);
         transform.SetPositionAndRotation(startPos, Quaternion.LookRotation(startTangent, Vector3.up));
     }
@@ -131,6 +127,42 @@ public class RailMover : MonoBehaviour
         _controller.minMoveDistance = 0f; // VR의 미세한 이동도 놓치지 않도록
     }
 
+    /// <summary>RailCourse 등 외부에서 웨이포인트를 설정하고 스플라인 샘플을 다시 생성.</summary>
+    public void SetWaypoints(List<Transform> newWaypoints)
+    {
+        waypoints = newWaypoints;
+        BuildSamples();
+    }
+
+    /// <summary>웨이포인트를 Catmull-Rom 스플라인으로 촘촘히 샘플링해 _samples/_totalLength를 채움.</summary>
+    private void BuildSamples()
+    {
+        _samples.Clear();
+        _totalLength = 0f;
+
+        if (waypoints.Count < 2)
+        {
+            Debug.LogWarning("[RailMover] 웨이포인트가 2개 미만이라 경로를 만들 수 없습니다.");
+            return;
+        }
+
+        Vector3 previousPoint = GetCatmullRomPoint(0, 0f);
+        _samples.Add(new Sample { position = previousPoint, cumulativeDistance = 0f });
+
+        int segmentCount = waypoints.Count - 1;
+        for (int segmentIndex = 0; segmentIndex < segmentCount; segmentIndex++)
+        {
+            for (int step = 1; step <= samplesPerSegment; step++)
+            {
+                float t = step / (float)samplesPerSegment;
+                Vector3 point = GetCatmullRomPoint(segmentIndex, t);
+                _totalLength += Vector3.Distance(previousPoint, point);
+                _samples.Add(new Sample { position = point, cumulativeDistance = _totalLength });
+                previousPoint = point;
+            }
+        }
+    }
+
     private void Update()
     {
         if (!IsMoving || _samples.Count < 2) return;
@@ -160,13 +192,16 @@ public class RailMover : MonoBehaviour
         _currentLateral = Mathf.Lerp(_currentLateral, targetLateral, Time.deltaTime * lateralSmoothing);
         _currentLateral = Mathf.Clamp(_currentLateral, -lateralRange, lateralRange); // 경로 중심 기준 좌우 클램핑
 
-        transform.position = centerPos + lateralDir * _currentLateral;
+        Vector3 targetPosition = centerPos + lateralDir * _currentLateral;
+
+        SyncCapsuleToHead(); // Move() 호출 전에 캡슐을 실제 머리 위치로 맞춰야 그 프레임 충돌 판정에 반영됨
+        _controller.Move(targetPosition - transform.position); // Move()로만 이동해야 벽 Collider에 물리적으로 막힘
 
         Quaternion targetRot = Quaternion.LookRotation(forwardDir, Vector3.up);
         transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * rotationSmoothing);
     }
 
-    /// <summary>이진 탐색으로 누적 거리에 해당하는 스플라인 상의 위치/진행방향을 구함.</summary>
+    /// <summary>이진 탐색으로 누적 거리에 해당하는 스플라인 상의 위치/진행방향을 구함 (부수효과 없는 순수 조회).</summary>
     private void SampleAt(float distance, out Vector3 position, out Vector3 tangent)
     {
         distance = Mathf.Clamp(distance, 0f, _totalLength);
@@ -186,11 +221,7 @@ public class RailMover : MonoBehaviour
         float segmentLength = upper.cumulativeDistance - lower.cumulativeDistance;
         float t = segmentLength > 0.0001f ? (distance - lower.cumulativeDistance) / segmentLength : 0f;
 
-        SyncCapsuleToHead(); // Move() 호출 전에 캡슐을 실제 머리 위치로 맞춰야 그 프레임 충돌 판정에 반영됨
-
-        Vector3 targetPosition = _railPosition + lateralDir * _currentLateral;
-        _controller.Move(targetPosition - transform.position);
-        transform.rotation = Quaternion.LookRotation(forwardDir, Vector3.up);
+        position = Vector3.Lerp(lower.position, upper.position, t);
 
         Vector3 delta = upper.position - lower.position;
         tangent = delta.sqrMagnitude > 0.0001f ? delta.normalized : transform.forward;
