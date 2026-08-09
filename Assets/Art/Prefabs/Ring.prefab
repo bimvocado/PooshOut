@@ -100,6 +100,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   fallSpeed: 2
+  purificationRatePerSecond: 10
+  purificationDecayPerSecond: 1
   floorTag: Floor
   landEffectPrefab: {fileID: 0}
   landSound: {fileID: 0}

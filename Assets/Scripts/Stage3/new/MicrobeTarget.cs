@@ -24,6 +24,13 @@ public class MicrobeTarget : MonoBehaviour {
     [SerializeField] private float minScaleRatio = 0.2f; // 도달 직전 최소 크기(원래 크기 대비 비율)
     [SerializeField] private AnimationCurve shrinkCurve = AnimationCurve.Linear(0f, 0f, 1f, 1f); // t(진행률) -> 축소 정도
 
+    [Header("피격 애니메이션")]
+    [SerializeField] private Animator animator; // 비워두면 Awake에서 GetComponent로 자동 탐색
+    [SerializeField] private string hitTriggerName = "Hit"; // Animator Controller의 Trigger 파라미터 이름과 일치해야 함
+
+    [Header("Idle 애니메이션")]
+    [SerializeField] private string[] idleStateNames = { "Idle1", "Idle2", "Idle3" }; // Animator 창의 State 이름과 정확히 일치해야 함
+
     private MicrobeSpawner _owner;
     private Transform _playerTarget;
     private State _state = State.Waiting;
@@ -37,13 +44,29 @@ public class MicrobeTarget : MonoBehaviour {
 
     private void Awake() {
         _originalScale = transform.localScale;
+
+        if (animator == null) {
+            animator = GetComponent<Animator>();
+            if (animator == null) {
+                animator = GetComponentInChildren<Animator>(); // 모델이 자식 오브젝트에 있는 경우 대비
+            }
+        }
     }
 
     public void Initialize(MicrobeSpawner owner, Transform playerTarget) {
         _owner = owner;
         _playerTarget = playerTarget;
         _state = State.Waiting;
+        PlayRandomIdle();
         StartCoroutine(LifeRoutine());
+    }
+
+    /// <summary>Idle 애니메이션 중 하나를 랜덤으로 골라 재생.</summary>
+    private void PlayRandomIdle() {
+        if (animator == null || idleStateNames == null || idleStateNames.Length == 0) return;
+
+        int randomIndex = Random.Range(0, idleStateNames.Length);
+        animator.Play(idleStateNames[randomIndex]);
     }
 
     private IEnumerator LifeRoutine() {
@@ -90,6 +113,10 @@ public class MicrobeTarget : MonoBehaviour {
         }
 
         GetComponent<MicrobeFloatMotion>()?.StopFloating(); // 접근 시작하면 진동 멈춤
+
+        if (animator != null) {
+            animator.SetTrigger(hitTriggerName); // 피격 애니메이션 재생
+        }
 
         Debug.Log($"[MicrobeTarget] Approaching으로 전환, playerTarget = {_playerTarget}");
     }
