@@ -103,6 +103,7 @@
     <Compile Include="Assets\Scripts\XR VR Input\PoseDetector.cs" />
     <Compile Include="Assets\Scripts\Core\PurificationSystem.cs" />
     <Compile Include="Assets\Scripts\Stage4\DoorController.cs" />
+    <Compile Include="Assets\Scripts\StepRotator.cs" />
     <Compile Include="Assets\Scripts\Player\CharacterVisualController.cs" />
     <Compile Include="Assets\Scripts\Stage2\Stage2Manager.cs" />
     <Compile Include="Assets\Scripts\Stage3\PumpController.cs" />
