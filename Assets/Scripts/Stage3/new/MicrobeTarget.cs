@@ -6,6 +6,8 @@ using UnityEngine;
 /// 대기 중(Waiting) 총알에 맞으면(Hit) 플레이어 쪽으로 서서히 다가가고(Approaching),
 /// 플레이어한테 도달하면 분해 처리(정화도 증가)된다.
 /// 맞지 않고 lifeTime이 지나면 패널티 없이 그냥 사라진다.
+/// 한 번 맞아서 Approaching 상태가 되면 자신의 Collider를 꺼서,
+/// 이후 날아오는 총알이 자신을 다시 맞히고 사라지는 일이 없도록 함(총알은 그냥 통과).
 /// </summary>
 [RequireComponent(typeof(Collider))]
 public class MicrobeTarget : MonoBehaviour {
@@ -37,6 +39,7 @@ public class MicrobeTarget : MonoBehaviour {
 
     private Vector3 _originalScale;
     private float _initialDistance;
+    private Collider _collider;
 
     private void Reset() {
         GetComponent<Collider>().isTrigger = true;
@@ -44,6 +47,7 @@ public class MicrobeTarget : MonoBehaviour {
 
     private void Awake() {
         _originalScale = transform.localScale;
+        _collider = GetComponent<Collider>();
 
         if (animator == null) {
             animator = GetComponent<Animator>();
@@ -116,6 +120,12 @@ public class MicrobeTarget : MonoBehaviour {
 
         if (animator != null) {
             animator.SetTrigger(hitTriggerName); // 피격 애니메이션 재생
+        }
+
+        // 이미 한 번 맞았으니 콜라이더를 꺼서, 이후 날아오는 총알이
+        // 자신을 다시 트리거로 맞히지 않고(=Destroy 안 되고) 그냥 통과하도록 함
+        if (_collider != null) {
+            _collider.enabled = false;
         }
 
         Debug.Log($"[MicrobeTarget] Approaching으로 전환, playerTarget = {_playerTarget}");
