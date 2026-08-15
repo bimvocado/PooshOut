@@ -3,12 +3,15 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// 온레일 자동 이동 (물살에 떠내려가는 느낌).
-/// 웨이포인트들을 Catmull-Rom 스플라인으로 보간해 부드러운 경로를 만들고,
-/// 등속(아크렝스 기준)으로 그 경로를 따라 전진한다.
-/// HandleController가 넘겨주는 좌우 입력값(-1~1)은 경로 중심 기준 좌우 오프셋으로만 반영되며
-/// (상하 이동 없음), 진행 방향 회전도 스무딩되어 코너에서 시점이 뚝뚝 끊기지 않는다.
+/// 온레일 자동 이동. 웨이포인트를 순서대로 따라가며 일정 속도로 전진하고,
+/// HandleController가 넘겨주는 좌우 입력값(-1~1)만큼 진행 방향에 수직으로 오프셋을 준다.
+/// 실제 이동은 CharacterController.Move()로 처리해서 벽 Collider에 물리적으로 막히도록 한다
+/// (Transform 직접 대입 방식은 Collider와 충돌 판정을 하지 않아 뚫고 지나감).
+/// headTracker를 연결하면 매 프레임 캡슐의 center/height를 실제 트래킹된 머리 위치로
+/// 맞춰서, 리그 안에서 플레이어가 물리적으로 좌우로 기운 만큼도 충돌 판정에 반영한다
+/// (연결 안 하면 defaultCenter/defaultHeight/defaultRadius 고정값만 사용).
 /// </summary>
+[RequireComponent(typeof(CharacterController))]
 public class RailMover : MonoBehaviour
 {
     [Header("경로 (RailCourse가 자동으로 채워줌, 직접 넣어도 됨)")]
@@ -20,6 +23,18 @@ public class RailMover : MonoBehaviour
     [SerializeField] private float lateralRange = 1.2f;    // 파이프 중심 기준 좌우 클램프 반경
     [SerializeField] private float lateralSmoothing = 5f;
     [SerializeField] private float rotationSmoothing = 6f; // 시점 회전 스무딩 (코너 멀미 방지)
+
+    [Header("CharacterController 기본값 (플레이어 캡슐 크기)")]
+    [SerializeField] private float defaultRadius = 0.3f;
+    [SerializeField] private float defaultHeight = 1.7f;
+    [SerializeField] private Vector3 defaultCenter = new Vector3(0f, 0.85f, 0f);
+
+    [Header("VR 헤드 추적 동기화 (선택 — 없으면 기본값 캡슐만 사용)")]
+    [Tooltip("연결하면 매 프레임 이 헤드 위치를 기준으로 캡슐 center/height를 갱신해서, " +
+             "플레이어가 리그 안에서 실제로 좌우로 기운 만큼도 벽 충돌 판정에 들어가게 한다.")]
+    [SerializeField] private HeadTracker headTracker;
+    [SerializeField] private float headCapsulePadding = 0.15f; // 머리 위로 여유 높이
+    [SerializeField] private float minCapsuleHeight = 1.0f;    // 스쿼트 등으로 너무 낮아지는 것 방지
 
     public bool IsMoving { get; private set; }
     /// <summary>RingGate 등에서 일시적으로 가속시킬 때 사용.</summary>
@@ -43,47 +58,37 @@ public class RailMover : MonoBehaviour
     private float _distanceTraveled;
     private float _lateralInput;
     private float _currentLateral;
+    private CharacterController _controller;
+
+    private void Awake()
+    {
+        _controller = GetComponent<CharacterController>();
+        if (_controller == null)
+        {
+            // RequireComponent는 "Add Component"로 새로 붙일 때만 자동 추가되고,
+            // 이미 저장된 씬에 스크립트만 먼저 있던 경우엔 안 붙어있을 수 있어 방어적으로 추가.
+            _controller = gameObject.AddComponent<CharacterController>();
+            Debug.LogWarning("[RailMover] CharacterController가 없어서 런타임에 자동으로 추가했습니다. " +
+                "에디터에서 직접 추가하고 값을 맞춰두는 걸 권장합니다.");
+        }
+
+        if (GetComponent<Camera>() != null)
+        {
+            Debug.LogError("[RailMover] 이 오브젝트에 Camera 컴포넌트가 같이 붙어있습니다. " +
+                "RailMover는 카메라가 아니라 XR 리그의 루트 오브젝트(예: PoopCharacter)에 있어야 합니다. " +
+                "카메라에 붙어있으면 XR 헤드 트래킹이 매 프레임 갱신하는 Transform과 충돌해 오동작합니다.");
+        }
+    }
 
     private void Start()
     {
-        if (waypoints.Count >= 2) BuildSpline();
-    }
+        ConfigureController();
 
-    /// <summary>RailCourse 등에서 세그먼트를 이어붙인 최종 경로를 주입할 때 사용.</summary>
-    public void SetWaypoints(List<Transform> points)
-    {
-        waypoints = points;
-        BuildSpline();
-    }
-
-    private void BuildSpline()
-    {
-        _samples.Clear();
-        _totalLength = 0f;
-
-        if (waypoints.Count < 2)
-        {
-            Debug.LogWarning("[RailMover] 웨이포인트가 2개 미만이라 경로를 만들 수 없습니다.");
-            return;
-        }
-
-        Vector3 prevPos = GetCatmullRomPoint(0, 0f);
-        _samples.Add(new Sample { position = prevPos, cumulativeDistance = 0f });
-
-        int segmentCount = waypoints.Count - 1;
-        for (int seg = 0; seg < segmentCount; seg++)
-        {
-            for (int i = 1; i <= samplesPerSegment; i++)
-            {
-                float t = (float)i / samplesPerSegment;
-                Vector3 pos = GetCatmullRomPoint(seg, t);
-                _totalLength += Vector3.Distance(prevPos, pos);
-                _samples.Add(new Sample { position = pos, cumulativeDistance = _totalLength });
-                prevPos = pos;
-            }
-        }
+        if (_samples.Count < 2) BuildSamples(); // RailCourse가 Awake에서 이미 채웠다면 재사용
+        if (_samples.Count < 2) return; // 웨이포인트가 없으면 대기
 
         _distanceTraveled = 0f;
+        // 최초 배치는 텔레포트라 직접 대입해도 안전 (이후 이동은 ApplyTransform에서 CharacterController.Move()로만 처리)
         SampleAt(0f, out Vector3 startPos, out Vector3 startTangent);
         transform.SetPositionAndRotation(startPos, Quaternion.LookRotation(startTangent, Vector3.up));
     }
@@ -110,6 +115,52 @@ public class RailMover : MonoBehaviour
     {
         index = Mathf.Clamp(index, 0, waypoints.Count - 1);
         return waypoints[index].position;
+    }
+
+    /// <summary>캡슐 기본 크기 세팅. headTracker가 있으면 이후 Update에서 매 프레임 덮어씀.</summary>
+    private void ConfigureController()
+    {
+        _controller.radius = defaultRadius;
+        _controller.height = defaultHeight;
+        _controller.center = defaultCenter;
+        _controller.skinWidth = Mathf.Max(0.01f, defaultRadius * 0.1f);
+        _controller.minMoveDistance = 0f; // VR의 미세한 이동도 놓치지 않도록
+    }
+
+    /// <summary>RailCourse 등 외부에서 웨이포인트를 설정하고 스플라인 샘플을 다시 생성.</summary>
+    public void SetWaypoints(List<Transform> newWaypoints)
+    {
+        waypoints = newWaypoints;
+        BuildSamples();
+    }
+
+    /// <summary>웨이포인트를 Catmull-Rom 스플라인으로 촘촘히 샘플링해 _samples/_totalLength를 채움.</summary>
+    private void BuildSamples()
+    {
+        _samples.Clear();
+        _totalLength = 0f;
+
+        if (waypoints.Count < 2)
+        {
+            Debug.LogWarning("[RailMover] 웨이포인트가 2개 미만이라 경로를 만들 수 없습니다.");
+            return;
+        }
+
+        Vector3 previousPoint = GetCatmullRomPoint(0, 0f);
+        _samples.Add(new Sample { position = previousPoint, cumulativeDistance = 0f });
+
+        int segmentCount = waypoints.Count - 1;
+        for (int segmentIndex = 0; segmentIndex < segmentCount; segmentIndex++)
+        {
+            for (int step = 1; step <= samplesPerSegment; step++)
+            {
+                float t = step / (float)samplesPerSegment;
+                Vector3 point = GetCatmullRomPoint(segmentIndex, t);
+                _totalLength += Vector3.Distance(previousPoint, point);
+                _samples.Add(new Sample { position = point, cumulativeDistance = _totalLength });
+                previousPoint = point;
+            }
+        }
     }
 
     private void Update()
@@ -141,13 +192,16 @@ public class RailMover : MonoBehaviour
         _currentLateral = Mathf.Lerp(_currentLateral, targetLateral, Time.deltaTime * lateralSmoothing);
         _currentLateral = Mathf.Clamp(_currentLateral, -lateralRange, lateralRange); // 경로 중심 기준 좌우 클램핑
 
-        transform.position = centerPos + lateralDir * _currentLateral;
+        Vector3 targetPosition = centerPos + lateralDir * _currentLateral;
+
+        SyncCapsuleToHead(); // Move() 호출 전에 캡슐을 실제 머리 위치로 맞춰야 그 프레임 충돌 판정에 반영됨
+        _controller.Move(targetPosition - transform.position); // Move()로만 이동해야 벽 Collider에 물리적으로 막힘
 
         Quaternion targetRot = Quaternion.LookRotation(forwardDir, Vector3.up);
         transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * rotationSmoothing);
     }
 
-    /// <summary>이진 탐색으로 누적 거리에 해당하는 스플라인 상의 위치/진행방향을 구함.</summary>
+    /// <summary>이진 탐색으로 누적 거리에 해당하는 스플라인 상의 위치/진행방향을 구함 (부수효과 없는 순수 조회).</summary>
     private void SampleAt(float distance, out Vector3 position, out Vector3 tangent)
     {
         distance = Mathf.Clamp(distance, 0f, _totalLength);
@@ -185,6 +239,22 @@ public class RailMover : MonoBehaviour
     {
         SampleAt(_distanceTraveled + aheadDistance, out _, out Vector3 tangent);
         return tangent;
+    }
+
+    /// <summary>
+    /// headTracker가 연결돼 있으면 캡슐 center/height를 실제 머리의 리그-로컬 위치로 갱신.
+    /// 리그 원점은 고정이어도 플레이어가 몸을 기울여 머리가 좌우로 벗어난 만큼 캡슐도 따라가서,
+    /// 그 상태로 Move()가 벽에 부딪히면 실제로 막히게 된다.
+    /// </summary>
+    private void SyncCapsuleToHead()
+    {
+        if (headTracker == null) return;
+
+        Vector3 headLocal = transform.InverseTransformPoint(headTracker.HeadPosition);
+        float height = Mathf.Max(minCapsuleHeight, headLocal.y + headCapsulePadding);
+
+        _controller.height = height;
+        _controller.center = new Vector3(headLocal.x, height * 0.5f, headLocal.z);
     }
 
     /// <summary>HandleController 등에서 좌우 조작값을 전달 (-1 ~ 1).</summary>

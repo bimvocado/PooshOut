@@ -18,6 +18,9 @@ public class PurificationSystem : Singleton<PurificationSystem>
     // 정화도가 바뀔 때 발행. 인자는 (현재 정화도 0~100).
     public event Action<float> OnPurityChanged;
 
+    // 오염물과 접촉해서 정화도가 깎일 때 발행. 인자는 오염물 종류 라벨. 정화봇 코칭이 구독.
+    public event Action<string> OnPollutantContact;
+
     protected override void Awake()
     {
         base.Awake();
@@ -34,6 +37,13 @@ public class PurificationSystem : Singleton<PurificationSystem>
     public void Decrease(float amount)
     {
         SetPurity(Purity - amount);
+    }
+
+    /// <summary>오염물 접촉으로 인한 정화도 감소. OnPollutantContact도 함께 발행.</summary>
+    public void ReportPollutantContact(string pollutantLabel, float penalty)
+    {
+        OnPollutantContact?.Invoke(pollutantLabel);
+        Decrease(penalty);
     }
 
     /// <summary>정화도를 특정 값으로 직접 설정.</summary>

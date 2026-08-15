@@ -27,7 +27,7 @@ public class PollutantObject : MonoBehaviour
         if (_hit || !other.CompareTag(playerTag)) return;
         _hit = true;
 
-        PurificationSystem.Instance?.Decrease(purityPenalty);
+        PurificationSystem.Instance?.ReportPollutantContact(type.ToString(), purityPenalty);
         if (hitSfx != null) AudioManager.Instance?.PlaySfx(hitSfx);
 
         gameObject.SetActive(false);
