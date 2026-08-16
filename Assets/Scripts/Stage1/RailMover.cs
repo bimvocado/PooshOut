@@ -12,14 +12,14 @@ using UnityEngine;
 /// (연결 안 하면 defaultCenter/defaultHeight/defaultRadius 고정값만 사용).
 /// </summary>
 [RequireComponent(typeof(CharacterController))]
-public class RailMover : MonoBehaviour
+public class RailMover : MonoBehaviour, IStageProgressProvider
 {
     [Header("경로 (RailCourse가 자동으로 채워줌, 직접 넣어도 됨)")]
     [SerializeField] private List<Transform> waypoints = new List<Transform>();
     [SerializeField] private int samplesPerSegment = 12; // 스플라인 샘플링 밀도 (구간당)
 
     [Header("이동 설정")]
-    [SerializeField] private float forwardSpeed = 3f;
+    [SerializeField] private float forwardSpeed = 3.9f;
     [SerializeField] private float lateralRange = 1.2f;    // 파이프 중심 기준 좌우 클램프 반경
     [SerializeField] private float lateralSmoothing = 5f;
     [SerializeField] private float rotationSmoothing = 6f; // 시점 회전 스무딩 (코너 멀미 방지)
