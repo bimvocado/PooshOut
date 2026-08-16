@@ -15,17 +15,25 @@ using TMPro;
 /// WristCanvas(월드스페이스 캔버스)는 미리 왼손 컨트롤러의 자식으로 배치해두고,
 /// 이 스크립트는 활성/비활성과 텍스트 갱신만 담당함 (위치는 에디터에서 직접 배치하는 게
 /// 코드로 오프셋 값을 맞추는 것보다 훨씬 정확하고 직관적임).
+///
+/// 스테이지 전용 컴포넌트(RailMover 등)를 직접 참조하지 않고 IStageProgressProvider를 통해
+/// 진행도를 읽으므로, 모든 스테이지에서 그대로 재사용할 수 있음. progressProviderSource를
+/// 비워두면 씬에서 IStageProgressProvider를 구현한 컴포넌트를 자동으로 찾는다.
 /// </summary>
 public class WristUIController : MonoBehaviour
 {
     [Header("참조")]
     [SerializeField] private HandTracker handTracker;
-    [SerializeField] private RailMover railMover;
 
     [Header("UI (WristCanvas 프리팹을 왼손 컨트롤러 자식으로 배치한 뒤 연결)")]
     [SerializeField] private GameObject wristCanvasRoot;
     [SerializeField] private TextMeshProUGUI purificationText;
     [SerializeField] private TextMeshProUGUI progressText;
+
+    [Header("진행도 소스 (IStageProgressProvider 구현체, 예: Stage1의 RailMover). 비워두면 씬에서 자동 탐색")]
+    [SerializeField] private MonoBehaviour progressProviderSource;
+
+    private IStageProgressProvider progressProvider;
 
     [Header("감지 설정 (손바닥이 위를 향하는 각도 기준, 0=완전히 위)")]
     [Tooltip("이 각도보다 작아지면 UI를 켬")]
@@ -39,7 +47,24 @@ public class WristUIController : MonoBehaviour
 
     private void Start()
     {
+        ResolveProgressProvider();
         SetVisible(false, force: true);
+    }
+
+    /// <summary>수동으로 지정된 소스가 있으면 그걸 쓰고, 없으면 씬에서 IStageProgressProvider 구현체를 찾는다.</summary>
+    private void ResolveProgressProvider()
+    {
+        progressProvider = progressProviderSource as IStageProgressProvider;
+        if (progressProvider != null) return;
+
+        foreach (var behaviour in FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None))
+        {
+            if (behaviour is IStageProgressProvider provider)
+            {
+                progressProvider = provider;
+                break;
+            }
+        }
     }
 
     private void Update()
@@ -82,7 +107,7 @@ public class WristUIController : MonoBehaviour
 
         if (progressText != null)
         {
-            float progress = railMover != null ? railMover.NormalizedProgress * 100f : 0f;
+            float progress = progressProvider != null ? progressProvider.NormalizedProgress * 100f : 0f;
             progressText.text = $"진행도 {Mathf.RoundToInt(progress)}%";
         }
     }
