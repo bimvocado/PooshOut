@@ -115,6 +115,7 @@
     <Compile Include="Assets\Scripts\Stage1\PollutantSpawner.cs" />
     <Compile Include="Assets\Scripts\XR VR Input\JumpDetector.cs" />
     <Compile Include="Assets\Scripts\Core\GameManager.cs" />
+    <Compile Include="Assets\Scripts\Core\IStageProgressProvider.cs" />
     <Compile Include="Assets\Scripts\Core\Singleton.cs" />
     <Compile Include="Assets\Scripts\Data\PlayerData.cs" />
     <Compile Include="Assets\Scripts\Stage2\PoseGateSpawner.cs" />
