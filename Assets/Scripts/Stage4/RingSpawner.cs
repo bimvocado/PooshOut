@@ -2,9 +2,9 @@
 using UnityEngine;
 
 /// <summary>
-/// 16개 타일 중 매 웨이브마다 2~3개를 랜덤으로 골라 링을 스폰하는 매니저.
-/// - 직전 웨이브에서 스폰된 타일은 이번 웨이브에서 제외
-/// - 고정 간격(waveInterval)마다 반복
+/// 16개 타일 중 하나를 랜덤으로 골라, 랜덤한 시간 간격마다 링을 하나씩 스폰하는 매니저.
+/// - 직전에 스폰된 타일은 이번 스폰에서 제외
+/// - 스폰 간격은 minInterval~maxInterval 사이에서 매번 랜덤
 /// 
 /// 세팅 방법:
 /// 1. 빈 오브젝트에 이 스크립트 추가 (예: "RingSpawner")
@@ -19,13 +19,13 @@ public class RingSpawner : MonoBehaviour {
     [Header("링 스폰 설정")]
     [SerializeField] private GameObject ringPrefab;
     [SerializeField] private float spawnHeight = 5f;
-    [SerializeField] private float waveInterval = 3f;
-    [SerializeField] private int minSpawnCount = 2;
-    [SerializeField] private int maxSpawnCount = 3; // inclusive
+    [SerializeField] private float minInterval = 1.5f; // 다음 스폰까지 최소 대기 시간
+    [SerializeField] private float maxInterval = 4f;    // 다음 스폰까지 최대 대기 시간
     [SerializeField] private Vector3 spawnRotationEuler = new Vector3(90f, 0f, 0f); // 링이 눕도록 회전 (X축 90도 기본값)
 
     private float _timer;
-    private List<int> _lastWaveIndices = new List<int>();
+    private float _nextSpawnTime;
+    private int _lastSpawnedIndex = -1;
     private bool _isSpawning;
 
     private void Awake() {
@@ -47,9 +47,10 @@ public class RingSpawner : MonoBehaviour {
 
         _timer += Time.deltaTime;
 
-        if (_timer >= waveInterval) {
+        if (_timer >= _nextSpawnTime) {
             _timer = 0f;
-            SpawnWave();
+            SpawnOneRing();
+            _nextSpawnTime = Random.Range(minInterval, maxInterval);
         }
     }
 
@@ -59,6 +60,7 @@ public class RingSpawner : MonoBehaviour {
     public void StartSpawning() {
         _isSpawning = true;
         _timer = 0f;
+        _nextSpawnTime = Random.Range(minInterval, maxInterval);
     }
 
     /// <summary>
@@ -68,42 +70,29 @@ public class RingSpawner : MonoBehaviour {
         _isSpawning = false;
     }
 
-    private void SpawnWave() {
+    private void SpawnOneRing() {
         if (tiles == null || tiles.Length == 0 || ringPrefab == null) return;
 
-        int spawnCount = Random.Range(minSpawnCount, maxSpawnCount + 1);
-        List<int> chosenIndices = PickRandomTileIndices(spawnCount);
-
-        foreach (int index in chosenIndices) {
-            SpawnRingAt(tiles[index]);
-        }
-
-        _lastWaveIndices = chosenIndices;
+        int index = PickRandomTileIndex();
+        SpawnRingAt(tiles[index]);
+        _lastSpawnedIndex = index;
     }
 
-    private List<int> PickRandomTileIndices(int count) {
-        // 직전 웨이브에서 쓴 타일 제외한 후보 목록 생성
+    private int PickRandomTileIndex() {
+        // 직전에 스폰된 타일 제외한 후보 목록 생성
         List<int> candidates = new List<int>();
         for (int i = 0; i < tiles.Length; i++) {
-            if (!_lastWaveIndices.Contains(i)) {
+            if (i != _lastSpawnedIndex) {
                 candidates.Add(i);
             }
         }
 
-        // 혹시 후보가 부족하면(타일 개수가 너무 적을 때 등) 전체 타일로 대체
-        if (candidates.Count < count) {
-            candidates.Clear();
-            for (int i = 0; i < tiles.Length; i++) candidates.Add(i);
+        // 타일이 1개뿐이라 후보가 없는 극단적 상황 대비
+        if (candidates.Count == 0) {
+            candidates.Add(0);
         }
 
-        List<int> result = new List<int>();
-        for (int i = 0; i < count && candidates.Count > 0; i++) {
-            int randIndex = Random.Range(0, candidates.Count);
-            result.Add(candidates[randIndex]);
-            candidates.RemoveAt(randIndex);
-        }
-
-        return result;
+        return candidates[Random.Range(0, candidates.Count)];
     }
 
     private void SpawnRingAt(TileController tile) {

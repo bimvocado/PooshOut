@@ -6,6 +6,8 @@ using UnityEngine;
 /// 대기 중(Waiting) 총알에 맞으면(Hit) 플레이어 쪽으로 서서히 다가가고(Approaching),
 /// 플레이어한테 도달하면 분해 처리(정화도 증가)된다.
 /// 맞지 않고 lifeTime이 지나면 패널티 없이 그냥 사라진다.
+/// 한 번 맞아서 Approaching 상태가 되면 자신의 Collider를 꺼서,
+/// 이후 날아오는 총알이 자신을 다시 맞히고 사라지는 일이 없도록 함(총알은 그냥 통과).
 /// </summary>
 [RequireComponent(typeof(Collider))]
 public class MicrobeTarget : MonoBehaviour {
@@ -24,12 +26,20 @@ public class MicrobeTarget : MonoBehaviour {
     [SerializeField] private float minScaleRatio = 0.2f; // 도달 직전 최소 크기(원래 크기 대비 비율)
     [SerializeField] private AnimationCurve shrinkCurve = AnimationCurve.Linear(0f, 0f, 1f, 1f); // t(진행률) -> 축소 정도
 
+    [Header("피격 애니메이션")]
+    [SerializeField] private Animator animator; // 비워두면 Awake에서 GetComponent로 자동 탐색
+    [SerializeField] private string hitTriggerName = "Hit"; // Animator Controller의 Trigger 파라미터 이름과 일치해야 함
+
+    [Header("Idle 애니메이션")]
+    [SerializeField] private string[] idleStateNames = { "Idle1", "Idle2", "Idle3" }; // Animator 창의 State 이름과 정확히 일치해야 함
+
     private MicrobeSpawner _owner;
     private Transform _playerTarget;
     private State _state = State.Waiting;
 
     private Vector3 _originalScale;
     private float _initialDistance;
+    private Collider _collider;
 
     private void Reset() {
         GetComponent<Collider>().isTrigger = true;
@@ -37,13 +47,30 @@ public class MicrobeTarget : MonoBehaviour {
 
     private void Awake() {
         _originalScale = transform.localScale;
+        _collider = GetComponent<Collider>();
+
+        if (animator == null) {
+            animator = GetComponent<Animator>();
+            if (animator == null) {
+                animator = GetComponentInChildren<Animator>(); // 모델이 자식 오브젝트에 있는 경우 대비
+            }
+        }
     }
 
     public void Initialize(MicrobeSpawner owner, Transform playerTarget) {
         _owner = owner;
         _playerTarget = playerTarget;
         _state = State.Waiting;
+        PlayRandomIdle();
         StartCoroutine(LifeRoutine());
+    }
+
+    /// <summary>Idle 애니메이션 중 하나를 랜덤으로 골라 재생.</summary>
+    private void PlayRandomIdle() {
+        if (animator == null || idleStateNames == null || idleStateNames.Length == 0) return;
+
+        int randomIndex = Random.Range(0, idleStateNames.Length);
+        animator.Play(idleStateNames[randomIndex]);
     }
 
     private IEnumerator LifeRoutine() {
@@ -90,6 +117,16 @@ public class MicrobeTarget : MonoBehaviour {
         }
 
         GetComponent<MicrobeFloatMotion>()?.StopFloating(); // 접근 시작하면 진동 멈춤
+
+        if (animator != null) {
+            animator.SetTrigger(hitTriggerName); // 피격 애니메이션 재생
+        }
+
+        // 이미 한 번 맞았으니 콜라이더를 꺼서, 이후 날아오는 총알이
+        // 자신을 다시 트리거로 맞히지 않고(=Destroy 안 되고) 그냥 통과하도록 함
+        if (_collider != null) {
+            _collider.enabled = false;
+        }
 
         Debug.Log($"[MicrobeTarget] Approaching으로 전환, playerTarget = {_playerTarget}");
     }
