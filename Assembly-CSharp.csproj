@@ -57,6 +57,7 @@
     <Compile Include="Assets\Scripts\XR VR Input\XRInputHandler.cs" />
     <Compile Include="Assets\Scripts\Player\WristUIController.cs" />
     <Compile Include="Assets\Scripts\Core\AudioManager.cs" />
+    <Compile Include="Assets\Scripts\Core\StageGaugeUI.cs" />
     <Compile Include="Assets\Scripts\Player\PurificationGaugeUI.cs" />
     <Compile Include="Assets\Scripts\Core\ServerConfig.cs" />
     <Compile Include="Assets\Scripts\Stage1\HandleController.cs" />
@@ -125,6 +126,7 @@
     <None Include="Assets\TextMesh Pro\Shaders\TMPro_Properties.cginc" />
     <None Include="Assets\TextMesh Pro\Shaders\TMPro_Surface.cginc" />
     <None Include="Assets\TextMesh Pro\Resources\LineBreaking Following Characters.txt" />
+    <None Include="Assets\Fonts\상용한글 2350자 + 영문 + 특수문자.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile Masking.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF Overlay.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap-Mobile.shader" />
