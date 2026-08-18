@@ -24,7 +24,27 @@ public class PurificationManager : MonoBehaviour, IStageProgressProvider {
     [SerializeField] private bool showDebugUI = true;
     [SerializeField] private int debugFontSize = 40;
 
+    [Header("BGM")]
+    [SerializeField] private AudioSource bgmAudioSource;
+    [SerializeField] private AudioClip bgmClip;
+    [Range(0f, 1f)]
+    [SerializeField] private float bgmVolume = 0.5f;
+
     public float CurrentPurification { get; private set; }
+
+    private void Start() {
+        PlayBGM();
+    }
+
+    private void PlayBGM() {
+        if (bgmAudioSource == null || bgmClip == null)
+            return;
+
+        bgmAudioSource.clip = bgmClip;
+        bgmAudioSource.volume = bgmVolume;
+        bgmAudioSource.loop = true;
+        bgmAudioSource.Play();
+    }
 
     /// <summary>
     /// IStageProgressProvider 구현.
