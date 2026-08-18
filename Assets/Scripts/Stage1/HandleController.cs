@@ -72,10 +72,30 @@ public class HandleController : MonoBehaviour
         _rightGripped = false;
     }
 
-    private void OnLeftGripEntered(SelectEnterEventArgs args) => _leftGripped = true;
-    private void OnLeftGripExited(SelectExitEventArgs args) => _leftGripped = false;
-    private void OnRightGripEntered(SelectEnterEventArgs args) => _rightGripped = true;
-    private void OnRightGripExited(SelectExitEventArgs args) => _rightGripped = false;
+    // TODO(디버그용, 확인 끝나면 제거): 그립 이벤트 자체가 오는지 확인하기 위한 임시 로그.
+    private void OnLeftGripEntered(SelectEnterEventArgs args)
+    {
+        _leftGripped = true;
+        Debug.Log($"[HandleController] LEFT grip ENTER by {args.interactorObject.transform.name}", this);
+    }
+
+    private void OnLeftGripExited(SelectExitEventArgs args)
+    {
+        _leftGripped = false;
+        Debug.Log($"[HandleController] LEFT grip EXIT by {args.interactorObject.transform.name}", this);
+    }
+
+    private void OnRightGripEntered(SelectEnterEventArgs args)
+    {
+        _rightGripped = true;
+        Debug.Log($"[HandleController] RIGHT grip ENTER by {args.interactorObject.transform.name}", this);
+    }
+
+    private void OnRightGripExited(SelectExitEventArgs args)
+    {
+        _rightGripped = false;
+        Debug.Log($"[HandleController] RIGHT grip EXIT by {args.interactorObject.transform.name}", this);
+    }
 
     private void Update()
     {
