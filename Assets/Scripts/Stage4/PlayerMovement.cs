@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.XR;
 
 /// <summary>
@@ -16,8 +16,7 @@ using UnityEngine.XR;
 /// deviceRotation 대신 Input Action Reference로 교체가 필요할 수 있습니다.
 /// </summary>
 [RequireComponent(typeof(CharacterController))]
-public class PlayerMovement : MonoBehaviour
-{
+public class PlayerMovement : MonoBehaviour {
     [Header("이동 설정")]
     [SerializeField] private float moveSpeed = 2f;
     [SerializeField] private float tiltThreshold = 15f; // 이 각도(도) 이상 기울여야 이동 시작
@@ -27,23 +26,19 @@ public class PlayerMovement : MonoBehaviour
 
     private CharacterController _characterController;
 
-    private void Awake()
-    {
+    private void Awake() {
         _characterController = GetComponent<CharacterController>();
     }
 
-    private void Update()
-    {
+    private void Update() {
         Vector3 moveDir = GetVRMoveDirection();
 
         // VR 컨트롤러 입력이 없으면(에디터 디버깅 등) 키보드 입력 사용
-        if (moveDir == Vector3.zero)
-        {
+        if (moveDir == Vector3.zero) {
             moveDir = GetDebugMoveDirection();
         }
 
-        if (moveDir != Vector3.zero)
-        {
+        if (moveDir != Vector3.zero) {
             _characterController.Move(moveDir * moveSpeed * Time.deltaTime);
         }
     }
@@ -52,8 +47,7 @@ public class PlayerMovement : MonoBehaviour
     /// 양쪽 컨트롤러 중 기울기 임계값을 넘은 컨트롤러의 "향하는 방향"을 반환.
     /// 위아래 성분은 제거해서 수평 이동만 되도록 함.
     /// </summary>
-    private Vector3 GetVRMoveDirection()
-    {
+    private Vector3 GetVRMoveDirection() {
         Vector3 dir = TryGetControllerForwardDir(XRNode.RightHand);
         if (dir != Vector3.zero) return dir;
 
@@ -61,13 +55,11 @@ public class PlayerMovement : MonoBehaviour
         return dir;
     }
 
-    private Vector3 TryGetControllerForwardDir(XRNode node)
-    {
+    private Vector3 TryGetControllerForwardDir(XRNode node) {
         InputDevice device = InputDevices.GetDeviceAtXRNode(node);
         if (!device.isValid) return Vector3.zero;
 
-        if (!device.TryGetFeatureValue(CommonUsages.deviceRotation, out Quaternion rotation))
-        {
+        if (!device.TryGetFeatureValue(CommonUsages.deviceRotation, out Quaternion rotation)) {
             return Vector3.zero;
         }
 
@@ -89,13 +81,19 @@ public class PlayerMovement : MonoBehaviour
     /// <summary>
     /// 에디터 디버깅용 WASD 입력. 헤드 방향(정면) 기준 수평 이동.
     /// </summary>
-    private Vector3 GetDebugMoveDirection()
-    {
-        float h = Input.GetAxisRaw("Horizontal"); // A/D
-        float v = Input.GetAxisRaw("Vertical");   // W/S
+    private Vector3 GetDebugMoveDirection() {
+        // 방향키: Up = 앞, Down = 뒤, Left = 왼쪽, Right = 오른쪽
+        // 주의: XR Device Simulator 기본 키맵이 알파벳 키(T,G,F,H 등)를 컨트롤러 회전에 이미 쓰고 있어서
+        // 알파벳 키와 겹치지 않도록 방향키를 사용함
+        float h = 0f;
+        float v = 0f;
 
-        if (Mathf.Approximately(h, 0f) && Mathf.Approximately(v, 0f))
-        {
+        if (Input.GetKey(KeyCode.UpArrow)) v += 1f;
+        if (Input.GetKey(KeyCode.DownArrow)) v -= 1f;
+        if (Input.GetKey(KeyCode.RightArrow)) h += 1f;
+        if (Input.GetKey(KeyCode.LeftArrow)) h -= 1f;
+
+        if (Mathf.Approximately(h, 0f) && Mathf.Approximately(v, 0f)) {
             return Vector3.zero;
         }
 

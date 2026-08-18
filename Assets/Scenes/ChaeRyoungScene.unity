@@ -1125,9 +1125,17 @@ MonoBehaviour:
   waypoints:
   - {fileID: 1127483049}
   - {fileID: 0}
+  samplesPerSegment: 12
   forwardSpeed: 3
   lateralRange: 1.5
   lateralSmoothing: 5
+  rotationSmoothing: 6
+  defaultRadius: 0.3
+  defaultHeight: 1.7
+  defaultCenter: {x: 0, y: 0.85, z: 0}
+  headTracker: {fileID: 0}
+  headCapsulePadding: 0.15
+  minCapsuleHeight: 1
 --- !u!114 &1364898228
 MonoBehaviour:
   m_ObjectHideFlags: 0

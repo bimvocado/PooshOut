@@ -1326,7 +1326,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   requestCooldown: 3
-  requestTimeoutSeconds: 15
+requestTimeoutSeconds: 15
   offlineFallbackMessages:
   - "\uC9C0\uAE08\uC740 \uC815\uD654\uBD07\uC774 \uC2E0\uD638\uAC00 \uC548 \uC7A1\uD600\uC11C
     \uB9D0\uC744 \uBABB \uD574\uC918! \uC870\uAE08\uB9CC \uAE30\uB2E4\uB824\uC904\uB798?"

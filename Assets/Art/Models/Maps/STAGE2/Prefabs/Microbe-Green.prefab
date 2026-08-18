@@ -65,8 +65,13 @@ PrefabInstance:
       value: Microbe-Green
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 4163730884033810741, guid: 6d22a50b826ca224fb21e149dfbdbe3f, type: 3}
+    - {fileID: -8391222552659086748, guid: 6d22a50b826ca224fb21e149dfbdbe3f, type: 3}
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: 6d22a50b826ca224fb21e149dfbdbe3f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5876692610447063142}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6d22a50b826ca224fb21e149dfbdbe3f, type: 3}
       insertIndex: -1
@@ -77,7 +82,15 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6d22a50b826ca224fb21e149dfbdbe3f, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6809443883950564994}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6d22a50b826ca224fb21e149dfbdbe3f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -8546940214561641665}
   m_SourcePrefab: {fileID: 100100000, guid: 6d22a50b826ca224fb21e149dfbdbe3f, type: 3}
+--- !u!4 &2734073720644921722 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 6d22a50b826ca224fb21e149dfbdbe3f, type: 3}
+  m_PrefabInstance: {fileID: 2484818133227409041}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &3367198545730155456 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 6d22a50b826ca224fb21e149dfbdbe3f, type: 3}
@@ -122,6 +135,9 @@ MonoBehaviour:
   approachSpeed: 5
   arriveDistance: 0.5
   purityRewardOnReach: 2
+  audioSource: {fileID: -8546940214561641665}
+  hitSfx:
+  - {fileID: 8300000, guid: 005e85642db0b0845a4bb2fc8dbdacc3, type: 3}
   decomposeSfx: {fileID: 0}
   minScaleRatio: 0.2
   shrinkCurve:
@@ -148,6 +164,12 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  animator: {fileID: 3625532660750563183}
+  hitTriggerName: Hit
+  idleStateNames:
+  - Idle1
+  - Idle2
+  - Idle3
 --- !u!114 &6809443883950564994
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -165,3 +187,192 @@ MonoBehaviour:
   randomizePhase: 1
   amplitudeJitter: 0.05
   speedJitter: 0.3
+--- !u!82 &-8546940214561641665
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3367198545730155456}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
+  m_PlayOnAwake: 0
+  m_Volume: 0.792
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 0
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+--- !u!1001 &6198234801961525133
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 2734073720644921722}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 01d317bff0b5b5442be671c853d11cce, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 01d317bff0b5b5442be671c853d11cce, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 01d317bff0b5b5442be671c853d11cce, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 01d317bff0b5b5442be671c853d11cce, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 01d317bff0b5b5442be671c853d11cce, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 01d317bff0b5b5442be671c853d11cce, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 01d317bff0b5b5442be671c853d11cce, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 01d317bff0b5b5442be671c853d11cce, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 01d317bff0b5b5442be671c853d11cce, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 01d317bff0b5b5442be671c853d11cce, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 01d317bff0b5b5442be671c853d11cce, type: 3}
+      propertyPath: m_Name
+      value: Microbe-Green-0.1.0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 01d317bff0b5b5442be671c853d11cce, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3625532660750563183}
+  m_SourcePrefab: {fileID: 100100000, guid: 01d317bff0b5b5442be671c853d11cce, type: 3}
+--- !u!4 &5876692610447063142 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 01d317bff0b5b5442be671c853d11cce, type: 3}
+  m_PrefabInstance: {fileID: 6198234801961525133}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &6540885167298077404 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 01d317bff0b5b5442be671c853d11cce, type: 3}
+  m_PrefabInstance: {fileID: 6198234801961525133}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &3625532660750563183
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6540885167298077404}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 14b4d79ef9aacc042aa0b8ab3b0a23ba, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
