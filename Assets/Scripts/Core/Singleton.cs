@@ -21,7 +21,8 @@ public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
         {
             if (_instance == null)
             {
-                _instance = FindObjectOfType<T>();
+                // 수정
+                _instance = FindFirstObjectByType<T>();
             }
             return _instance;
         }
