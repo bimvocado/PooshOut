@@ -132,6 +132,7 @@ GameObject:
   - component: {fileID: 7257479}
   - component: {fileID: 7257477}
   - component: {fileID: 7257481}
+  - component: {fileID: 7257483}
   - component: {fileID: 7257482}
   m_Layer: 0
   m_Name: Gun
@@ -149,7 +150,7 @@ Transform:
   m_GameObject: {fileID: 7257474}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.002, y: 0.049, z: 0.431}
+  m_LocalPosition: {x: -0.002, y: 0.049, z: 0.764}
   m_LocalScale: {x: -0.5, y: 0.5, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -168,7 +169,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f15aededff831244b8b6678f5b28dd3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  aimInputSource: {fileID: 7257481}
+  aimInputSource: {fileID: 7257483}
   muzzlePoint: {fileID: 1151299148}
   bulletPrefab: {fileID: 7545707472421421406, guid: 83adccf8b226e43499b0afe06b905425, type: 3}
   bulletSpeed: 10
@@ -338,6 +339,31 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &7257483
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7257474}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a34ea88595bdca24dbf6b5e6dd9b8584, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  controllerTransform: {fileID: 226028946}
+  triggerAction:
+    m_UseReference: 1
+    m_Action:
+      m_Name: Trigger
+      m_Type: 0
+      m_ExpectedControlType: 
+      m_Id: ffea5dd4-7d4a-4638-81da-4524a8a68a2b
+      m_Processors: 
+      m_Interactions: 
+      m_SingletonActionBindings: []
+      m_Flags: 0
+    m_Reference: {fileID: 83097790271614945, guid: c348712bda248c246b8c49b3db54643f, type: 3}
 --- !u!1 &25117762
 GameObject:
   m_ObjectHideFlags: 0

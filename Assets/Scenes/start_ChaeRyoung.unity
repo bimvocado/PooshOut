@@ -353,6 +353,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: a033ee017a7e88e46b40ddfddf2a0b5e, type: 3}
   m_PrefabInstance: {fileID: 835218697}
   m_PrefabAsset: {fileID: 0}
+--- !u!4 &244130176 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1670256625, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
+  m_PrefabInstance: {fileID: 469845483}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &222706478 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -2001777990273901945, guid: 320dfb4a601d1f54c8873ba4d14acb83, type: 3}
@@ -374,6 +379,7 @@ MonoBehaviour:
   rotateAngle: 45
   rotateTime: 0.2
   stayTime: 0.1
+
 --- !u!1 &332554417 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1767192433, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
@@ -531,7 +537,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1680501587, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 2
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 1767192439, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
       propertyPath: m_ClearFlags
@@ -1637,6 +1643,8 @@ MonoBehaviour:
   moveSpeed: 5
   tiltThreshold: 15
   headTransform: {fileID: 332554418}
+  leftController: {fileID: 1338007250}
+  rightController: {fileID: 244130176}
 --- !u!136 &982763945
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -1663,6 +1671,11 @@ CapsuleCollider:
 --- !u!4 &1193740133 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8366379412631108205, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
+  m_PrefabInstance: {fileID: 469845483}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &1338007250 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 202364688, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
   m_PrefabInstance: {fileID: 469845483}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1355965010

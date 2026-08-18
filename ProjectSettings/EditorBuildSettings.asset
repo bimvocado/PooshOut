@@ -8,6 +8,18 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/SampleScene.unity
     guid: 99c9720ab356a0642a771bea13969a05
+  - enabled: 0
+    path: Assets/Scenes/RealGame/Stage1.unity
+    guid: 6fc3b43e42bb4304b9f561f99484077e
+  - enabled: 0
+    path: Assets/Scenes/3_Chaeryoung.unity
+    guid: 93e2dccde18dd034483bd0a263e64ec5
+  - enabled: 0
+    path: Assets/Scenes/4_ChaeRyoungScene.unity
+    guid: 54d20c2542c543d43a363b88ffc36d80
+  - enabled: 1
+    path: Assets/Scenes/start_ChaeRyoung.unity
+    guid: 4005deb80aa07964f84d062d1bc03e75
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 4eb0a53a377e3b64a9366caf109e4332, type: 2}
