@@ -28,8 +28,8 @@ public class GripDistanceDebugger : MonoBehaviour
     [SerializeField] private Transform gripL;
     [SerializeField] private Transform gripR;
 
-    [Header("Fallback 반경 (위 오브젝트에서 해당 컴포넌트를 못 찾았을 때만 사용)")]
-    [SerializeField] private float fallbackGripColliderRadius = 0.65f;
+    [Header("Fallback 반경 (위 오브젝트에서 해당 컴포넌트를 못 찾았을 때만 사용, 월드 스케일 반영된 값으로 적을 것)")]
+    [SerializeField] private float fallbackGripColliderRadius = 0.7f; // Grip 로컬 반경 1.0 x 부모(Cart 본체) 스케일 0.7
     [SerializeField] private float fallbackNearCasterRadius = 0.1f;
 
     [Header("로그 주기")]
