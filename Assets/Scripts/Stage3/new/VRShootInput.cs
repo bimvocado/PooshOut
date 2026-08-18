@@ -5,26 +5,14 @@ public class VRShootInput : MonoBehaviour, IShootInput {
     [SerializeField] private Transform controllerTransform;
 
     [Header("Input")]
-    [SerializeField] private InputActionReference triggerAction;
-
-    private bool _triggerPressedThisFrame;
+    [SerializeField] private InputActionProperty triggerAction;
 
     private void OnEnable() {
-        if (triggerAction != null) {
-            triggerAction.action.performed += OnTriggerPressed;
-            triggerAction.action.Enable();
-        }
+        triggerAction.action?.Enable();
     }
 
     private void OnDisable() {
-        if (triggerAction != null) {
-            triggerAction.action.performed -= OnTriggerPressed;
-            triggerAction.action.Disable();
-        }
-    }
-
-    private void OnTriggerPressed(InputAction.CallbackContext context) {
-        SetTriggerPressed();
+        triggerAction.action?.Disable();
     }
 
     public bool TryGetAim(out Vector3 origin, out Vector3 direction) {
@@ -41,13 +29,9 @@ public class VRShootInput : MonoBehaviour, IShootInput {
     }
 
     public bool FirePressedThisFrame() {
-        bool pressed = _triggerPressedThisFrame;
-        _triggerPressedThisFrame = false;
+        if (triggerAction.action == null)
+            return false;
 
-        return pressed;
-    }
-
-    public void SetTriggerPressed() {
-        _triggerPressedThisFrame = true;
+        return triggerAction.action.WasPressedThisFrame();
     }
 }
