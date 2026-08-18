@@ -133,6 +133,7 @@ GameObject:
   - component: {fileID: 7257477}
   - component: {fileID: 7257481}
   - component: {fileID: 7257482}
+  - component: {fileID: 7257483}
   m_Layer: 0
   m_Name: Gun
   m_TagString: Untagged
@@ -338,6 +339,20 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &7257483
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7257474}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a34ea88595bdca24dbf6b5e6dd9b8584, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  controllerTransform: {fileID: 226028946}
+  triggerAction: {fileID: -2439264783773714294, guid: 0be0028c24f2a4c14a96b6aa39055933, type: 3}
 --- !u!1 &25117762
 GameObject:
   m_ObjectHideFlags: 0
