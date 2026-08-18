@@ -1551,7 +1551,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 3.5
-  tiltThreshold: 1
+  tiltThreshold: 30
   headTransform: {fileID: 1860053102}
   leftController: {fileID: 633521786}
   rightController: {fileID: 633521784}
