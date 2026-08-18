@@ -23,6 +23,7 @@ public class RailMover : MonoBehaviour, IStageProgressProvider
     [SerializeField] private float lateralRange = 1.2f;    // 파이프 중심 기준 좌우 클램프 반경
     [SerializeField] private float lateralSmoothing = 5f;
     [SerializeField] private float rotationSmoothing = 6f; // 시점 회전 스무딩 (코너 멀미 방지)
+    [SerializeField] private float railHeight = 0f;        // 웨이포인트 높이 대신 항상 이 Y값에서 진행
 
     [Header("CharacterController 기본값 (플레이어 캡슐 크기)")]
     [SerializeField] private float defaultRadius = 0.3f;
@@ -90,7 +91,7 @@ public class RailMover : MonoBehaviour, IStageProgressProvider
         _distanceTraveled = 0f;
         // 최초 배치는 텔레포트라 직접 대입해도 안전 (이후 이동은 ApplyTransform에서 CharacterController.Move()로만 처리)
         SampleAt(0f, out Vector3 startPos, out Vector3 startTangent);
-        startPos.y = 0f; // 웨이포인트 높이와 무관하게 항상 y=0에서 진행 (파이프 메쉬 자체 높이는 건드리지 않음)
+        startPos.y = railHeight; // 웨이포인트 높이와 무관하게 항상 railHeight에서 진행 (파이프 메쉬 자체 높이는 건드리지 않음)
         transform.SetPositionAndRotation(startPos, Quaternion.LookRotation(startTangent, Vector3.up));
     }
 
@@ -185,7 +186,7 @@ public class RailMover : MonoBehaviour, IStageProgressProvider
     private void ApplyTransform()
     {
         SampleAt(_distanceTraveled, out Vector3 centerPos, out Vector3 forwardDir);
-        centerPos.y = 0f; // 웨이포인트 높이와 무관하게 항상 y=0에서 진행 (파이프 메쉬 자체 높이는 건드리지 않음)
+        centerPos.y = railHeight; // 웨이포인트 높이와 무관하게 항상 railHeight에서 진행 (파이프 메쉬 자체 높이는 건드리지 않음)
 
         // 상하 이동 없음: up과의 외적이라 결과 벡터는 항상 수평(y=0)이 보장됨.
         Vector3 lateralDir = Vector3.Cross(Vector3.up, forwardDir).normalized;
