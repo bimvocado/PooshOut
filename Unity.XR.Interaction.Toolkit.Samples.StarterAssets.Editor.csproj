@@ -858,10 +858,6 @@
     <Reference Include="UnityEngine.UI">
       <HintPath>C:\dev\PooshOut\Library\ScriptAssemblies\UnityEngine.UI.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEditor.UI">
-      <HintPath>Library\ScriptAssemblies\UnityEditor.UI.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="UnityEngine.TestRunner">
       <HintPath>C:\dev\PooshOut\Library\ScriptAssemblies\UnityEngine.TestRunner.dll</HintPath>
     </Reference>
