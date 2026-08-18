@@ -33,10 +33,12 @@ public class HandleController : MonoBehaviour
     private bool _leftGripped;
     private bool _rightGripped;
     private float _currentSteering;
+    private Quaternion _baseLocalRotation; // handleMesh에 미리 세팅된 보정 회전(예: Y 180도)을 보존하기 위한 기준값
 
     private void Awake()
     {
         if (handleMesh == null) handleMesh = transform;
+        _baseLocalRotation = handleMesh.localRotation;
     }
 
     private void OnEnable()
@@ -94,7 +96,7 @@ public class HandleController : MonoBehaviour
         _currentSteering = Mathf.MoveTowards(_currentSteering, targetSteering, Time.deltaTime * smoothing);
         SteeringValue = _currentSteering;
 
-        handleMesh.localRotation = Quaternion.Euler(0f, 0f, -_currentSteering * maxTiltAngle);
+        handleMesh.localRotation = _baseLocalRotation * Quaternion.Euler(0f, 0f, -_currentSteering * maxTiltAngle);
 
         railMover?.SetLateralInput(_currentSteering);
     }
