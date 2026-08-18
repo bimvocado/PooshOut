@@ -25,7 +25,7 @@ public class LLMConnector : Singleton<LLMConnector>
     [Tooltip("연속 요청 사이 최소 간격(초). 어린이가 버튼을 연타해도 서버를 과호출하지 않도록 방지.")]
     [SerializeField, Min(3f)] private float requestCooldown = 3f;
     [Tooltip("서버 응답을 이 시간(초) 안에 못 받으면 오프라인으로 간주하고 폴백 메시지를 출력.")]
-    [SerializeField, Min(1f)] private float requestTimeoutSeconds = 5f;
+    [SerializeField, Min(1f)] private float requestTimeoutSeconds = 10f;
 
     [Header("오프라인 폴백 (서버 미연결 시 정화봇이 대신 하는 말)")]
     [SerializeField]
@@ -261,6 +261,13 @@ public class LLMConnector : Singleton<LLMConnector>
                 Debug.LogError($"[LLMConnector] 응답 파싱 실패(reply 없음): {json}");
                 return PickOfflineFallback();
             }
+
+            // TTS 음성이 왔으면 재생 (audioUrl이 없으면 PooshVoicePlayer가 알아서 무시하고 텍스트만 표시됨)
+            if (PooshVoicePlayer.Instance != null)
+            {
+                PooshVoicePlayer.Instance.PlayFromUrl(response.audioUrl);
+            }
+
             return response.reply;
         }
         catch (Exception e)
@@ -301,5 +308,6 @@ public class LLMConnector : Singleton<LLMConnector>
     private class ChatResponse
     {
         public string reply;
+        public string audioUrl;
     }
 }
