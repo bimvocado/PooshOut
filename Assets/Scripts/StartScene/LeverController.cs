@@ -1,60 +1,85 @@
 ﻿using UnityEngine;
-using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.InputSystem;
 using System.Collections;
 
-public class LeverController: MonoBehaviour {
-    [Header("Outline")]
-    public GameObject outlineObject;
+public class LeverController : MonoBehaviour {
+    [Header("Input")]
+    [SerializeField] private InputActionReference triggerAction;
 
     [Header("Rotation")]
-    public float rotateAngle = 45f;
-    public float rotateTime = 0.2f;
-    public float stayTime = 0.1f;
+    [SerializeField] private float hoverAngle = 10f;
+    [SerializeField] private float clickAngle = 45f;
+    [SerializeField] private float rotateTime = 0.2f;
+    [SerializeField] private float stayTime = 0.1f;
 
     private Quaternion originalRotation;
-    private bool isRotating = false;
+    private bool isHovered;
+    private bool isRotating;
 
-    void Start() {
+    private void Start() {
         originalRotation = transform.localRotation;
-
-        if (outlineObject != null)
-            outlineObject.SetActive(false);
     }
 
-    // Ray가 닿았을 때
+    private void OnEnable() {
+        if (triggerAction != null)
+            triggerAction.action.Enable();
+    }
+
+    private void OnDisable() {
+        if (triggerAction != null)
+            triggerAction.action.Disable();
+    }
+
+    private void Update() {
+        if (!isHovered || isRotating || triggerAction == null)
+            return;
+
+        if (triggerAction.action.WasPressedThisFrame()) {
+            Click();
+        }
+    }
+
     public void HoverEnter() {
-        if (outlineObject != null)
-            outlineObject.SetActive(true);
+        isHovered = true;
+
+        if (!isRotating) {
+            transform.localRotation =
+                originalRotation *
+                Quaternion.Euler(0f, 0f, hoverAngle);
+        }
     }
 
-    // Ray가 빠졌을 때
     public void HoverExit() {
-        if (outlineObject != null)
-            outlineObject.SetActive(false);
+        isHovered = false;
+
+        if (!isRotating)
+            transform.localRotation = originalRotation;
     }
 
-    // 클릭했을 때
     public void Click() {
         if (!isRotating)
             StartCoroutine(RotateAnimation());
     }
 
-    IEnumerator RotateAnimation() {
+    private IEnumerator RotateAnimation() {
         isRotating = true;
 
-        Quaternion startRot = originalRotation;
+        Quaternion startRot = transform.localRotation;
         Quaternion targetRot =
-            originalRotation * Quaternion.Euler(0, 45f, 0);
+            originalRotation *
+            Quaternion.Euler(0f, 0f, -clickAngle);
 
-        // 45도 회전
-        float time = 0;
+        float time = 0f;
 
         while (time < rotateTime) {
             time += Time.deltaTime;
-            float t = time / rotateTime;
 
             transform.localRotation =
-                Quaternion.Slerp(startRot, targetRot, t);
+                Quaternion.Slerp(
+                    startRot,
+                    targetRot,
+                    time / rotateTime
+                );
 
             yield return null;
         }
@@ -63,20 +88,27 @@ public class LeverController: MonoBehaviour {
 
         yield return new WaitForSeconds(stayTime);
 
-        // 원위치로 복귀
-        time = 0;
+        time = 0f;
+
+        Quaternion returnTarget =
+            isHovered
+            ? originalRotation * Quaternion.Euler(0f, 0f, hoverAngle)
+            : originalRotation;
 
         while (time < rotateTime) {
             time += Time.deltaTime;
-            float t = time / rotateTime;
 
             transform.localRotation =
-                Quaternion.Slerp(targetRot, startRot, t);
+                Quaternion.Slerp(
+                    targetRot,
+                    returnTarget,
+                    time / rotateTime
+                );
 
             yield return null;
         }
 
-        transform.localRotation = startRot;
+        transform.localRotation = returnTarget;
         isRotating = false;
     }
 }
