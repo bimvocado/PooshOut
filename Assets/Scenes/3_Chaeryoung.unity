@@ -6945,10 +6945,10 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_Sprite: {fileID: 21300000, guid: 1ab01007230a62045ba49e2040bf4531, type: 3}
-  m_Type: 0
+  m_Type: 3
   m_PreserveAspect: 0
   m_FillCenter: 1
-  m_FillMethod: 4
+  m_FillMethod: 0
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
@@ -7025,10 +7025,10 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_Sprite: {fileID: 21300000, guid: 3273e8252a984164b9e58b8bf9279d05, type: 3}
-  m_Type: 0
+  m_Type: 3
   m_PreserveAspect: 0
   m_FillCenter: 1
-  m_FillMethod: 4
+  m_FillMethod: 0
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
@@ -7061,6 +7061,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   uiPanel: {fileID: 842915952}
   showDuration: 10
+  wristUIController: {fileID: 1794878284}
 --- !u!1 &850204156
 GameObject:
   m_ObjectHideFlags: 0
@@ -8923,7 +8924,10 @@ MonoBehaviour:
   wristCanvasRoot: {fileID: 1811330846}
   purificationText: {fileID: 25117764}
   purificationGauge: {fileID: 1794878285}
-  progressProviderSource: {fileID: 346570519}
+  purificationProviderSource: {fileID: 346570519}
+  progressText: {fileID: 1431299781}
+  progressGauge: {fileID: 834665541}
+  totalStageTime: 60
   activateAngleThreshold: 60
   deactivateAngleThreshold: 100
   invertDetection: 0
@@ -9383,10 +9387,10 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_Sprite: {fileID: 21300000, guid: 66c4400e29e462d439264e8b5de7d624, type: 3}
-  m_Type: 0
+  m_Type: 3
   m_PreserveAspect: 0
   m_FillCenter: 1
-  m_FillMethod: 4
+  m_FillMethod: 0
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
@@ -9417,7 +9421,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1940964997
 RectTransform:
   m_ObjectHideFlags: 0
@@ -9458,10 +9462,10 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_Sprite: {fileID: 21300000, guid: 05552a0f8fbb1bf4aa224ca0010ccd3d, type: 3}
-  m_Type: 0
+  m_Type: 3
   m_PreserveAspect: 0
   m_FillCenter: 1
-  m_FillMethod: 4
+  m_FillMethod: 0
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
