@@ -70,6 +70,8 @@
     <Compile Include="Assets\Scripts\Stage1\PipeSegment.cs" />
     <Compile Include="Assets\Scripts\Stage4\Ring.cs" />
     <Compile Include="Assets\Scripts\XR VR Input\XRInputHandler.cs" />
+    <Compile Include="Assets\Scripts\BlinkingUIImage.cs" />
+    <Compile Include="Assets\Scripts\StageStartUIController.cs" />
     <Compile Include="Assets\Scripts\Player\WristUIController.cs" />
     <Compile Include="Assets\Scripts\Core\AudioManager.cs" />
     <Compile Include="Assets\Scripts\Core\StageGaugeUI.cs" />
@@ -1143,8 +1145,8 @@
       <HintPath>Library\ScriptAssemblies\UnityEditor.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.Searcher.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.Searcher.Editor.dll</HintPath>
+    <Reference Include="Unity.XR.MockHMD">
+      <HintPath>Library\ScriptAssemblies\Unity.XR.MockHMD.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.Rider.Editor">
@@ -1159,16 +1161,16 @@
       <HintPath>Library\ScriptAssemblies\Unity.XR.OpenXR.Features.OculusQuestSupport.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Unity.Searcher.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.Searcher.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Unity.AI.Navigation">
       <HintPath>Library\ScriptAssemblies\Unity.AI.Navigation.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.XR.CoreUtils">
       <HintPath>Library\ScriptAssemblies\Unity.XR.CoreUtils.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.XR.MockHMD">
-      <HintPath>Library\ScriptAssemblies\Unity.XR.MockHMD.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.RenderPipeline.Universal.ShaderLibrary">
