@@ -177,10 +177,10 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_Sprite: {fileID: 21300000, guid: 3273e8252a984164b9e58b8bf9279d05, type: 3}
-  m_Type: 0
+  m_Type: 3
   m_PreserveAspect: 0
   m_FillCenter: 1
-  m_FillMethod: 4
+  m_FillMethod: 0
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
@@ -351,7 +351,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 388176299017867152, guid: c89b5d5de83b33249a725ae4d8e5ab98, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 164.43
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 388176299017867152, guid: c89b5d5de83b33249a725ae4d8e5ab98, type: 3}
       propertyPath: m_AnchoredPosition.x
@@ -499,7 +499,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3185311003688980948, guid: c89b5d5de83b33249a725ae4d8e5ab98, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 215.71
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3185311003688980948, guid: c89b5d5de83b33249a725ae4d8e5ab98, type: 3}
       propertyPath: m_AnchoredPosition.x
@@ -551,7 +551,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6632748474467062556, guid: c89b5d5de83b33249a725ae4d8e5ab98, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 363.77
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6632748474467062556, guid: c89b5d5de83b33249a725ae4d8e5ab98, type: 3}
       propertyPath: m_AnchoredPosition.x
@@ -1557,6 +1557,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 1670256624, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1680501587, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
       propertyPath: m_LocalPosition.y
       value: 3
@@ -1740,7 +1744,10 @@ MonoBehaviour:
   wristCanvasRoot: {fileID: 199355845}
   purificationText: {fileID: 1236654897}
   purificationGauge: {fileID: 633521790}
-  progressProviderSource: {fileID: 2005729068}
+  purificationProviderSource: {fileID: 2005729068}
+  progressText: {fileID: 921251345}
+  progressGauge: {fileID: 1396787469}
+  totalStageTime: 60
   activateAngleThreshold: 60
   deactivateAngleThreshold: 100
   invertDetection: 0
@@ -2922,10 +2929,10 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_Sprite: {fileID: 21300000, guid: 1ab01007230a62045ba49e2040bf4531, type: 3}
-  m_Type: 0
+  m_Type: 3
   m_PreserveAspect: 0
   m_FillCenter: 1
-  m_FillMethod: 4
+  m_FillMethod: 0
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
@@ -3078,10 +3085,10 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_Sprite: {fileID: 21300000, guid: 05552a0f8fbb1bf4aa224ca0010ccd3d, type: 3}
-  m_Type: 0
+  m_Type: 3
   m_PreserveAspect: 0
   m_FillCenter: 1
-  m_FillMethod: 4
+  m_FillMethod: 0
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
@@ -3526,10 +3533,10 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_Sprite: {fileID: 21300000, guid: 66c4400e29e462d439264e8b5de7d624, type: 3}
-  m_Type: 0
+  m_Type: 3
   m_PreserveAspect: 0
   m_FillCenter: 1
-  m_FillMethod: 4
+  m_FillMethod: 0
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
@@ -3893,8 +3900,9 @@ GameObject:
   m_Component:
   - component: {fileID: 2005729069}
   - component: {fileID: 2005729068}
+  - component: {fileID: 2005729070}
   m_Layer: 0
-  m_Name: PurificationManager
+  m_Name: StageManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3923,9 +3931,9 @@ MonoBehaviour:
   increaseSound: {fileID: 0}
   showDebugUI: 1
   debugFontSize: 40
-  bgmAudioSource: {fileID: 0}
-  bgmClip: {fileID: 0}
-  bgmVolume: 0.5
+  bgmAudioSource: {fileID: 2005729070}
+  bgmClip: {fileID: 8300000, guid: 37a2c011037a0d644b84e30e2ea06f59, type: 3}
+  bgmVolume: 0.16
 --- !u!4 &2005729069
 Transform:
   m_ObjectHideFlags: 0
@@ -3941,6 +3949,103 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!82 &2005729070
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2005729067}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
+  m_PlayOnAwake: 1
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &2051849309 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 548871573199302726, guid: c89b5d5de83b33249a725ae4d8e5ab98, type: 3}
@@ -3960,6 +4065,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   uiPanel: {fileID: 2051849309}
   showDuration: 10
+  wristUIController: {fileID: 633521788}
 --- !u!4 &2059342691 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: a033ee017a7e88e46b40ddfddf2a0b5e, type: 3}
