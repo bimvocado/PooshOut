@@ -1,67 +1,75 @@
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
-public class EndLeaderboardUI : MonoBehaviour
+public class StartLeaderboardUI : MonoBehaviour
 {
-    [Header("My Result")]
-    [SerializeField] private TMP_Text myNameText;
-    [SerializeField] private TMP_Text myPurityText;
-    [SerializeField] private TMP_Text myGradeText;
-    [SerializeField] private TMP_Text myRankText;
-
-    [Header("Leaderboard")]
     [SerializeField] private TMP_Text[] rankTexts;
     [SerializeField] private TMP_Text[] nameTexts;
     [SerializeField] private TMP_Text[] purityTexts;
-    [SerializeField] private TMP_Text[] gradeTexts;
-
-    [Header("Status")]
     [SerializeField] private TMP_Text statusText;
+    [SerializeField] private int maxEntries = 6;
     [SerializeField] private bool refreshOnEnable = true;
     [SerializeField] private string loadingText = "\uBD88\uB7EC\uC624\uB294 \uC911...";
     [SerializeField] private string emptyText = "\uC544\uC9C1 \uAE30\uB85D\uC774 \uC5C6\uC2B5\uB2C8\uB2E4.";
     [SerializeField] private bool useDebugLeaderboardWhenEmpty = true;
     [SerializeField] private TextAsset debugLeaderboardJson;
 
+    private Coroutine refreshRoutine;
+
     private void Awake()
     {
-        ClearMyResult();
-        ClearLeaderboardRows();
+        ClearRows();
         SetStatus("");
     }
 
     private void OnEnable()
     {
         if (refreshOnEnable)
-            Refresh();
+            QueueRefresh();
+    }
+
+    private void Start()
+    {
+        if (refreshOnEnable)
+            QueueRefresh();
     }
 
     public void Refresh()
     {
+        QueueRefresh();
+    }
+
+    private void QueueRefresh()
+    {
+        if (!isActiveAndEnabled)
+            return;
+
+        if (refreshRoutine != null)
+            StopCoroutine(refreshRoutine);
+
+        refreshRoutine = StartCoroutine(RefreshWhenReady());
+    }
+
+    private IEnumerator RefreshWhenReady()
+    {
+        SetStatus(loadingText);
+
+        const float timeoutSeconds = 5f;
+        float deadline = Time.unscaledTime + timeoutSeconds;
+        while (SaveLoadManager.Instance == null && Time.unscaledTime < deadline)
+            yield return null;
+
         if (SaveLoadManager.Instance == null)
         {
             SetStatus("SaveLoadManager missing");
-            return;
+            refreshRoutine = null;
+            yield break;
         }
 
-        SetStatus(loadingText);
         SaveLoadManager.Instance.FetchLeaderboard(ApplyLeaderboard);
-    }
-
-    public void ShowMyResult(PlayerData data, int rank)
-    {
-        if (data == null)
-            return;
-
-        string displayName = string.IsNullOrEmpty(data.displayName)
-            ? data.playerName
-            : data.displayName;
-
-        if (myNameText != null) myNameText.text = displayName;
-        if (myPurityText != null) myPurityText.text = FormatPurity(data.purity);
-        if (myGradeText != null) myGradeText.text = data.grade;
-        if (myRankText != null) myRankText.text = rank > 0 ? FormatRank(rank) : "-";
+        refreshRoutine = null;
     }
 
     private void ApplyLeaderboard(List<PlayerData> entries)
@@ -69,28 +77,21 @@ public class EndLeaderboardUI : MonoBehaviour
         if ((entries == null || entries.Count == 0) && useDebugLeaderboardWhenEmpty)
             entries = LoadDebugLeaderboard();
 
-        int count = entries?.Count ?? 0;
-        int rowCount = Mathf.Max(
-            rankTexts?.Length ?? 0,
-            nameTexts?.Length ?? 0,
-            purityTexts?.Length ?? 0,
-            gradeTexts?.Length ?? 0
-        );
+        int availableCount = entries?.Count ?? 0;
+        int displayCount = Mathf.Min(availableCount, Mathf.Max(0, maxEntries));
+        int rowCount = Mathf.Min(GetRowCount(), Mathf.Max(0, maxEntries));
 
         for (int i = 0; i < rowCount; i++)
         {
-            PlayerData entry = i < count ? entries[i] : null;
-            string displayName = entry == null
-                ? ""
-                : string.IsNullOrEmpty(entry.displayName) ? entry.playerName : entry.displayName;
+            PlayerData entry = i < displayCount ? entries[i] : null;
+            string displayName = GetDisplayName(entry);
 
             SetText(rankTexts, i, entry == null ? "" : FormatRank(i + 1));
             SetText(nameTexts, i, displayName);
             SetText(purityTexts, i, entry == null ? "" : FormatPurity(entry.purity));
-            SetText(gradeTexts, i, entry == null ? "" : entry.grade);
         }
 
-        SetStatus(count == 0 ? emptyText : "");
+        SetStatus(displayCount == 0 ? emptyText : "");
     }
 
     private List<PlayerData> LoadDebugLeaderboard()
@@ -106,30 +107,28 @@ public class EndLeaderboardUI : MonoBehaviour
         return data?.entries;
     }
 
-    private void ClearMyResult()
+    private void ClearRows()
     {
-        if (myNameText != null) myNameText.text = "";
-        if (myPurityText != null) myPurityText.text = "";
-        if (myGradeText != null) myGradeText.text = "";
-        if (myRankText != null) myRankText.text = "";
-    }
-
-    private void ClearLeaderboardRows()
-    {
-        int rowCount = Mathf.Max(
-            rankTexts?.Length ?? 0,
-            nameTexts?.Length ?? 0,
-            purityTexts?.Length ?? 0,
-            gradeTexts?.Length ?? 0
-        );
-
+        int rowCount = GetRowCount();
         for (int i = 0; i < rowCount; i++)
         {
             SetText(rankTexts, i, "");
             SetText(nameTexts, i, "");
             SetText(purityTexts, i, "");
-            SetText(gradeTexts, i, "");
         }
+    }
+
+    private int GetRowCount()
+    {
+        return Mathf.Max(rankTexts?.Length ?? 0, nameTexts?.Length ?? 0, purityTexts?.Length ?? 0);
+    }
+
+    private static string GetDisplayName(PlayerData entry)
+    {
+        if (entry == null)
+            return "";
+
+        return string.IsNullOrEmpty(entry.displayName) ? entry.playerName : entry.displayName;
     }
 
     private static string FormatRank(int rank)
@@ -144,7 +143,8 @@ public class EndLeaderboardUI : MonoBehaviour
 
     private void SetStatus(string text)
     {
-        if (statusText != null) statusText.text = text;
+        if (statusText != null)
+            statusText.text = text;
     }
 
     private static void SetText(TMP_Text[] texts, int index, string value)

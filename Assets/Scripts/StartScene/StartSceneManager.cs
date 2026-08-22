@@ -12,6 +12,9 @@ public class StartSceneManager : MonoBehaviour {
     [Header("상단 선택된 칭호")]
     [SerializeField] private TMP_Text selectedTitleText;
 
+    [Header("Leaderboard")]
+    [SerializeField] private StartLeaderboardUI leaderboardUI;
+
     [Header("Hover 설정")]
     [SerializeField] private float hoverScale = 1.2f;
     [SerializeField] private float hoverSpeed = 10f;
@@ -30,6 +33,13 @@ public class StartSceneManager : MonoBehaviour {
 
     private void Awake() {
         SetupTitleObjects();
+    }
+
+    private void Start() {
+        if (leaderboardUI == null)
+            leaderboardUI = FindFirstObjectByType<StartLeaderboardUI>();
+
+        leaderboardUI?.Refresh();
     }
 
 

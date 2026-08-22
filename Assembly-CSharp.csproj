@@ -104,6 +104,7 @@
     <Compile Include="Assets\Scripts\XR VR Input\HandTracker.cs" />
     <Compile Include="Assets\Scripts\Stage1\RailCourse.cs" />
     <Compile Include="Assets\Scripts\AI\LLMConnector.cs" />
+    <Compile Include="Assets\Scripts\StartScene\StartLeaderboardUI.cs" />
     <Compile Include="Assets\Scripts\Stage4\TileController.cs" />
     <Compile Include="Assets\Scripts\Stage2\PoseGate.cs" />
     <Compile Include="Assets\Scripts\Stage2\EyeHeightAdjuster.cs" />
