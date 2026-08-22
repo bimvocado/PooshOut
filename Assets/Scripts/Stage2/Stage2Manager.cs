@@ -1,3 +1,4 @@
+﻿using System;
 using System.Collections;
 using UnityEngine;
 
@@ -36,6 +37,8 @@ public class Stage2Manager : MonoBehaviour, IStageProgressProvider
     private bool _gatesFinished;
     private bool _stageCompleted;
     private bool _gatesStarted;
+
+    public event Action OnStageCompleted;
 
     /// <summary>
     /// 현재 Stage2 정화도(점수).
@@ -191,18 +194,19 @@ public class Stage2Manager : MonoBehaviour, IStageProgressProvider
         CheckStageDone();
     }
 
-    private void CheckStageDone()
-    {
+    private void CheckStageDone() {
         if (_stageCompleted) return;
         if (!_gatesFinished || _resolvedGateCount < _totalGateCount) return;
 
         _stageCompleted = true;
 
-        // 스테이지 종료 시점의 정화도를 스냅샷으로 저장.
-        // 이걸 안 하면 Stage3에서 Purity가 계속 바뀌어서 나중에 "Stage2에서 몇 점 받았는지"를 알 수 없게 된다.
         PurificationSystem.Instance?.SaveStagePurity(2);
 
-        Debug.Log("[Stage2Manager] 모든 게이트 판정 완료 - 다음 스테이지로");
+        Debug.Log("[Stage2Manager] 모든 게이트 판정 완료");
+
+        // 완료 UI 등에 알림
+        OnStageCompleted?.Invoke();
+
         Invoke(nameof(AdvanceToNextStage), clearDelay);
     }
 

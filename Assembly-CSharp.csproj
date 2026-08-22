@@ -78,6 +78,7 @@
     <Compile Include="Assets\Scripts\StartScene\LeverController.cs" />
     <Compile Include="Assets\Scripts\EndScene\WaterDrop.cs" />
     <Compile Include="Assets\Scripts\Core\ScoreManager.cs" />
+    <Compile Include="Assets\Scripts\EndScene\EndSceneManager.cs" />
     <Compile Include="Assets\Scripts\Stage3\Stage3Manager.cs" />
     <Compile Include="Assets\Scripts\Stage1\GripDistanceDebugger.cs" />
     <Compile Include="Assets\Scripts\XR VR Input\HandTracker.cs" />
