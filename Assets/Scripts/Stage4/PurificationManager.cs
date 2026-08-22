@@ -4,6 +4,9 @@ using UnityEngine.Events;
 /// <summary>
 /// 정화도를 관리하고,
 /// WristUIController의 진행도가 100%가 되면 스테이지 클리어.
+/// CurrentPurification은 Stage4 자체 게이지(문 열림 판정용, 최대 제한 없음)이고,
+/// 증감 시 전체 게임 공용 PurificationSystem.Instance에도 같은 양만큼 반영해서
+/// 엔딩(EndSceneManager)에서 저장되는 최종 정화도에 Stage4 기여분이 포함되게 한다.
 /// </summary>
 public class PurificationManager : MonoBehaviour, IStageProgressProvider {
     public static PurificationManager Instance { get; private set; }
@@ -224,6 +227,10 @@ public class PurificationManager : MonoBehaviour, IStageProgressProvider {
             CurrentPurification
         );
 
+        // Stage1~3과 동일하게 전체 게임 공용 PurificationSystem에도 반영.
+        // 이게 없으면 Stage4에서 올린 정화도가 엔딩에서 저장되는 최종 기록에 안 들어감.
+        PurificationSystem.Instance?.Increase(amount);
+
         PlayIncreaseSoundIfNeeded();
 
         // 100을 "처음" 넘어갔을 때만 이벤트 발생
@@ -250,6 +257,8 @@ public class PurificationManager : MonoBehaviour, IStageProgressProvider {
         onPurificationChanged?.Invoke(
             CurrentPurification
         );
+
+        PurificationSystem.Instance?.Decrease(amount);
 
         StopIncreaseSound();
     }

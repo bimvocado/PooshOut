@@ -7,7 +7,7 @@ using System;
 [Serializable]
 public class PlayerData
 {
-    public string playerName;   // 이니셜 3글자 (예: "KHW")
+    public string playerName;   // 타이틀 화면에서 선택한 칭호 (GameManager.PlayerName, 예: "KHW")
     public float purity;        // 최종 정화도 0~100
     public string grade;        // 등급 문자열 (예: "일급수 황금 물방울")
 

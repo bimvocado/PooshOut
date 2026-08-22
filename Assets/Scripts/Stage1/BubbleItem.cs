@@ -57,6 +57,7 @@ public class BubbleItem : MonoBehaviour
             PurificationSystem.Instance?.Increase(bubblePurityGain);
             ApplySpeedEffect(bubbleSpeedMultiplier);
             Stage1SoundManager.Instance?.PlayItemCollect();
+            Stage1VFXManager.Instance?.PlaySpeedLineEffect();
         }
         else
         {

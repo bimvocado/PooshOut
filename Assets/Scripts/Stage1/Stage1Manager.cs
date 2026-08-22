@@ -12,14 +12,20 @@ public class Stage1Manager : MonoBehaviour, IStageProgressProvider
     [SerializeField] private RailMover railMover;
     [SerializeField] private PollutantSpawner spawner;
     [SerializeField] private float clearThreshold = 30f; // 이 정화도 미만이면 클리어 실패
+    [Tooltip("레일 끝(완주) 도달 시 지급하는 정화도 보너스")]
+    [SerializeField] private float completionPurityBonus = 70f;
 
     private bool _subscribedToRailEnd;
+    private bool _reachedEnd;
 
     /// <summary>
     /// 현재 Stage1 진행도(레일 이동 거리 기준).
-    /// 0 = 0%, 1 = 100%
+    /// 0 = 0%, 1 = 100%.
+    /// 레일 끝에 도달하면(완주) 다음 씬으로 넘어가도 값이 100%로 고정되도록 강제한다.
     /// </summary>
-    public float NormalizedProgress => railMover != null ? Mathf.Clamp01(railMover.NormalizedProgress) : 0f;
+    public float NormalizedProgress => _reachedEnd || (railMover != null && railMover.NormalizedProgress >= 1f)
+        ? 1f
+        : (railMover != null ? Mathf.Clamp01(railMover.NormalizedProgress) : 0f);
 
     private void OnEnable()
     {
@@ -60,6 +66,7 @@ public class Stage1Manager : MonoBehaviour, IStageProgressProvider
     private void StartStage()
     {
         Debug.Log("[Stage1Manager] 스테이지 1 시작");
+        _reachedEnd = false;
 
         if (railMover != null)
         {
@@ -87,10 +94,14 @@ public class Stage1Manager : MonoBehaviour, IStageProgressProvider
     {
         Debug.Log("[Stage1Manager] 레일 종료 지점 도달");
         spawner?.StopSpawning();
+        _reachedEnd = true; // 진행도 100% 확정 - 다음 씬으로 넘어가도 값 유지
+
+        PurificationSystem.Instance?.Increase(completionPurityBonus); // 완주 보너스
 
         bool cleared = PurificationSystem.Instance == null || PurificationSystem.Instance.MeetsThreshold(clearThreshold);
         if (cleared)
         {
+            PurificationSystem.Instance?.SaveStagePurity(StageNumber);
             StageManager.Instance?.AdvanceStage();
         }
         else

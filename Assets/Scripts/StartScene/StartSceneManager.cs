@@ -175,7 +175,8 @@ public class StartSceneManager : MonoBehaviour {
 
         Debug.Log($"선택된 칭호 : {selectedTitle}");
 
-        // TODO: 서버에 selectedTitle 저장
+        // GameManager(Singleton)에 저장 - 씬이 바뀌어도 유지되어 엔딩에서 PlayerData로 사용됨.
+        GameManager.Instance?.SetPlayerName(selectedTitle);
     }
 
 

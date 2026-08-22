@@ -65,4 +65,31 @@ public class GameManager : Singleton<GameManager>
         IsHeightCalibrated = false;
         CalibratedHeight = 0f;
     }
+
+    // --- 선택된 칭호(플레이어 이름) (씬 전환에도 유지됨) ---
+
+    /// 타이틀 화면에서 선택한 칭호. 선택 전이면 빈 문자열이니 HasPlayerName 먼저 확인.
+    public string PlayerName { get; private set; } = string.Empty;
+
+    /// 이번 플레이(부스 한 판)에서 칭호가 선택됐는지.
+    public bool HasPlayerName { get; private set; }
+
+    /// 칭호가 선택될 때 발행 (다른 씬의 UI 등이 구독 가능).
+    public event Action<string> OnPlayerNameSet;
+
+    /// StartSceneManager가 칭호 선택 시 호출. 이후 스테이지/엔딩 씬이 바뀌어도 여기서 값을 읽어감.
+    public void SetPlayerName(string name)
+    {
+        PlayerName = name;
+        HasPlayerName = !string.IsNullOrEmpty(name);
+        Debug.Log($"[GameManager] 플레이어 칭호 저장 = {PlayerName}");
+        OnPlayerNameSet?.Invoke(PlayerName);
+    }
+
+    /// 다음 플레이어를 위해 리셋 (부스에서 다음 사람 플레이 시작할 때 호출).
+    public void ResetPlayerName()
+    {
+        PlayerName = string.Empty;
+        HasPlayerName = false;
+    }
 }

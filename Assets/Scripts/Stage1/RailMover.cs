@@ -300,8 +300,14 @@ public class RailMover : MonoBehaviour, IStageProgressProvider
     public void StartMoving() => IsMoving = true;
     public void StopMoving() => IsMoving = false;
 
-    /// <summary>Stage1SoundManager 등에서 벽 충돌 효과음을 재생하기 위해 구독.</summary>
-    public event Action<Collider> OnWallHit;
+    /// <summary>
+    /// Stage1SoundManager, Stage1VFXManager 등에서 벽 충돌 효과음/스파크 VFX를 재생하기 위해 구독.
+    /// ControllerColliderHit을 그대로 넘겨서 구독자가 충돌 지점(point)/법선(normal)을 직접 쓸 수 있게 한다.
+    /// </summary>
+    public event Action<ControllerColliderHit> OnWallHit;
+
+    /// <summary>CharacterController가 실제로 이동한 속도(m/s). 벽에 막히면 0에 가까워지고, 아이템 속도 효과도 반영됨.</summary>
+    public float CurrentSpeed => _controller != null ? _controller.velocity.magnitude : 0f;
 
     /// <summary>
     /// CharacterController.Move()가 실제로 다른 콜라이더에 부딪힌 프레임마다 유니티가 호출.
@@ -310,6 +316,6 @@ public class RailMover : MonoBehaviour, IStageProgressProvider
     private void OnControllerColliderHit(ControllerColliderHit hit)
     {
         if (Mathf.Abs(hit.normal.y) < 0.5f)
-            OnWallHit?.Invoke(hit.collider);
+            OnWallHit?.Invoke(hit);
     }
 }
