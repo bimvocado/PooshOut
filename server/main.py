@@ -409,7 +409,7 @@ def feedback(req: FeedbackRequest):
 
 
 # ─────────────────────────────────────────────
-# ④ 리더보드 (인메모리 — 부스 하루용으론 충분. 재시작하면 초기화됨)
+# ④ 리더보드 (파일 저장 — 서버 재시작해도 기록 유지됨)
 # ─────────────────────────────────────────────
 class LeaderboardEntry(BaseModel):
     playerName: str      # 아이가 고른 닉네임 (번호 없이, 예: "똥순이")
@@ -417,9 +417,33 @@ class LeaderboardEntry(BaseModel):
     grade: str = ""
 
 
-# 부스 하루 운영 기준으로는 인메모리로 충분. 서버 재시작하면 초기화됨.
-# (Unity의 SaveLoadManager가 로컬 파일 저장을 따로 하고 있어서 기록 자체는 안전)
-_leaderboard: list[dict] = []
+# 리더보드를 JSON 파일로 저장. 서버 프로세스가 재시작돼도 이 파일에서 다시 읽어온다.
+# (호스팅 환경이 컨테이너를 통째로 새로 만드는 경우 — 예: 무료 플랜 재배포 — 에는
+#  디스크 자체가 초기화될 수 있으니 완전한 영구 저장이 필요하면 별도 DB/퍼시스턴트 디스크 필요)
+LEADERBOARD_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "leaderboard.json")
+
+
+def _load_leaderboard() -> list[dict]:
+    if not os.path.exists(LEADERBOARD_FILE):
+        return []
+    try:
+        with open(LEADERBOARD_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return data if isinstance(data, list) else []
+    except (json.JSONDecodeError, OSError) as e:
+        print(f"[리더보드 파일 오류] {e} — 빈 목록으로 시작")
+        return []
+
+
+def _save_leaderboard() -> None:
+    try:
+        with open(LEADERBOARD_FILE, "w", encoding="utf-8") as f:
+            json.dump(_leaderboard, f, ensure_ascii=False, indent=2)
+    except OSError as e:
+        print(f"[리더보드 파일 저장 오류] {e}")
+
+
+_leaderboard: list[dict] = _load_leaderboard()
 
 
 def _make_display_name(base_name: str) -> str:
@@ -435,6 +459,7 @@ def add_leaderboard(entry: LeaderboardEntry):
 
     _leaderboard.append(record)
     _leaderboard.sort(key=lambda x: x["purity"], reverse=True)
+    _save_leaderboard()
 
     rank = next(
         (i + 1 for i, e in enumerate(_leaderboard) if e["displayName"] == record["displayName"]),

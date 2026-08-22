@@ -4,5 +4,5 @@
 /// </summary>
 public static class ServerConfig
 {
-    public const string SERVER_URL = "http://localhost:8000";
+    public const string SERVER_URL = "https://pooshout.onrender.com";
 }

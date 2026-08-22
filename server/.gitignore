@@ -11,6 +11,9 @@ venv/
 # 서버가 런타임에 만드는 음성 파일 (일회성이라 커밋 불필요)
 audio/
 
+# 리더보드 저장 파일 (런타임 데이터라 커밋 불필요)
+leaderboard.json
+
 # 일괄 생성 결과물 — Unity Assets로 복사해서 쓰므로 여기선 제외
 lines_output/
 
