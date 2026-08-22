@@ -5,11 +5,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="2cd2ed85-acab-4fd2-af17-d9aa022870be" name="변경" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.PooshOut/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.PooshOut/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Art/Cart.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Art/Cart.prefab" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assembly-CSharp-Editor.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/Assembly-CSharp-Editor.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assembly-CSharp.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/Assembly-CSharp.csproj" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scenes/RealGame/Stage1.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/RealGame/Stage1.unity" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Stage1/HandleController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Stage1/HandleController.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Stage1/RailMover.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Stage1/RailMover.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/PooshOut.sln" beforeDir="false" afterPath="$PROJECT_DIR$/PooshOut.sln" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ProjectSettings/EditorBuildSettings.asset" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectSettings/EditorBuildSettings.asset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Unity.XR.Interaction.Toolkit.Samples.StarterAssets.Editor.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/Unity.XR.Interaction.Toolkit.Samples.StarterAssets.Editor.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Unity.XR.Interaction.Toolkit.Samples.StarterAssets.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/Unity.XR.Interaction.Toolkit.Samples.StarterAssets.csproj" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -105,6 +107,7 @@
       <workItem from="1785216765138" duration="7000" />
       <workItem from="1785216973361" duration="1809000" />
       <workItem from="1787029509856" duration="1498000" />
+      <workItem from="1787410176951" duration="11000" />
     </task>
     <servers />
   </component>

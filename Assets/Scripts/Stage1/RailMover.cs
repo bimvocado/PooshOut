@@ -299,4 +299,17 @@ public class RailMover : MonoBehaviour, IStageProgressProvider
 
     public void StartMoving() => IsMoving = true;
     public void StopMoving() => IsMoving = false;
+
+    /// <summary>Stage1SoundManager 등에서 벽 충돌 효과음을 재생하기 위해 구독.</summary>
+    public event Action<Collider> OnWallHit;
+
+    /// <summary>
+    /// CharacterController.Move()가 실제로 다른 콜라이더에 부딪힌 프레임마다 유니티가 호출.
+    /// 바닥(파이프 아래쪽, normal.y가 1에 가까움)은 제외하고 옆면(파이프 벽)에 부딪힌 경우만 알린다.
+    /// </summary>
+    private void OnControllerColliderHit(ControllerColliderHit hit)
+    {
+        if (Mathf.Abs(hit.normal.y) < 0.5f)
+            OnWallHit?.Invoke(hit.collider);
+    }
 }
