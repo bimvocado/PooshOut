@@ -45,6 +45,9 @@ public class MicrobeTarget : MonoBehaviour {
     private string[] idleStateNames =
         { "Idle1", "Idle2", "Idle3" };
 
+    [Header("피격 VFX")]
+    [SerializeField] private GameObject hitVfxObject;
+
     private MicrobeSpawner _owner;
     private Transform _playerTarget;
     private State _state = State.Waiting;
@@ -84,6 +87,11 @@ public class MicrobeTarget : MonoBehaviour {
         _owner = owner;
         _playerTarget = playerTarget;
         _state = State.Waiting;
+
+        // 피격 VFX는 처음에는 숨김
+        if (hitVfxObject != null) {
+            hitVfxObject.SetActive(false);
+        }
 
         PlayRandomIdle();
         StartCoroutine(LifeRoutine());
@@ -172,16 +180,18 @@ public class MicrobeTarget : MonoBehaviour {
 
         _state = State.Approaching;
 
-        // -------------------------
+        // 피격 VFX ON
+        if (hitVfxObject != null) {
+            hitVfxObject.SetActive(true);
+        }
+
         // 피격 사운드 랜덤 재생
-        // -------------------------
         if (audioSource != null &&
             hitSfx != null &&
             hitSfx.Length > 0) {
+
             AudioClip randomSfx =
-                hitSfx[
-                    Random.Range(0, hitSfx.Length)
-                ];
+                hitSfx[Random.Range(0, hitSfx.Length)];
 
             if (randomSfx != null) {
                 audioSource.PlayOneShot(randomSfx);
@@ -196,15 +206,12 @@ public class MicrobeTarget : MonoBehaviour {
                 );
         }
 
-        // 접근 시작하면 떠다니는 움직임 중지
         GetComponent<MicrobeFloatMotion>()?.StopFloating();
 
-        // 피격 애니메이션
         if (animator != null) {
             animator.SetTrigger(hitTriggerName);
         }
 
-        // 한 번 맞은 후 콜라이더 비활성화
         if (_collider != null) {
             _collider.enabled = false;
         }

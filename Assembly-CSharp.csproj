@@ -74,10 +74,12 @@
     <Compile Include="Assets\Scripts\StageStartUIController.cs" />
     <Compile Include="Assets\Scripts\Player\WristUIController.cs" />
     <Compile Include="Assets\Scripts\Core\AudioManager.cs" />
+    <Compile Include="Assets\AC Little Enchant Mesh VFX\Demo\Demo Script\DemoScript.cs" />
     <Compile Include="Assets\Scripts\Core\StageGaugeUI.cs" />
     <Compile Include="Assets\Scripts\Player\PurificationGaugeUI.cs" />
     <Compile Include="Assets\Scripts\Core\ServerConfig.cs" />
     <Compile Include="Assets\Scripts\StartScene\StartSceneManager.cs" />
+    <Compile Include="Assets\Scripts\EndScene\CharacterControllerTest.cs" />
     <Compile Include="Assets\Scripts\Stage1\HandleController.cs" />
     <Compile Include="Assets\Scripts\Core\SmokeTest.cs" />
     <Compile Include="Assets\Scripts\Stage3\new\MouseShootInput.cs" />
@@ -136,6 +138,7 @@
     <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap.shader" />
     <None Include="Assets\Art\Fantasy Skybox FREE\Readme.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMPro_Mobile.cginc" />
+    <None Include="Assets\AC Little Enchant Mesh VFX\Read Me.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF SSD.shader" />
     <None Include="Assets\Art\Fantasy Skybox FREE\ReleaseNotes.txt" />
     <None Include="Assets\Art\Material\OutlineShader.shader" />
