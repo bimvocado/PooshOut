@@ -24,6 +24,7 @@ public class Stage1VFXManager : Singleton<Stage1VFXManager>
     [SerializeField] private float wallSparkCooldown = 0.2f;
 
     private float _lastWallSparkTime = -999f;
+    private SpeedLineFlash _speedLineFlash;
 
     private void OnEnable()
     {
@@ -42,12 +43,28 @@ public class Stage1VFXManager : Singleton<Stage1VFXManager>
         PlayWallSpark(hit.point, hit.normal);
     }
 
-    /// <summary>버블 획득 시 호출. 속도선 이펙트를 앵커 위치에 생성한다(자동 소멸은 프리팹의 TimedVFX가 처리).</summary>
+    /// <summary>
+    /// 버블 획득 시 호출. 속도선(화면 가장자리 방사형 집중선) 쿼드는 매번 새로 스폰하지 않고
+    /// 카메라 앞에 딱 붙여 최초 1회만 생성해서 재사용하고, 부를 때마다 알파를 반짝여서 보여준다.
+    /// </summary>
     public void PlaySpeedLineEffect()
     {
         if (speedLinePrefab == null) return;
-        Transform anchor = speedLineAnchor != null ? speedLineAnchor : transform;
-        Instantiate(speedLinePrefab, anchor.position, anchor.rotation, anchor);
+
+        if (_speedLineFlash == null)
+        {
+            Transform anchor = speedLineAnchor != null ? speedLineAnchor : transform;
+            // Instantiate(prefab, parent) 2-인자 오버로드는 instantiateInWorldSpace가 기본 true라
+            // 프리팹에 미리 넣어둔 로컬 오프셋(카메라 앞 0.6m)을 "월드 좌표"로 그대로 써버린다.
+            // 그 결과 anchor(카메라)가 월드 원점 근처가 아닌 한 카메라 앞이 아니라 엉뚱한 월드 위치에
+            // 생성되고, 만약 그 위치가 카메라 바로 앞/내부에 걸리면 거대한 쿼드가 화면을 통째로
+            // 가려버리는 문제가 생긴다. worldPositionStays를 false로 줘서 프리팹의 로컬 오프셋을
+            // anchor 기준 로컬 좌표로 그대로 유지해야 한다.
+            GameObject instance = Instantiate(speedLinePrefab, anchor, false);
+            _speedLineFlash = instance.GetComponent<SpeedLineFlash>();
+        }
+
+        if (_speedLineFlash != null) _speedLineFlash.Flash();
     }
 
     /// <summary>벽 충돌 지점에 스파크 이펙트를 생성한다. normal 방향(벽 바깥쪽)을 바라보도록 회전시킨다.</summary>
@@ -55,6 +72,20 @@ public class Stage1VFXManager : Singleton<Stage1VFXManager>
     {
         if (wallSparkPrefab == null) return;
         Quaternion rotation = normal.sqrMagnitude > 0.0001f ? Quaternion.LookRotation(normal) : Quaternion.identity;
-        Instantiate(wallSparkPrefab, position, rotation);
+        GameObject instance = Instantiate(wallSparkPrefab, position, rotation);
+        ForceReplay(instance);
+    }
+
+    /// <summary>
+    /// playOnAwake만 믿으면 인스턴스가 생성 직후 재생을 안 하는 경우가 있어(파티클이 이전 상태를 이어받거나
+    /// 초기화가 늦는 문제), 매 스폰마다 명시적으로 Clear 후 Play를 강제해서 항상 처음부터 새로 재생되게 한다.
+    /// 다음 충돌/획득 때 다시 보이려면 이 인스턴스가 매번 새로 스폰되고(Instantiate) 확실히 재생까지 되어야 한다.
+    /// </summary>
+    private static void ForceReplay(GameObject instance)
+    {
+        var ps = instance.GetComponentInChildren<ParticleSystem>(true);
+        if (ps == null) return;
+        ps.Clear(true);
+        ps.Play(true);
     }
 }
