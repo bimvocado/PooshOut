@@ -33,6 +33,13 @@ public class WristUIController : MonoBehaviour {
     [Tooltip("전체 스테이지 시간(초)")]
     [SerializeField] private float totalStageTime = 60f;
 
+    public bool IsProgressComplete {
+        get {
+            return totalStageTime > 0f &&
+                   currentStageTime >= totalStageTime;
+        }
+    }
+
     private float currentStageTime;
     private bool isProgressTimerRunning;
 
@@ -121,13 +128,17 @@ public class WristUIController : MonoBehaviour {
                 ? purificationProvider.NormalizedProgress
                 : 0f;
 
+        // 숫자는 100을 넘어도 그대로 표시
         if (purificationText != null) {
             purificationText.text =
                 $"{Mathf.RoundToInt(normalizedPurity * 100f)}%";
         }
 
+        // 게이지만 100%에서 꽉 차게 제한
         if (purificationGauge != null) {
-            purificationGauge.SetFillRate(normalizedPurity);
+            purificationGauge.SetFillRate(
+                Mathf.Clamp01(normalizedPurity)
+            );
         }
     }
 

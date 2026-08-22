@@ -519,6 +519,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: -32.5605
       objectReference: {fileID: 0}
+    - target: {fileID: 3893254363930421687, guid: c89b5d5de83b33249a725ae4d8e5ab98, type: 3}
+      propertyPath: m_PresetInfoIsWorld
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4444955506569326877, guid: c89b5d5de83b33249a725ae4d8e5ab98, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -5455,18 +5459,27 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxPurification: 100
+  wristUIController: {fileID: 633521788}
   onPurificationChanged:
     m_PersistentCalls:
       m_Calls: []
   onMaxPurification:
     m_PersistentCalls:
       m_Calls: []
+  onStageClear:
+    m_PersistentCalls:
+      m_Calls: []
+  clearUIPrefab: {fileID: 473281657502371646, guid: bfc85ea90dc13e84d84d5d75284a77c8, type: 3}
+  headTransform: {fileID: 1860053102}
+  clearUIDistance: 4
+  clearUIRotationOffset: {x: 0, y: 180, z: 0}
   increaseAudioSource: {fileID: 0}
   increaseSound: {fileID: 0}
   showDebugUI: 1
   debugFontSize: 40
   bgmAudioSource: {fileID: 2005729070}
   bgmClip: {fileID: 8300000, guid: 37a2c011037a0d644b84e30e2ea06f59, type: 3}
+  ringSpawnerRoot: {fileID: 49364514}
   bgmVolume: 0.16
 --- !u!4 &2005729069
 Transform:

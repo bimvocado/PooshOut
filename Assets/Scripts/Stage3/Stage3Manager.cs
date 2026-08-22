@@ -8,7 +8,6 @@ public class Stage3Manager : MonoBehaviour, IStageProgressProvider {
     [Header("Stage")]
     [SerializeField] private MicrobeSpawner microbeSpawner;
 
-    [SerializeField] private int decomposeTarget = 15;
 
     [Header("BGM")]
     [SerializeField] private AudioSource bgmAudioSource;
@@ -19,19 +18,34 @@ public class Stage3Manager : MonoBehaviour, IStageProgressProvider {
 
     private bool _cleared;
 
+    [SerializeField] private float scorePerDecompose = 2f;
+    private int _lastDecomposedCount;
+
+    [Header("진행도")]
+    [SerializeField] private WristUIController wristUIController;
+
+    [Header("Clear UI")]
+    [SerializeField] private GameObject clearUIPrefab;
+    [SerializeField] private Transform headTransform; // XR Origin의 Main Camera
+    [SerializeField] private float clearUIDistance = 3f;
+
+    private GameObject _clearUIInstance;
+
+
     /// <summary>
     /// 현재 Stage3 진행도.
     /// 0 = 0%, 1 = 100%
     /// </summary>
     public float NormalizedProgress {
         get {
-            if (microbeSpawner == null || decomposeTarget <= 0)
+            if (microbeSpawner == null)
                 return 0f;
 
-            return Mathf.Clamp01(
-                (float)microbeSpawner.DecomposedCount
-                / decomposeTarget
-            );
+            float score =
+                microbeSpawner.DecomposedCount *
+                scorePerDecompose;
+
+            return score / 100f;
         }
     }
 
@@ -59,10 +73,14 @@ public class Stage3Manager : MonoBehaviour, IStageProgressProvider {
     }
 
     private void Update() {
-        if (_cleared || microbeSpawner == null)
+        if (_cleared)
             return;
 
-        if (microbeSpawner.DecomposedCount >= decomposeTarget) {
+        if (wristUIController == null)
+            return;
+
+        // WristUI의 진행도가 100%인지 Stage3에서 직접 확인
+        if (wristUIController.IsProgressComplete) {
             ClearStage();
         }
     }
@@ -73,13 +91,46 @@ public class Stage3Manager : MonoBehaviour, IStageProgressProvider {
 
         _cleared = true;
 
-        microbeSpawner.StopSpawning();
+        // 미생물 스폰 정지
+        microbeSpawner?.StopSpawning();
 
-        // Stage3 종료 시 현재 정화도 저장
+        // 진행도 타이머 정지
+        wristUIController?.StopProgressTimer();
+
+        // 정화도 저장
         if (PurificationSystem.Instance != null) {
             PurificationSystem.Instance.SaveStagePurity(3);
         }
 
-        Debug.Log("[Stage3Manager] 목표 분해량 달성");
+        // 눈앞에 Clear UI 생성
+        SpawnClearUI();
+
+        Debug.Log("[Stage3Manager] Stage3 Clear");
+    }
+
+    private void SpawnClearUI() {
+        if (clearUIPrefab == null ||
+            headTransform == null ||
+            _clearUIInstance != null)
+            return;
+
+        // 플레이어 눈앞 위치
+        Vector3 spawnPosition =
+            headTransform.position +
+            headTransform.forward * clearUIDistance;
+
+        // 카메라의 좌우 회전만 사용
+        Vector3 forward = headTransform.forward;
+        forward.y = 0f;
+        forward.Normalize();
+
+        Quaternion spawnRotation =
+            Quaternion.LookRotation(forward, Vector3.up);
+
+        _clearUIInstance = Instantiate(
+            clearUIPrefab,
+            spawnPosition,
+            spawnRotation
+        );
     }
 }

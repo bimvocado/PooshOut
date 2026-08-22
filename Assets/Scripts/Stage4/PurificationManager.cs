@@ -2,9 +2,8 @@
 using UnityEngine.Events;
 
 /// <summary>
-/// 정화도(0~100)를 관리하는 매니저.
-/// IStageProgressProvider를 구현해서
-/// WristUIController가 현재 정화도를 0~1 진행도로 읽을 수 있게 한다.
+/// 정화도를 관리하고,
+/// WristUIController의 진행도가 100%가 되면 스테이지 클리어.
 /// </summary>
 public class PurificationManager : MonoBehaviour, IStageProgressProvider {
     public static PurificationManager Instance { get; private set; }
@@ -12,9 +11,25 @@ public class PurificationManager : MonoBehaviour, IStageProgressProvider {
     [Header("정화도 설정")]
     [SerializeField] private float maxPurification = 100f;
 
+    [Header("Wrist UI")]
+    [SerializeField] private WristUIController wristUIController;
+
     [Header("이벤트")]
     public UnityEvent<float> onPurificationChanged;
     public UnityEvent onMaxPurification;
+
+    // ★ 진행도 100% 클리어 시 호출
+    public UnityEvent onStageClear;
+
+    [Header("Clear UI")]
+    [SerializeField] private GameObject clearUIPrefab;
+    [SerializeField] private Transform headTransform; // XR Main Camera
+    [SerializeField] private float clearUIDistance = 1.5f;
+
+    // 프리팹 방향이 안 맞을 때 Inspector에서 조절
+    [SerializeField] private Vector3 clearUIRotationOffset = Vector3.zero;
+
+    private GameObject _clearUIInstance;
 
     [Header("사운드 (선택, 나중에 연결 가능)")]
     [SerializeField] private AudioSource increaseAudioSource;
@@ -27,14 +42,141 @@ public class PurificationManager : MonoBehaviour, IStageProgressProvider {
     [Header("BGM")]
     [SerializeField] private AudioSource bgmAudioSource;
     [SerializeField] private AudioClip bgmClip;
+
+    [Header("링 스포너")]
+    [SerializeField] private GameObject ringSpawnerRoot;
+
     [Range(0f, 1f)]
     [SerializeField] private float bgmVolume = 0.5f;
 
     public float CurrentPurification { get; private set; }
 
+    private bool _hasReachedMax;
+    private bool _cleared;
+
+
+    private void Awake() {
+        if (Instance != null && Instance != this) {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+    }
+
+
     private void Start() {
         PlayBGM();
     }
+
+
+    private void Update() {
+        if (_cleared)
+            return;
+
+        if (wristUIController == null)
+            return;
+
+        // ★ WristUI의 진행도가 100%인지 직접 확인
+        if (wristUIController.IsProgressComplete) {
+            ClearStage();
+        }
+    }
+
+
+    // ==================================================
+    // 스테이지 클리어
+    // ==================================================
+
+    private void ClearStage() {
+        if (_cleared)
+            return;
+
+        _cleared = true;
+
+        // 진행도 타이머 정지
+        wristUIController?.StopProgressTimer();
+
+        // 링 생성 중지
+        if (ringSpawnerRoot != null) {
+            ringSpawnerRoot.SetActive(false);
+        }
+
+        // 정화도 증가 사운드 정지
+        StopIncreaseSound();
+
+        // BGM 정지
+        if (bgmAudioSource != null) {
+            bgmAudioSource.Stop();
+        }
+
+        // Clear UI 생성
+        SpawnClearUI();
+
+        onStageClear?.Invoke();
+
+        Debug.Log(
+            $"[PurificationManager] Stage Clear / 최종 정화도: {CurrentPurification}"
+        );
+    }
+
+    private void SpawnClearUI() {
+        if (clearUIPrefab == null ||
+            headTransform == null ||
+            _clearUIInstance != null)
+            return;
+
+        Vector3 headPosition = headTransform.position;
+
+        // 머리가 보는 방향에서 위/아래 방향 제거
+        Vector3 forward = headTransform.forward;
+        forward.y = 0f;
+
+        // 혹시 완전히 위/아래를 보고 있는 경우 방어
+        if (forward.sqrMagnitude < 0.001f) {
+            forward = headTransform.parent != null
+                ? headTransform.parent.forward
+                : Vector3.forward;
+
+            forward.y = 0f;
+        }
+
+        forward.Normalize();
+
+        // X/Z로만 앞쪽에 이동
+        Vector3 spawnPosition =
+            headPosition + forward * clearUIDistance;
+
+        // ★ 높이는 무조건 현재 눈높이 유지
+        spawnPosition.y = headPosition.y;
+
+        // UI가 플레이어를 바라보게 함
+        Vector3 directionToPlayer =
+            headPosition - spawnPosition;
+
+        directionToPlayer.y = 0f;
+
+        Quaternion spawnRotation =
+            Quaternion.LookRotation(
+                directionToPlayer.normalized,
+                Vector3.up
+            );
+
+        // 프리팹 방향 보정
+        spawnRotation *=
+            Quaternion.Euler(clearUIRotationOffset);
+
+        _clearUIInstance = Instantiate(
+            clearUIPrefab,
+            spawnPosition,
+            spawnRotation
+        );
+    }
+
+
+    // ==================================================
+    // BGM
+    // ==================================================
 
     private void PlayBGM() {
         if (bgmAudioSource == null || bgmClip == null)
@@ -46,58 +188,55 @@ public class PurificationManager : MonoBehaviour, IStageProgressProvider {
         bgmAudioSource.Play();
     }
 
-    /// <summary>
-    /// IStageProgressProvider 구현.
-    /// WristUIController에서는 이 값을 0~1 정화도로 사용한다.
-    /// </summary>
+
+    // ==================================================
+    // IStageProgressProvider
+    // ==================================================
+
     public float NormalizedProgress {
         get {
             if (maxPurification <= 0f)
                 return 0f;
 
-            return Mathf.Clamp01(
-                CurrentPurification / maxPurification
-            );
+            return CurrentPurification / maxPurification;
         }
     }
 
-    private bool _hasReachedMax;
 
-    private void Awake() {
-        if (Instance != null && Instance != this) {
-            Destroy(gameObject);
-            return;
-        }
+    // ==================================================
+    // 정화도 증가 / 감소
+    // ==================================================
 
-        Instance = this;
-    }
-
-    /// <summary>
-    /// 정화도를 amount만큼 증가.
-    /// </summary>
     public void AddPurificationAmount(float amount) {
-        if (_hasReachedMax || amount <= 0f)
+        if (_cleared || amount <= 0f)
             return;
 
-        CurrentPurification = Mathf.Clamp(
-            CurrentPurification + amount,
-            0f,
-            maxPurification
-        );
+        float previousPurification = CurrentPurification;
 
-        onPurificationChanged?.Invoke(CurrentPurification);
+        // 최대 제한 없음
+        CurrentPurification += amount;
+
+        // 음수 방지만
+        CurrentPurification =
+            Mathf.Max(0f, CurrentPurification);
+
+        onPurificationChanged?.Invoke(
+            CurrentPurification
+        );
 
         PlayIncreaseSoundIfNeeded();
 
-        if (CurrentPurification >= maxPurification) {
+        // 100을 "처음" 넘어갔을 때만 이벤트 발생
+        if (!_hasReachedMax &&
+            previousPurification < maxPurification &&
+            CurrentPurification >= maxPurification) {
             _hasReachedMax = true;
+
             onMaxPurification?.Invoke();
         }
     }
 
-    /// <summary>
-    /// 정화도를 amount만큼 감소.
-    /// </summary>
+
     public void DecreasePurificationAmount(float amount) {
         if (_hasReachedMax || amount <= 0f)
             return;
@@ -108,10 +247,17 @@ public class PurificationManager : MonoBehaviour, IStageProgressProvider {
             maxPurification
         );
 
-        onPurificationChanged?.Invoke(CurrentPurification);
+        onPurificationChanged?.Invoke(
+            CurrentPurification
+        );
 
         StopIncreaseSound();
     }
+
+
+    // ==================================================
+    // 사운드
+    // ==================================================
 
     public void StopIncreaseSound() {
         if (increaseAudioSource != null &&
@@ -120,8 +266,10 @@ public class PurificationManager : MonoBehaviour, IStageProgressProvider {
         }
     }
 
+
     private void PlayIncreaseSoundIfNeeded() {
-        if (increaseAudioSource == null || increaseSound == null)
+        if (increaseAudioSource == null ||
+            increaseSound == null)
             return;
 
         if (!increaseAudioSource.isPlaying) {
@@ -131,17 +279,28 @@ public class PurificationManager : MonoBehaviour, IStageProgressProvider {
         }
     }
 
+
+    // ==================================================
+    // 디버그
+    // ==================================================
+
     private void OnGUI() {
         if (!showDebugUI)
             return;
 
-        GUIStyle style = new GUIStyle(GUI.skin.label) {
-            fontSize = debugFontSize,
-            normal = { textColor = Color.white }
-        };
+        GUIStyle style =
+            new GUIStyle(GUI.skin.label) {
+                fontSize = debugFontSize,
+                normal = { textColor = Color.white }
+            };
 
         GUI.Label(
-            new Rect(20, 20, 500, debugFontSize + 20),
+            new Rect(
+                20,
+                20,
+                500,
+                debugFontSize + 20
+            ),
             $"정화도: {CurrentPurification:F0} / {maxPurification:F0}",
             style
         );

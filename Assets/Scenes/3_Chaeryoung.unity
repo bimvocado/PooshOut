@@ -6211,10 +6211,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   microbeSpawner: {fileID: 1977366654}
-  decomposeTarget: 15
   bgmAudioSource: {fileID: 346570521}
   bgmClip: {fileID: 8300000, guid: 2d37bbefd9ff62d499775871e9f331cf, type: 3}
   bgmVolume: 0.819
+  scorePerDecompose: 6
+  wristUIController: {fileID: 1794878284}
+  clearUIPrefab: {fileID: 1015065494592970577, guid: bc21b40ecaeee194f8adca8b6073a67a, type: 3}
+  headTransform: {fileID: 394572836}
+  clearUIDistance: 3
 --- !u!4 &346570520
 Transform:
   m_ObjectHideFlags: 0
@@ -6376,6 +6380,11 @@ MonoBehaviour:
     m_MipBias: 0
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
+--- !u!4 &394572836 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1767192434, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
+  m_PrefabInstance: {fileID: 255470791}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &400711198 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 284521ee650cb3b45ba4df139f9b8468, type: 3}
@@ -6622,6 +6631,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   rotationInterval: 1
   stepAngle: 90
+  rotationAxis: 1
 --- !u!4 &630828302
 Transform:
   m_ObjectHideFlags: 0
@@ -8924,7 +8934,7 @@ MonoBehaviour:
   wristCanvasRoot: {fileID: 1811330846}
   purificationText: {fileID: 25117764}
   purificationGauge: {fileID: 1794878285}
-  purificationProviderSource: {fileID: 346570519}
+  purificationProviderSource: {fileID: 1794878289}
   progressText: {fileID: 1431299781}
   progressGauge: {fileID: 834665541}
   totalStageTime: 60
@@ -8944,6 +8954,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gaugeFillImage: {fileID: 1906689246}
+--- !u!114 &1794878289 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4778211696441940833, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
+  m_PrefabInstance: {fileID: 255470791}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1794878279}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9ac216f0eb04754b1d938aac6380b31, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1811330846
 GameObject:
   m_ObjectHideFlags: 0
@@ -9777,6 +9798,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: -32.5605
       objectReference: {fileID: 0}
+    - target: {fileID: 3893254363930421687, guid: c89b5d5de83b33249a725ae4d8e5ab98, type: 3}
+      propertyPath: m_PresetInfoIsWorld
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4444955506569326877, guid: c89b5d5de83b33249a725ae4d8e5ab98, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -9878,6 +9903,7 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 332445763}
+  - {fileID: 255470791}
   - {fileID: 102540007}
   - {fileID: 792074386}
   - {fileID: 1977366655}
@@ -9885,7 +9911,6 @@ SceneRoots:
   - {fileID: 1144279710}
   - {fileID: 850204157}
   - {fileID: 992564832}
-  - {fileID: 255470791}
   - {fileID: 1300083493}
   - {fileID: 248279769}
   - {fileID: 630828302}
