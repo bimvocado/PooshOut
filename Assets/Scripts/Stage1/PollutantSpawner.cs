@@ -107,10 +107,14 @@ public class PollutantSpawner : MonoBehaviour
         GameObject instance = GetFromPool(prefab);
         instance.transform.position = spawnPos; // 회전은 프리팹에 설정된 그대로 유지 (강제 정렬하지 않음)
 
-        BubbleItem bubbleItem = instance.GetComponent<BubbleItem>();
+        // Bubble.prefab은 BubbleItem이 루트에 바로 있지만, Trash-*_glow 프리팹들은
+        // 글로우 이펙트 루트 밑에 실제 아이템(BubbleItem)이 중첩 프리팹 자식으로 들어있다.
+        // GetComponent(루트만 검색)를 쓰면 Trash 쪽에서 항상 null이 나와 SetRailMover가
+        // 조용히 스킵되고, 그 결과 충돌해도 속도 효과가 전혀 걸리지 않는 문제가 있었다.
+        BubbleItem bubbleItem = instance.GetComponentInChildren<BubbleItem>(true);
         bubbleItem?.SetRailMover(railMover);
         bubbleItem?.ResetItem();
-        instance.GetComponent<PollutantObject>()?.ResetItem();
+        instance.GetComponentInChildren<PollutantObject>(true)?.ResetItem();
 
         instance.SetActive(true);
         _active.Add(new ActiveItem { instance = instance, prefab = prefab, spawnTime = Time.time });

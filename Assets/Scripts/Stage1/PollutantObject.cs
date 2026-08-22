@@ -32,7 +32,10 @@ public class PollutantObject : MonoBehaviour
         PurificationSystem.Instance?.ReportPollutantContact(type.ToString(), purityPenalty);
         if (hitSfx != null) AudioManager.Instance?.PlaySfx(hitSfx);
 
-        gameObject.SetActive(false);
+        // gameObject.SetActive(false)로 자기 자신만 끄면, 글로우 파티클(루트) 밑에 이 오브젝트가
+        // 중첩 프리팹 자식으로 들어있는 경우 파티클은 계속 살아남는다. PollutantSpawner가 실제로
+        // 풀링하는 루트를 꺼야 한다.
+        PooledItemUtil.DeactivatePooledRoot(transform);
     }
 
     /// <summary>스포너가 풀링 시 타입을 바꿔가며 재사용.</summary>

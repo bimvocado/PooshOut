@@ -68,7 +68,10 @@ public class BubbleItem : MonoBehaviour
 
         if (collectSfx != null) AudioManager.Instance?.PlaySfx(collectSfx);
 
-        gameObject.SetActive(false);
+        // gameObject.SetActive(false)로 자기 자신만 끄면, Trash-*_glow 프리팹처럼 글로우 파티클(루트)
+        // 밑에 이 오브젝트가 중첩 프리팹 자식으로 들어있는 경우 파티클은 계속 살아남아 "쓰레기 없이
+        // 파티클만 남는" 문제가 생긴다. PollutantSpawner가 실제로 풀링하는 루트를 꺼야 한다.
+        PooledItemUtil.DeactivatePooledRoot(transform);
     }
 
     /// <summary>
