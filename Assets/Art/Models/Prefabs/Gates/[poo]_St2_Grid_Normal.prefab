@@ -134,18 +134,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   poseDetector: {fileID: 0}
   requiredPose: 0
-  purityRewardOnPass: 4
-  purityPenaltyOnFail: 4
+  purityRewardOnPass: 10
+  purityPenaltyOnFail: 0
   playerTag: Player
   failVfxPrefab: {fileID: 2789664591911689160, guid: 4728979f99808f946bcb667fd1b1b65a, type: 3}
   failVfxLifetime: 2
   failVfxHeightOffset: 1.4
+  failVfxForwardOffset: 0
   failFlashColor: {r: 1, g: 0.15, b: 0.15, a: 1}
   shakeDuration: 0.25
   shakeAngle: 6
   successVfxPrefab: {fileID: 0}
   successVfxLifetime: 2
   successVfxHeightOffset: 1.4
+  successVfxForwardOffset: 0
   successFlashColor: {r: 0.3, g: 1, b: 0.4, a: 1}
   successFlashIntensity: 3
   flashInTime: 0.1
