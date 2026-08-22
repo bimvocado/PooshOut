@@ -17,12 +17,12 @@ public class PoseGateSpawner : MonoBehaviour
     [SerializeField] private Transform spawnPoint;
 
     [Tooltip("총 몇 개의 게이트를 생성할지")]
-    [SerializeField] private int gateCount = 9;
+    [SerializeField] private int gateCount = 12;
 
     [Tooltip("체크하면 gatePrefabs 리스트 순서대로(0->1->2...) 생성. 해제하면 랜덤으로 생성.")]
     [SerializeField] private bool spawnInOrder = true;
 
-    [SerializeField] private float intervalBetweenGates = 4f;
+    [SerializeField] private float intervalBetweenGates = 4.5f;
 
     [Tooltip("씬의 PoseDetector(_XR). 프리팹 애셋 자체는 씬 오브젝트를 참조할 수 없어서, 스폰 직후 코드로 연결해줘야 함.")]
     [SerializeField] private PoseDetector poseDetector;
@@ -32,6 +32,11 @@ public class PoseGateSpawner : MonoBehaviour
     [SerializeField] private bool autoStartOnPlay = false;
 
     public event Action OnAllGatesSpawned;
+
+    /// 게이트 하나가 생성되는 즉시(그 프레임 안에) 발생.
+    /// Stage2Manager 등이 이 이벤트를 받아서 그 자리에서 바로 gate.OnGateResolved를 구독하면,
+    /// "다 스폰된 뒤에 한꺼번에 구독"할 때 생기는 지연/누락 없이 모든 게이트의 판정을 놓치지 않고 받을 수 있다.
+    public event Action<PoseGate> OnGateSpawned;
 
     private readonly List<PoseGate> _spawnedGates = new List<PoseGate>();
     public IReadOnlyList<PoseGate> SpawnedGates => _spawnedGates;
@@ -108,6 +113,9 @@ public class PoseGateSpawner : MonoBehaviour
                 gate.SetPoseDetector(poseDetector);
             }
             _spawnedGates.Add(gate);
+
+            // 생성 즉시 알림 - 구독자가 이 프레임에서 바로 OnGateResolved를 걸 수 있게 한다.
+            OnGateSpawned?.Invoke(gate);
         }
     }
 }
