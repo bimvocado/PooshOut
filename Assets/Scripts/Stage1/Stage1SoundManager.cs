@@ -67,7 +67,7 @@ public class Stage1SoundManager : Singleton<Stage1SoundManager>
         else if (!railMover.IsMoving && _moveSource.isPlaying) _moveSource.Stop();
     }
 
-    private void HandleWallHit(Collider other)
+    private void HandleWallHit(ControllerColliderHit hit)
     {
         if (Time.time - _lastWallHitTime < wallHitCooldown) return;
         _lastWallHitTime = Time.time;
