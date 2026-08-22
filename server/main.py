@@ -473,6 +473,29 @@ def get_leaderboard():
     return {"entries": _leaderboard[:10]}
 
 
+@app.delete("/leaderboard/all")
+def delete_leaderboard_all():
+    """리더보드 전체 초기화. 더미데이터 정리 등 관리 목적으로만 사용."""
+    _leaderboard.clear()
+    _save_leaderboard()
+    return {"success": True}
+
+
+# 주의: 이 라우트는 반드시 "/leaderboard/all" 보다 아래에 있어야 한다.
+# 순서가 바뀌면 DELETE /leaderboard/all 요청도 name="all"로 여기서 잡아먹혀버린다.
+@app.delete("/leaderboard/{name}")
+def delete_leaderboard_entry(name: str):
+    """특정 닉네임(playerName 또는 displayName) 기록 삭제. 중복 번호가 붙은 기록도 함께 지워진다."""
+    before = len(_leaderboard)
+    _leaderboard[:] = [
+        e for e in _leaderboard
+        if e.get("displayName") != name and e.get("playerName") != name
+    ]
+    removed = before - len(_leaderboard)
+    _save_leaderboard()
+    return {"success": removed > 0, "removed": removed}
+
+
 # ─────────────────────────────────────────────
 # 헬스체크 (Unity에서 서버 살아있는지 확인용)
 # ─────────────────────────────────────────────
