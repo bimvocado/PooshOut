@@ -4,7 +4,13 @@ using UnityEngine;
 
 /// <summary>
 /// 온레일 자동 이동. 웨이포인트를 순서대로 따라가며 일정 속도로 전진하고,
-/// HandleController가 넘겨주는 좌우 입력값(-1~1)만큼 진행 방향에 수직으로 오프셋을 준다.
+/// HandleController가 넘겨주는 좌우 입력값(-1~1)을 진행 방향에 수직인 "속도"로 매 프레임 적분해서
+/// 좌우 위치(_currentLateral)에 누적한다. 입력이 0이면 그 자리에서 멈추고(중앙 복귀 없음),
+/// 인위적인 좌우 한계(벽 거리)는 따로 두지 않는다 — 실제 씬의 벽 Collider에 CharacterController가
+/// 물리적으로 막힐 때까지 계속 그쪽으로 밀어붙인다. 막힌 뒤에도 입력을 계속 주면 다음 프레임에도
+/// 다시 그 방향으로 Move()를 시도하게 되고(=벽에 계속 힘을 주는 느낌), Move()가 실제로 이동시킨
+/// 만큼만 _currentLateral을 재동기화해서 막힌 동안 누적값이 벽 너머로 무한정 커지지 않게 한다
+/// (안 그러면 반대로 꺾었을 때 실제로 안 움직였던 거리만큼 반응이 늦게 나타남).
 /// 실제 이동은 CharacterController.Move()로 처리해서 벽 Collider에 물리적으로 막히도록 한다
 /// (Transform 직접 대입 방식은 Collider와 충돌 판정을 하지 않아 뚫고 지나감).
 /// headTracker를 연결하면 매 프레임 캡슐의 center/height를 실제 트래킹된 머리 위치로
@@ -20,8 +26,9 @@ public class RailMover : MonoBehaviour, IStageProgressProvider
 
     [Header("이동 설정")]
     [SerializeField] private float forwardSpeed = 3.9f;
-    [SerializeField] private float lateralRange = 1.2f;    // 파이프 중심 기준 좌우 클램프 반경
-    [SerializeField] private float lateralSmoothing = 5f;
+    [Tooltip("조향값(-1~1)이 최대일 때 초당 좌우 이동 속도(m/s). 클수록 핸들을 돌리는 즉시 빠르게 옆으로 이동한다. " +
+             "좌우 이동 한계는 따로 두지 않고 씬의 벽 Collider가 물리적으로 막을 때까지 계속 밀어붙인다.")]
+    [SerializeField] private float lateralSpeed = 4f;
     [SerializeField] private float rotationSmoothing = 6f; // 시점 회전 스무딩 (코너 멀미 방지)
     [SerializeField] private float railHeight = 0f;        // 웨이포인트 높이 대신 항상 이 Y값에서 진행
 
@@ -36,6 +43,13 @@ public class RailMover : MonoBehaviour, IStageProgressProvider
     [SerializeField] private HeadTracker headTracker;
     [SerializeField] private float headCapsulePadding = 0.15f; // 머리 위로 여유 높이
     [SerializeField] private float minCapsuleHeight = 1.0f;    // 스쿼트 등으로 너무 낮아지는 것 방지
+
+    [Header("카트(카펫) 형상 보정")]
+    [Tooltip("카트 메쉬 중심이 리그 피벗(이 오브젝트) 기준으로 얼마나 앞/옆/위로 떨어져 있는지(로컬 좌표). " +
+             "SyncCapsuleToHead가 머리 위치로 캡슐 center를 매 프레임 덮어쓰기 때문에, 카트가 피벗보다 앞으로 " +
+             "튀어나온 만큼을 반영하지 않으면 radius를 아무리 키워도 카트 앞쪽 모서리가 벽에 파묻힌다. " +
+             "Cart/Plane 메쉬 실측 기준 기본값 z=0.84.")]
+    [SerializeField] private Vector3 cartCenterOffset = new Vector3(0f, 0f, 0.84f);
 
     public bool IsMoving { get; private set; }
     /// <summary>RingGate 등에서 일시적으로 가속시킬 때 사용.</summary>
@@ -124,7 +138,7 @@ public class RailMover : MonoBehaviour, IStageProgressProvider
     {
         _controller.radius = defaultRadius;
         _controller.height = defaultHeight;
-        _controller.center = defaultCenter;
+        _controller.center = defaultCenter + cartCenterOffset;
         _controller.skinWidth = Mathf.Max(0.01f, defaultRadius * 0.1f);
         _controller.minMoveDistance = 0f; // VR의 미세한 이동도 놓치지 않도록
     }
@@ -191,14 +205,31 @@ public class RailMover : MonoBehaviour, IStageProgressProvider
         // 상하 이동 없음: up과의 외적이라 결과 벡터는 항상 수평(y=0)이 보장됨.
         Vector3 lateralDir = Vector3.Cross(Vector3.up, forwardDir).normalized;
 
-        float targetLateral = _lateralInput * lateralRange;
-        _currentLateral = Mathf.Lerp(_currentLateral, targetLateral, Time.deltaTime * lateralSmoothing);
-        _currentLateral = Mathf.Clamp(_currentLateral, -lateralRange, lateralRange); // 경로 중심 기준 좌우 클램핑
+        // 위치 제어가 아니라 속도 제어: 입력을 매 프레임 위치에 적분한다.
+        // 입력 0이면 더해지는 양도 0이라 그 자리에서 멈추고, 중앙으로 되돌아가지 않는다.
+        // 인위적인 좌우 한계는 없음 - 벽 Collider에 막힐 때까지 값이 계속 커지며 그쪽으로 밀어붙인다.
+        _currentLateral += _lateralInput * lateralSpeed * Time.deltaTime;
 
         Vector3 targetPosition = centerPos + lateralDir * _currentLateral;
 
         SyncCapsuleToHead(); // Move() 호출 전에 캡슐을 실제 머리 위치로 맞춰야 그 프레임 충돌 판정에 반영됨
-        _controller.Move(targetPosition - transform.position); // Move()로만 이동해야 벽 Collider에 물리적으로 막힘
+
+        // 벽에 막혀 여러 프레임 동안 실제로 못 나아가면 centerPos(스플라인 목표)만 계속 앞서 나가서
+        // targetPosition과 transform.position 사이 간격이 쌓인다. 이게 풀리는 순간 한 프레임에
+        // 큰 거리를 몰아서 Move()하면 CharacterController가 얇은/이음매 있는 벽 Collider를 뚫고
+        // 지나갈 수 있어서, 한 프레임 이동 거리를 정상 속도의 여유배수로 제한한다.
+        Vector3 moveDelta = targetPosition - transform.position;
+        float maxStepDistance = (forwardSpeed + lateralSpeed) * Time.deltaTime * 3f;
+        if (moveDelta.magnitude > maxStepDistance)
+        {
+            moveDelta = moveDelta.normalized * maxStepDistance;
+        }
+        _controller.Move(moveDelta); // Move()로만 이동해야 벽 Collider에 물리적으로 막힘
+
+        // 벽에 막혀 실제로는 목표만큼 못 갔다면, 다음 프레임 계산이 "실제 도달한 위치"에서 이어지도록
+        // _currentLateral을 그 결과에 맞춰 재동기화한다. 안 하면 막혀있는 동안에도 값이 무한정 커져서,
+        // 나중에 반대로 꺾었을 때 그 커진 만큼을 다 되감기 전까지 카트가 반응을 안 하는 것처럼 보인다.
+        _currentLateral = Vector3.Dot(transform.position - centerPos, lateralDir);
 
         Quaternion targetRot = Quaternion.LookRotation(forwardDir, Vector3.up);
         transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * rotationSmoothing);
@@ -257,7 +288,10 @@ public class RailMover : MonoBehaviour, IStageProgressProvider
         float height = Mathf.Max(minCapsuleHeight, headLocal.y + headCapsulePadding);
 
         _controller.height = height;
-        _controller.center = new Vector3(headLocal.x, height * 0.5f, headLocal.z);
+        // cartCenterOffset을 더해서 카트가 피벗보다 앞으로 튀어나온 만큼도 캡슐 중심이 따라가게 한다.
+        // 안 더하면 캡슐 중심이 항상 머리 위치에만 붙어있어서, radius를 아무리 키워도 카트 앞쪽
+        // 모서리를 덮으려면 비현실적으로 큰 radius가 필요해진다(직선 구간에서 되려 벽에 낌).
+        _controller.center = new Vector3(headLocal.x + cartCenterOffset.x, height * 0.5f, headLocal.z + cartCenterOffset.z);
     }
 
     /// <summary>HandleController 등에서 좌우 조작값을 전달 (-1 ~ 1).</summary>
