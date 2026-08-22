@@ -39,20 +39,30 @@ public class BubbleItem : MonoBehaviour
     /// <summary>스포너 등에서 아이템 종류를 지정할 때 사용.</summary>
     public void SetItemType(ItemType newType) => itemType = newType;
 
+    /// <summary>
+    /// 프리팹 애셋 자체에는 씬의 RailMover를 미리 연결해둘 수 없으므로,
+    /// 스포너가 인스턴스를 생성/재사용할 때마다 실제 RailMover를 주입해준다.
+    /// </summary>
+    public void SetRailMover(RailMover mover) => railMover = mover;
+
     private void OnTriggerEnter(Collider other)
     {
         if (_collected || !other.CompareTag(playerTag)) return;
         _collected = true;
 
+        Debug.Log($"[BubbleItem] 플레이어 충돌 감지: {name} ({itemType})");
+
         if (itemType == ItemType.Bubble)
         {
             PurificationSystem.Instance?.Increase(bubblePurityGain);
             ApplySpeedEffect(bubbleSpeedMultiplier);
+            Stage1SoundManager.Instance?.PlayItemCollect();
         }
         else
         {
             PurificationSystem.Instance?.Decrease(trashPurityPenalty);
             ApplySpeedEffect(trashSpeedMultiplier);
+            Stage1SoundManager.Instance?.PlayObstacleHit();
         }
 
         if (collectSfx != null) AudioManager.Instance?.PlaySfx(collectSfx);

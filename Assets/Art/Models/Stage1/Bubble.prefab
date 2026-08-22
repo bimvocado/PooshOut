@@ -29,8 +29,8 @@ Transform:
   m_GameObject: {fileID: 2173244060107882090}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 14.511, y: -0.061, z: -52.093452}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 2, y: 2, z: 2}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -126,7 +126,7 @@ MonoBehaviour:
   bubblePurityGain: 5
   trashPurityPenalty: 5
   bubbleSpeedMultiplier: 1.5
-  trashSpeedMultiplier: 0.5
-  speedEffectDuration: 3
+  trashSpeedMultiplier: 0.4
+  speedEffectDuration: 2
   playerTag: Player
   collectSfx: {fileID: 0}

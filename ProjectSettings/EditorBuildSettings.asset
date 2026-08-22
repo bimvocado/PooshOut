@@ -15,7 +15,7 @@ EditorBuildSettings:
     path: Assets/Scenes/3_Chaeryoung.unity
     guid: 93e2dccde18dd034483bd0a263e64ec5
   - enabled: 0
-    path: Assets/Scenes/4_ChaeRyoungScene.unity
+    path: Assets/Scenes/RealGame/Stage4.unity
     guid: 54d20c2542c543d43a363b88ffc36d80
   - enabled: 0
     path: Assets/Scenes/start_ChaeRyoung.unity

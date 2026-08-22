@@ -27,6 +27,8 @@ public class PollutantObject : MonoBehaviour
         if (_hit || !other.CompareTag(playerTag)) return;
         _hit = true;
 
+        Debug.Log($"[PollutantObject] 플레이어 충돌 감지: {name} ({type})");
+
         PurificationSystem.Instance?.ReportPollutantContact(type.ToString(), purityPenalty);
         if (hitSfx != null) AudioManager.Instance?.PlaySfx(hitSfx);
 

@@ -22,6 +22,10 @@ public class PollutantSpawner : MonoBehaviour
     [SerializeField] private float spawnInterval = 1.2f;
     [SerializeField] private float lateralSpread = 1f;
     [SerializeField] private float aheadDistance = 8f;
+    [Tooltip("스폰 Y 위치를 이 값으로 고정한다. GetPositionAheadOf가 반환하는 파이프 웨이포인트의 원본 Y는 " +
+             "RailMover.railHeight로 보정되지 않은 값이라 구간마다 들쭉날쭉하고 실제 플레이어 주행 높이와도 " +
+             "어긋날 수 있어, 스포너에서 별도로 고정한다.")]
+    [SerializeField] private float spawnHeight = 1f;
     [Range(0f, 1f)]
     [SerializeField] private float bubbleRatio = 0.5f; // 버블이 나올 확률 (나머지는 오염물)
 
@@ -93,6 +97,7 @@ public class PollutantSpawner : MonoBehaviour
         if (prefab == null) return;
 
         Vector3 centerPos = railMover.GetPositionAheadOf(aheadDistance);
+        centerPos.y = spawnHeight;
         Vector3 tangent = railMover.GetTangentAheadOf(aheadDistance);
         Vector3 lateralDir = Vector3.Cross(Vector3.up, tangent).normalized;
 
@@ -100,9 +105,11 @@ public class PollutantSpawner : MonoBehaviour
         Vector3 spawnPos = centerPos + lateralDir * lateral;
 
         GameObject instance = GetFromPool(prefab);
-        instance.transform.SetPositionAndRotation(spawnPos, Quaternion.LookRotation(tangent, Vector3.up));
+        instance.transform.position = spawnPos; // 회전은 프리팹에 설정된 그대로 유지 (강제 정렬하지 않음)
 
-        instance.GetComponent<BubbleItem>()?.ResetItem();
+        BubbleItem bubbleItem = instance.GetComponent<BubbleItem>();
+        bubbleItem?.SetRailMover(railMover);
+        bubbleItem?.ResetItem();
         instance.GetComponent<PollutantObject>()?.ResetItem();
 
         instance.SetActive(true);

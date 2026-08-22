@@ -10,23 +10,23 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 55dec8de61bbd534a9fe7801381feea8, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 1.3153589
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 55dec8de61bbd534a9fe7801381feea8, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.0723955
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 55dec8de61bbd534a9fe7801381feea8, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.00051131035
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 55dec8de61bbd534a9fe7801381feea8, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.7071067
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 55dec8de61bbd534a9fe7801381feea8, type: 3}
       propertyPath: m_LocalRotation.x
-      value: -0.7071068
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 55dec8de61bbd534a9fe7801381feea8, type: 3}
       propertyPath: m_LocalRotation.y
@@ -34,7 +34,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 55dec8de61bbd534a9fe7801381feea8, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 55dec8de61bbd534a9fe7801381feea8, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -85,8 +85,8 @@ MonoBehaviour:
   bubblePurityGain: 5
   trashPurityPenalty: 5
   bubbleSpeedMultiplier: 1.5
-  trashSpeedMultiplier: 0.5
-  speedEffectDuration: 3
+  trashSpeedMultiplier: 0.4
+  speedEffectDuration: 2
   playerTag: Player
   collectSfx: {fileID: 0}
 --- !u!136 &4845631507846613041
