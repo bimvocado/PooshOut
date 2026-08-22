@@ -110,6 +110,41 @@ Unity 클라이언트가 실제로 호출하는 스펙 그대로 정리한 문�
 
 ---
 
+## DELETE /leaderboard/all
+
+리더보드 전체 초기화. **관리 목적 전용 — Unity 클라이언트는 호출하지 않음** (더미데이터 정리, 행사 종료 후 리셋 등에 직접 curl/스크립트로 호출).
+
+### Response (200)
+
+```json
+{ "success": true }
+```
+
+---
+
+## DELETE /leaderboard/{name}
+
+특정 닉네임 기록 삭제. `name`은 `playerName` 또는 `displayName`(중복 시 번호 붙은 이름, 예: `똥순이2`) 둘 중 하나와 정확히 일치하면 삭제됨. **관리 목적 전용 — Unity 클라이언트는 호출하지 않음.**
+
+닉네임에 공백/한글이 포함될 수 있으므로 URL 인코딩해서 호출할 것 (예: curl은 `--data-urlencode` 대신 경로 자체를 인코딩해야 함).
+
+### Response (200)
+
+```json
+{ "success": true, "removed": 1 }
+```
+
+| 필드 | 타입 | 설명 |
+|---|---|---|
+| `success` | bool | 하나 이상 삭제됐으면 `true`. |
+| `removed` | int | 실제로 삭제된 항목 수 (`playerName`/`displayName`이 같은 중복 기록이 여러 개면 한 번에 다 지워짐). |
+
+### 실패 시
+
+- 일치하는 닉네임이 없어도 200과 `{"success": false, "removed": 0}`을 반환함 (존재 여부를 굳이 4xx로 구분하지 않음).
+
+---
+
 ## 클라이언트 구현 메모 (참고용, 서버 팀 액션 아님)
 
 - Unity의 `JsonUtility`는 최상위에서 배열(`[...]`)을 바로 파싱 못 해서, `GET /leaderboard` 응답은 `{"entries":[...]}` 형태로 한 번 감싸서 내려줘야 함. 최상위를 `[{...}, {...}]`로 주면 클라이언트가 못 읽음.

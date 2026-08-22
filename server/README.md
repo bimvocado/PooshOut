@@ -120,6 +120,8 @@ python generate_lines.py
 | POST | `/feedback` | **마무리 피드백** (아이용 + 보호자용 동시 생성) |
 | POST | `/leaderboard` | 기록 저장 (닉네임 중복 시 번호 자동 부여) |
 | GET | `/leaderboard` | 상위 10명 조회 |
+| DELETE | `/leaderboard/all` | 전체 초기화 (관리용, 클라이언트 미사용) |
+| DELETE | `/leaderboard/{name}` | 특정 닉네임 삭제 (관리용, 클라이언트 미사용) |
 | GET | `/` | 헬스체크 |
 
 요청/응답 필드 상세는 `docs/server-api-spec.md` 참고.
