@@ -23,6 +23,15 @@ public class Stage1VFXManager : Singleton<Stage1VFXManager>
     [Tooltip("벽에 계속 밀착해서 밀고 있을 때 스파크가 매 프레임 겹쳐 생성되는 걸 막기 위한 최소 생성 간격(초).")]
     [SerializeField] private float wallSparkCooldown = 0.2f;
 
+    [Header("벽 스파크 위치 보정")]
+    [Tooltip("충돌 지점에서 벽 안쪽(normal 반대 = 플레이어가 있는 파이프 내부 공간 쪽)으로 밀어내는 거리. " +
+             "0이면 스파크가 벽 표면에 딱 붙어서 생성되어 파이프 벽 메시 안쪽에 절반쯤 묻혀 안 보이는 문제가 있다.")]
+    [SerializeField] private float wallSparkInwardOffset = 0.25f;
+    [Tooltip("충돌 지점에서 플레이어 진행/시야 방향(railMover.transform.forward)으로 밀어내는 거리. " +
+             "ControllerColliderHit.point가 물리 서브스텝상 실제 캐릭터 위치보다 살짝 뒤처진 지점을 가리켜 " +
+             "스파크가 플레이어 뒤쪽에 스폰되는 것처럼 보이는 문제를 보정한다.")]
+    [SerializeField] private float wallSparkForwardOffset = 0.3f;
+
     private float _lastWallSparkTime = -999f;
     private SpeedLineFlash _speedLineFlash;
 
@@ -40,7 +49,21 @@ public class Stage1VFXManager : Singleton<Stage1VFXManager>
     {
         if (Time.time - _lastWallSparkTime < wallSparkCooldown) return;
         _lastWallSparkTime = Time.time;
-        PlayWallSpark(hit.point, hit.normal);
+
+        // 1) normal 반대 방향(벽 안쪽/플레이어가 있는 파이프 내부 공간)으로 밀어내서
+        //    스파크가 벽 표면 메시에 절반쯤 묻혀 안 보이는 문제를 막는다.
+        Vector3 spawnPos = hit.point - hit.normal * wallSparkInwardOffset;
+
+        // 2) 플레이어 진행/시야 방향으로도 밀어내서, hit.point가 실제 캐릭터 위치보다
+        //    뒤처져 스파크가 플레이어 뒤쪽에 스폰되는 것처럼 보이는 문제를 보정한다.
+        if (railMover != null) spawnPos += railMover.transform.forward * wallSparkForwardOffset;
+
+        Debug.Log($"[Stage1VFXManager] WallSpark 스폰 위치 계산 - hit.point={hit.point}, hit.normal={hit.normal}, " +
+            $"inwardOffset={wallSparkInwardOffset}, forwardOffset={wallSparkForwardOffset}, " +
+            $"railMover.forward={(railMover != null ? railMover.transform.forward.ToString() : "N/A")}, " +
+            $"최종 spawnPos={spawnPos}");
+
+        PlayWallSpark(spawnPos, hit.normal);
     }
 
     /// <summary>
