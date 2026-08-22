@@ -8,6 +8,9 @@ public class TimedVFX : MonoBehaviour
 {
     [SerializeField] private float lifetime = 1.5f;
 
+    /// <summary>에디터 프리팹 생성 스크립트 등에서 저장 전에 lifetime을 지정할 때 사용.</summary>
+    public void SetLifetime(float value) => lifetime = value;
+
     private void OnEnable()
     {
         Destroy(gameObject, lifetime);

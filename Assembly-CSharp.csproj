@@ -73,7 +73,7 @@
     <Compile Include="Assets\Scripts\Stage4\Ring.cs" />
     <Compile Include="Assets\Scripts\Stage1\Stage1VFXManager.cs" />
     <Compile Include="Assets\Scripts\XR VR Input\XRInputHandler.cs" />
-    <Compile Include="Assets\Scripts\EndScene\End1SceneManager.cs" />
+    <Compile Include="Assets\Scripts\Stage1\SpeedLineFlash.cs" />
     <Compile Include="Assets\Scripts\BlinkingUIImage.cs" />
     <Compile Include="Assets\Scripts\StageStartUIController.cs" />
     <Compile Include="Assets\Scripts\Player\WristUIController.cs" />
@@ -95,7 +95,6 @@
     <Compile Include="Assets\Scripts\Stage3\new\MicrobeTarget.cs" />
     <Compile Include="Assets\Scripts\StartScene\LeverController.cs" />
     <Compile Include="Assets\Scripts\EndScene\WaterDrop.cs" />
-    <Compile Include="Assets\Scripts\UI\StagePuritySummaryUI.cs" />
     <Compile Include="Assets\Scripts\Stage1\WaterSplashVFX.cs" />
     <Compile Include="Assets\Scripts\Core\ScoreManager.cs" />
     <Compile Include="Assets\Scripts\EndScene\EndSceneManager.cs" />
