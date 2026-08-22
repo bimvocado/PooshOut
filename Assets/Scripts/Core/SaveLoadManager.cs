@@ -22,6 +22,14 @@ using UnityEngine.Networking;
 /// </summary>
 public class SaveLoadManager : Singleton<SaveLoadManager>
 {
+    [Serializable]
+    private class UploadScoreResponse
+    {
+        public bool success;
+        public int rank;
+        public string displayName;
+    }
+
     // 서버 주소는 ServerConfig 한 곳에서만 관리 (LLMConnector/SaveLoadManager 공용).
     private const string SERVER_URL = ServerConfig.SERVER_URL;
     private const string LeaderboardEndpoint = SERVER_URL + "/leaderboard";
@@ -122,6 +130,13 @@ public class SaveLoadManager : Singleton<SaveLoadManager>
             {
                 Debug.LogWarning($"[SaveLoadManager] 서버 업로드 실패 (로컬 저장은 완료됨): {request.error}");
                 yield break;
+            }
+
+            UploadScoreResponse response = JsonUtility.FromJson<UploadScoreResponse>(request.downloadHandler.text);
+            if (response != null && response.success && !string.IsNullOrEmpty(response.displayName))
+            {
+                data.displayName = response.displayName;
+                Save();
             }
 
             Debug.Log($"[SaveLoadManager] 서버 업로드 완료: {request.downloadHandler.text}");

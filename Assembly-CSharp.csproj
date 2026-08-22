@@ -68,8 +68,10 @@
     <Compile Include="Assets\Scripts\Stage3\new\PlayerShooter.cs" />
     <Compile Include="Assets\Scripts\Stage1\PollutantObject.cs" />
     <Compile Include="Assets\Scripts\Player\CalibrationController.cs" />
+    <Compile Include="Assets\Scripts\Core\TimedVFX.cs" />
     <Compile Include="Assets\Scripts\Stage1\PipeSegment.cs" />
     <Compile Include="Assets\Scripts\Stage4\Ring.cs" />
+    <Compile Include="Assets\Scripts\Stage1\Stage1VFXManager.cs" />
     <Compile Include="Assets\Scripts\XR VR Input\XRInputHandler.cs" />
     <Compile Include="Assets\Scripts\EndScene\End1SceneManager.cs" />
     <Compile Include="Assets\Scripts\BlinkingUIImage.cs" />
@@ -93,6 +95,7 @@
     <Compile Include="Assets\Scripts\Stage3\new\MicrobeTarget.cs" />
     <Compile Include="Assets\Scripts\StartScene\LeverController.cs" />
     <Compile Include="Assets\Scripts\EndScene\WaterDrop.cs" />
+    <Compile Include="Assets\Scripts\Stage1\WaterSplashVFX.cs" />
     <Compile Include="Assets\Scripts\Core\ScoreManager.cs" />
     <Compile Include="Assets\Scripts\EndScene\EndSceneManager.cs" />
     <Compile Include="Assets\Scripts\Stage3\Stage3Manager.cs" />
