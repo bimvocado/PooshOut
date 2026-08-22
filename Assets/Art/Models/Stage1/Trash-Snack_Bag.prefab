@@ -10,15 +10,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 9065ea59190909e4ab3fc188bd773018, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -3.1176653
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 9065ea59190909e4ab3fc188bd773018, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.020166526
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 9065ea59190909e4ab3fc188bd773018, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.18659025
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 9065ea59190909e4ab3fc188bd773018, type: 3}
       propertyPath: m_LocalRotation.w
@@ -108,7 +108,7 @@ MonoBehaviour:
   bubblePurityGain: 5
   trashPurityPenalty: 5
   bubbleSpeedMultiplier: 1.5
-  trashSpeedMultiplier: 0.5
-  speedEffectDuration: 3
+  trashSpeedMultiplier: 0.4
+  speedEffectDuration: 2
   playerTag: Player
   collectSfx: {fileID: 0}

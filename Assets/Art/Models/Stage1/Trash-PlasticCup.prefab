@@ -9,12 +9,24 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 12f53ff2b46a01048a3c5810dd69d1de, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 12f53ff2b46a01048a3c5810dd69d1de, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 12f53ff2b46a01048a3c5810dd69d1de, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 12f53ff2b46a01048a3c5810dd69d1de, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 12f53ff2b46a01048a3c5810dd69d1de, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 12f53ff2b46a01048a3c5810dd69d1de, type: 3}
       propertyPath: m_LocalPosition.z
@@ -85,8 +97,8 @@ MonoBehaviour:
   bubblePurityGain: 5
   trashPurityPenalty: 5
   bubbleSpeedMultiplier: 1.5
-  trashSpeedMultiplier: 0.5
-  speedEffectDuration: 3
+  trashSpeedMultiplier: 0.4
+  speedEffectDuration: 2
   playerTag: Player
   collectSfx: {fileID: 0}
 --- !u!136 &8851414899349368058
