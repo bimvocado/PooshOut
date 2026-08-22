@@ -5,7 +5,7 @@ using UnityEngine;
 /// StageManager가 1번 스테이지가 되면 레일 이동과 오염물 스폰을 시작하고,
 /// 레일 끝에 도달하면 정화도 결과에 따라 다음 스테이지로 넘긴다.
 /// </summary>
-public class Stage1Manager : MonoBehaviour
+public class Stage1Manager : MonoBehaviour, IStageProgressProvider
 {
     private const int StageNumber = 1;
 
@@ -14,6 +14,12 @@ public class Stage1Manager : MonoBehaviour
     [SerializeField] private float clearThreshold = 30f; // 이 정화도 미만이면 클리어 실패
 
     private bool _subscribedToRailEnd;
+
+    /// <summary>
+    /// 현재 Stage1 진행도(레일 이동 거리 기준).
+    /// 0 = 0%, 1 = 100%
+    /// </summary>
+    public float NormalizedProgress => railMover != null ? Mathf.Clamp01(railMover.NormalizedProgress) : 0f;
 
     private void OnEnable()
     {
