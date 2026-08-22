@@ -1,0 +1,18 @@
+# ⚠️ API 키가 들어있는 파일 — 절대 커밋 금지
+.env
+
+# 파이썬 캐시
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# 서버가 런타임에 만드는 음성 파일 (일회성이라 커밋 불필요)
+audio/
+
+# 일괄 생성 결과물 — Unity Assets로 복사해서 쓰므로 여기선 제외
+lines_output/
+
+# 로그
+*.log

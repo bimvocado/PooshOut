@@ -17,9 +17,15 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/4_ChaeRyoungScene.unity
     guid: 54d20c2542c543d43a363b88ffc36d80
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/start_ChaeRyoung.unity
     guid: 4005deb80aa07964f84d062d1bc03e75
+  - enabled: 1
+    path: Assets/Scenes/CalibrationTestScene.unity
+    guid: 15dc39815a01e1d48b4054a7e9fcbb3b
+  - enabled: 1
+    path: Assets/Scenes/HeeWonScene.unity
+    guid: 693fa3777d3349a4f8b18a631cc1b4f7
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 4eb0a53a377e3b64a9366caf109e4332, type: 2}
