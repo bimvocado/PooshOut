@@ -113,6 +113,9 @@ public class PurificationManager : MonoBehaviour, IStageProgressProvider {
             bgmAudioSource.Stop();
         }
 
+        // 정화도 저장
+        PurificationSystem.Instance?.SaveStagePurity(4);
+
         // Clear UI 생성
         SpawnClearUI();
 

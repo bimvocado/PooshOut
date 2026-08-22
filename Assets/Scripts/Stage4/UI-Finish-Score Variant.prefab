@@ -155,5 +155,31 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 4709864755612250257, guid: 34a7ccc8d109e0341bf2aad20299ac19, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -8117830955457139355}
   m_SourcePrefab: {fileID: 100100000, guid: 34a7ccc8d109e0341bf2aad20299ac19, type: 3}
+--- !u!1 &473281657502371646 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4709864755612250257, guid: 34a7ccc8d109e0341bf2aad20299ac19, type: 3}
+  m_PrefabInstance: {fileID: 5173969815446323119}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &-8117830955457139355
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 473281657502371646}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50550c9ab81085d49829f486191c4d5f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  currentStage: 0
+  stageScoreGrid: {fileID: 0}
+  totalLabelText: {fileID: 0}
+  totalValueText: {fileID: 0}
+  stageDetailText: "\uC815\uD654\uB3C4"
+  totalLabel: "\uCD5C\uC885 \uC815\uD654\uB3C4"

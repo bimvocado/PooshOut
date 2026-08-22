@@ -17,7 +17,7 @@ public class PurificationSystem : Singleton<PurificationSystem> {
 
     /// <summary>
     /// 현재 스테이지에서 사용하는 정화도.
-    /// 범위: 0 ~ 100
+    /// 0 이상. 보너스 설계에 따라 100을 넘을 수 있다.
     /// </summary>
     public float Purity { get; private set; }
 
@@ -48,7 +48,7 @@ public class PurificationSystem : Singleton<PurificationSystem> {
     protected override void Awake() {
         base.Awake();
 
-        Purity = Mathf.Clamp(startingPurity, 0f, 100f);
+        Purity = Mathf.Max(0f, startingPurity);
     }
 
     // ==================================================
@@ -83,10 +83,10 @@ public class PurificationSystem : Singleton<PurificationSystem> {
 
     /// <summary>
     /// 현재 정화도를 직접 설정.
-    /// 항상 0~100으로 제한한다.
+    /// 항상 0 이상으로 제한한다.
     /// </summary>
     public void SetPurity(float value) {
-        float clamped = Mathf.Clamp(value, 0f, 100f);
+        float clamped = Mathf.Max(0f, value);
 
         if (Mathf.Approximately(clamped, Purity))
             return;
@@ -135,7 +135,7 @@ public class PurificationSystem : Singleton<PurificationSystem> {
         stagePurities[index] = Mathf.Clamp(
             Purity,
             0f,
-            100f
+            float.MaxValue
         );
 
         Debug.Log(
