@@ -413,7 +413,7 @@ def feedback(req: FeedbackRequest):
 # ─────────────────────────────────────────────
 class LeaderboardEntry(BaseModel):
     playerName: str      # 아이가 고른 닉네임 (번호 없이, 예: "똥순이")
-    purity: int
+    purity: float
     grade: str = ""
 
 
@@ -449,7 +449,7 @@ _leaderboard: list[dict] = _load_leaderboard()
 def _make_display_name(base_name: str) -> str:
     """같은 닉네임을 고른 사람이 여럿일 때 뒤에 번호를 붙여 구분한다. (똥순이 → 똥순이2 → 똥순이3)"""
     count = sum(1 for e in _leaderboard if e.get("playerName") == base_name)
-    return base_name if count == 0 else f"{base_name}{count + 1}"
+    return base_name if count == 0 else f"{base_name}#{count + 1}"
 
 
 @app.post("/leaderboard")

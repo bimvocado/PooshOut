@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 5327809415590765271}
   - component: {fileID: 1015380327075628222}
   - component: {fileID: 6019222457368612883}
+  - component: {fileID: 3529294944309872305}
   m_Layer: 5
   m_Name: StageScoreCanvas
   m_TagString: Untagged
@@ -102,6 +103,24 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!114 &3529294944309872305
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1015065494592970577}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50550c9ab81085d49829f486191c4d5f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  currentStage: 0
+  stageScoreGrid: {fileID: 0}
+  totalLabelText: {fileID: 0}
+  totalValueText: {fileID: 0}
+  stageDetailText: "\uC815\uD654\uB3C4"
+  totalLabel: "\uD604\uC7AC \uC815\uD654\uB3C4"
 --- !u!1001 &7532809368290371527
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -9,10 +9,14 @@ public class EndSceneManager : MonoBehaviour {
     [Tooltip("타이틀에서 칭호를 선택하지 않은 채로 엔딩에 도달한 경우(테스트 플레이 등) 사용할 기본 이름.")]
     [SerializeField] private string fallbackPlayerName = "익명";
 
+    [Header("결과 UI")]
+    [SerializeField] private EndLeaderboardUI leaderboardUI;
+
     private bool _scoreSubmitted;
 
     private void Start() {
         PlayBGM();
+        leaderboardUI?.Refresh();
         SubmitScore();
     }
 
@@ -37,12 +41,13 @@ public class EndSceneManager : MonoBehaviour {
         if (_scoreSubmitted) return;
         _scoreSubmitted = true;
 
-        if (PurificationSystem.Instance == null) {
-            Debug.LogWarning("[EndSceneManager] PurificationSystem이 없어서 기록을 저장하지 못했습니다.");
+        if (SaveLoadManager.Instance == null) {
+            Debug.LogWarning("[EndSceneManager] SaveLoadManager가 없어서 기록을 저장/조회하지 못했습니다.");
             return;
         }
-        if (SaveLoadManager.Instance == null) {
-            Debug.LogWarning("[EndSceneManager] SaveLoadManager가 없어서 기록을 저장하지 못했습니다.");
+        if (PurificationSystem.Instance == null) {
+            Debug.LogWarning("[EndSceneManager] PurificationSystem이 없어서 새 기록 저장은 건너뛰고 서버 순위표만 조회합니다.");
+            leaderboardUI?.Refresh();
             return;
         }
 
@@ -54,7 +59,19 @@ public class EndSceneManager : MonoBehaviour {
         string grade = ScoreManager.GetGrade(purity);
 
         var data = new PlayerData(playerName, purity, grade);
-        SaveLoadManager.Instance.UploadScore(data);
+        int localRank = SaveLoadManager.Instance.GetRank(purity);
+        leaderboardUI?.ShowMyResult(data, localRank);
+
+        SaveLoadManager.Instance.UploadScore(data, result =>
+        {
+            if (result != null)
+            {
+                data.displayName = result.displayName;
+                leaderboardUI?.ShowMyResult(data, result.rank);
+            }
+
+            leaderboardUI?.Refresh();
+        });
 
         Debug.Log($"[EndSceneManager] 최종 기록 저장 - 이름={playerName}, 정화도={purity}, 등급={grade}");
     }

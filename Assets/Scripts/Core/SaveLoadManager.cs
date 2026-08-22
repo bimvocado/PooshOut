@@ -22,6 +22,16 @@ using UnityEngine.Networking;
 /// </summary>
 public class SaveLoadManager : Singleton<SaveLoadManager>
 {
+    private const int RequestTimeoutSeconds = 30;
+
+    [Serializable]
+    public class UploadScoreResult
+    {
+        public bool success;
+        public int rank;
+        public string displayName;
+    }
+
     // 서버 주소는 ServerConfig 한 곳에서만 관리 (LLMConnector/SaveLoadManager 공용).
     private const string SERVER_URL = ServerConfig.SERVER_URL;
     private const string LeaderboardEndpoint = SERVER_URL + "/leaderboard";
@@ -98,13 +108,13 @@ public class SaveLoadManager : Singleton<SaveLoadManager>
     /// 기록을 로컬에 저장(AddEntry, 기존 동작 그대로)하고 서버에도 업로드 시도.
     /// 서버가 죽어있어도 로컬 저장은 이미 끝난 뒤라 기록 자체는 안전함 — 업로드만 조용히 실패.
     /// </summary>
-    public void UploadScore(PlayerData data)
+    public void UploadScore(PlayerData data, Action<UploadScoreResult> callback = null)
     {
         AddEntry(data);
-        StartCoroutine(UploadScoreRoutine(data));
+        StartCoroutine(UploadScoreRoutine(data, callback));
     }
 
-    private IEnumerator UploadScoreRoutine(PlayerData data)
+    private IEnumerator UploadScoreRoutine(PlayerData data, Action<UploadScoreResult> callback)
     {
         string jsonBody = JsonUtility.ToJson(data);
 
@@ -114,17 +124,26 @@ public class SaveLoadManager : Singleton<SaveLoadManager>
             request.uploadHandler = new UploadHandlerRaw(bodyBytes);
             request.downloadHandler = new DownloadHandlerBuffer();
             request.SetRequestHeader("Content-Type", "application/json");
-            request.timeout = 5;
+            request.timeout = RequestTimeoutSeconds;
 
             yield return request.SendWebRequest();
 
             if (request.result != UnityWebRequest.Result.Success)
             {
                 Debug.LogWarning($"[SaveLoadManager] 서버 업로드 실패 (로컬 저장은 완료됨): {request.error}");
+                callback?.Invoke(null);
                 yield break;
             }
 
+            UploadScoreResult response = JsonUtility.FromJson<UploadScoreResult>(request.downloadHandler.text);
+            if (response != null && response.success && !string.IsNullOrEmpty(response.displayName))
+            {
+                data.displayName = response.displayName;
+                Save();
+            }
+
             Debug.Log($"[SaveLoadManager] 서버 업로드 완료: {request.downloadHandler.text}");
+            callback?.Invoke(response);
         }
     }
 
@@ -141,7 +160,7 @@ public class SaveLoadManager : Singleton<SaveLoadManager>
     {
         using (UnityWebRequest request = UnityWebRequest.Get(LeaderboardEndpoint))
         {
-            request.timeout = 5;
+            request.timeout = RequestTimeoutSeconds;
             yield return request.SendWebRequest();
 
             if (request.result != UnityWebRequest.Result.Success)
