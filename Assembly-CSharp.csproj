@@ -74,14 +74,17 @@
     <Compile Include="Assets\Scripts\Stage1\Stage1VFXManager.cs" />
     <Compile Include="Assets\Scripts\XR VR Input\XRInputHandler.cs" />
     <Compile Include="Assets\Scripts\Stage1\SpeedLineFlash.cs" />
+    <Compile Include="Assets\Scripts\EndScene\End1SceneManager.cs" />
     <Compile Include="Assets\Scripts\BlinkingUIImage.cs" />
     <Compile Include="Assets\Scripts\StageStartUIController.cs" />
     <Compile Include="Assets\Scripts\Player\WristUIController.cs" />
     <Compile Include="Assets\Scripts\Core\AudioManager.cs" />
     <Compile Include="Assets\AC Little Enchant Mesh VFX\Demo\Demo Script\DemoScript.cs" />
+    <Compile Include="Assets\Scripts\Stage4\CutsceneCameraOrbit.cs" />
     <Compile Include="Assets\Scripts\Stage2\WaterConveyor.cs" />
     <Compile Include="Assets\Scripts\Core\StageGaugeUI.cs" />
     <Compile Include="Assets\Scripts\Player\PurificationGaugeUI.cs" />
+    <Compile Include="Assets\Scripts\Stage3\new\MicrobeWaveAutoPlay.cs" />
     <Compile Include="Assets\Scripts\Core\ServerConfig.cs" />
     <Compile Include="Assets\Scripts\StartScene\StartSceneManager.cs" />
     <Compile Include="Assets\Scripts\EndScene\CharacterControllerTest.cs" />
@@ -95,6 +98,8 @@
     <Compile Include="Assets\Scripts\Stage3\new\MicrobeTarget.cs" />
     <Compile Include="Assets\Scripts\StartScene\LeverController.cs" />
     <Compile Include="Assets\Scripts\EndScene\WaterDrop.cs" />
+    <Compile Include="Assets\Scripts\UI\StagePuritySummaryUI.cs" />
+    <Compile Include="Assets\Scripts\StartScene\LeverFlushToStage1.cs" />
     <Compile Include="Assets\Scripts\Stage1\WaterSplashVFX.cs" />
     <Compile Include="Assets\Scripts\Core\ScoreManager.cs" />
     <Compile Include="Assets\Scripts\EndScene\EndSceneManager.cs" />
@@ -654,12 +659,12 @@
       <HintPath>Library\PackageCache\com.unity.visualscripting@7dcdc439b230\Runtime\VisualScripting.Flow\Dependencies\NCalc\Unity.VisualScripting.Antlr3.Runtime.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Mono.Cecil">
-      <HintPath>Library\PackageCache\com.unity.nuget.mono-cecil@d6f9955a5d5f\Mono.Cecil.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>Library\PackageCache\com.unity.nuget.newtonsoft-json@74deb55db2a0\Runtime\Newtonsoft.Json.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Mono.Cecil">
+      <HintPath>Library\PackageCache\com.unity.nuget.mono-cecil@d6f9955a5d5f\Mono.Cecil.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.Android.Types">
@@ -1290,8 +1295,8 @@
       <HintPath>Library\ScriptAssemblies\Unity.VisualScripting.Core.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.XR.OpenXR.Features.RuntimeDebugger.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.XR.OpenXR.Features.RuntimeDebugger.Editor.dll</HintPath>
+    <Reference Include="MCPForUnity.Runtime">
+      <HintPath>Library\ScriptAssemblies\MCPForUnity.Runtime.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.RenderPipelines.Universal.Config.Runtime">
@@ -1302,8 +1307,8 @@
       <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Universal.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="MCPForUnity.Runtime">
-      <HintPath>Library\ScriptAssemblies\MCPForUnity.Runtime.dll</HintPath>
+    <Reference Include="Unity.XR.OpenXR.Features.RuntimeDebugger.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.XR.OpenXR.Features.RuntimeDebugger.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.Collections.Editor">

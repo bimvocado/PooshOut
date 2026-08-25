@@ -534,6 +534,9 @@ MonoBehaviour:
   clickAngle: 45
   rotateTime: 0.2
   stayTime: 0.1
+  OnLeverPulled:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!114 &222706484
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -651,7 +654,7 @@ MeshCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 222706478}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 2114277850}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -666,6 +669,119 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -4188492731819274950, guid: 320dfb4a601d1f54c8873ba4d14acb83, type: 3}
+--- !u!114 &222706486
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 222706478}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f5096028e4f5324c8134fc15a7257fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  leverController: {fileID: 222706482}
+  audioSource: {fileID: 222706487}
+  flushClip: {fileID: 8300000, guid: 051e56b68e6940340997f3b6503420d6, type: 3}
+  nextSceneName: Stage1
+--- !u!82 &222706487
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 222706478}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
+  m_PlayOnAwake: 0
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!4 &244130176 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1670256625, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
@@ -1719,6 +1835,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -2001777990273901945, guid: 320dfb4a601d1f54c8873ba4d14acb83, type: 3}
       insertIndex: -1
       addedObject: {fileID: 222706484}
+    - targetCorrespondingSourceObject: {fileID: -2001777990273901945, guid: 320dfb4a601d1f54c8873ba4d14acb83, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 222706487}
+    - targetCorrespondingSourceObject: {fileID: -2001777990273901945, guid: 320dfb4a601d1f54c8873ba4d14acb83, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 222706486}
     - targetCorrespondingSourceObject: {fileID: 6507901977716847365, guid: 320dfb4a601d1f54c8873ba4d14acb83, type: 3}
       insertIndex: -1
       addedObject: {fileID: 537025965}
@@ -5646,6 +5768,19 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.8, y: 1.4, z: 1}
   m_Center: {x: 0, y: 0.1, z: 0.5}
+--- !u!134 &2114277850
+PhysicsMaterial:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  serializedVersion: 2
+  m_DynamicFriction: 0.6
+  m_StaticFriction: 0.6
+  m_Bounciness: 0
+  m_FrictionCombine: 0
+  m_BounceCombine: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
