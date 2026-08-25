@@ -27,6 +27,9 @@ public class PooshVoicePlayer : Singleton<PooshVoicePlayer>
 
     private AudioSource _audioSource;
 
+    // PooshBotAnimator가 IsTalking을 판단할 때 이걸 봄
+    public bool IsPlaying => _audioSource != null && _audioSource.isPlaying;
+
     protected override void Awake()
     {
         base.Awake();
@@ -47,6 +50,17 @@ public class PooshVoicePlayer : Singleton<PooshVoicePlayer>
         if (string.IsNullOrEmpty(url)) return;
         StopAllCoroutines();
         StartCoroutine(DownloadAndPlay(url));
+    }
+
+    /// 사전 생성해서 Assets/Audio/Poosh/에 넣어둔 고정 멘트 clip을 바로 재생.
+    /// 다운로드가 필요 없으니 지연이 0. Stage별 성공/실패 멘트는 전부 이걸로 재생한다.
+    public void PlayClip(AudioClip clip)
+    {
+        if (clip == null) return;
+        StopAllCoroutines();
+        if (_audioSource.isPlaying) _audioSource.Stop();
+        _audioSource.clip = clip;
+        _audioSource.Play();
     }
 
     private IEnumerator DownloadAndPlay(string url)

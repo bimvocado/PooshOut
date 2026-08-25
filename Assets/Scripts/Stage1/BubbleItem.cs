@@ -31,6 +31,10 @@ public class BubbleItem : MonoBehaviour
 
     private bool _collected;
 
+    /// 아이템(버블/쓰레기)을 획득한 순간 발행. 풀링되어 인스턴스가 계속 바뀌므로
+    /// Stage1PooshTrigger 등 외부에서는 이 static 이벤트 하나만 구독하면 모든 아이템을 다 받을 수 있음.
+    public static event System.Action<ItemType> OnItemCollected;
+
     private void Reset()
     {
         GetComponent<Collider>().isTrigger = true;
@@ -51,6 +55,8 @@ public class BubbleItem : MonoBehaviour
         _collected = true;
 
         Debug.Log($"[BubbleItem] 플레이어 충돌 감지: {name} ({itemType})");
+
+        OnItemCollected?.Invoke(itemType);
 
         if (itemType == ItemType.Bubble)
         {

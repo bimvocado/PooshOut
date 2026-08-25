@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 /// <summary>
 /// 실제로 날아가는 총알.
@@ -9,7 +10,8 @@
 /// </summary>
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(Collider))]
-public class Bullet : MonoBehaviour {
+public class Bullet : MonoBehaviour
+{
     [SerializeField] private float lifeTime = 3f;
 
     [Tooltip("모델이 기본 정면(Z+)과 다르게 눕혀져/돌려져 있다면 그 차이만큼 오일러각으로 입력. " +
@@ -18,33 +20,44 @@ public class Bullet : MonoBehaviour {
 
     private Rigidbody _rb;
 
-    private void Awake() {
+    // 추가 1: 명중 이벤트를 정의합니다.
+    public static event Action OnMicrobeHit;
+
+    private void Awake()
+    {
         _rb = GetComponent<Rigidbody>();
         _rb.useGravity = false;
         _rb.isKinematic = false;
         _rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic; // 빠른 속도라 관통 방지용
     }
 
-    private void Start() {
+    private void Start()
+    {
         Destroy(gameObject, lifeTime);
     }
 
-    public void Launch(Vector3 direction, float speed) {
+    public void Launch(Vector3 direction, float speed)
+    {
         Vector3 dir = direction.normalized;
         transform.rotation = Quaternion.LookRotation(dir) * Quaternion.Euler(modelRotationOffset);
         // Unity 버전에 따라 프로퍼티명이 다름: 최신(Unity 6+)은 rb.linearVelocity, 그 이전은 rb.velocity
         _rb.linearVelocity = dir * speed;
     }
 
-    private void OnTriggerEnter(Collider other) {
+    private void OnTriggerEnter(Collider other)
+    {
         // 임시 디버그: 뭘 맞았는지, MicrobeTarget을 찾았는지 확인용 (원인 찾은 뒤 지워도 됨)
         Debug.Log($"[Bullet] 충돌 대상: {other.gameObject.name}");
 
         // 콜라이더가 루트가 아니라 자식 오브젝트(Visual 등)에 있을 수도 있으니 부모까지 찾는다
         MicrobeTarget target = other.GetComponentInParent<MicrobeTarget>();
         Debug.Log($"[Bullet] MicrobeTarget 찾음? {target != null}");
-        if (target != null) {
+        if (target != null)
+        {
             target.Hit();
+
+            // 추가 2: 미생물을 맞췄을 때 이벤트를 호출하여 Stage3PooshTrigger에 알립니다.
+            OnMicrobeHit?.Invoke();
         }
 
         Destroy(gameObject);
