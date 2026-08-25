@@ -85,10 +85,24 @@ STAGE_INFO = {
 
 # 폴백 멘트 (LLM 실패 시)
 FALLBACK_COMMENTARY = "지금까지 정말 잘하고 있어! 남은 게이트도 힘내서 통과해보자!"
-FALLBACK_FEEDBACK = {
-    "child_message": "오늘 정말 잘했어! 네 덕분에 물이 깨끗해졌어. 다음에 또 만나자!",
-    "guardian_summary": "하수처리 4단계(침전-미생물분해-소독-방류) 체험을 완료했습니다.",
-}
+
+
+def fallback_feedback(player_name: str) -> dict:
+    """
+    /feedback의 LLM 호출이 실패했을 때 쓰는 폴백. child_message에 닉네임이
+    들어가야 해서(오프닝 문구 규칙) 고정 dict가 아니라 함수로 만듦.
+    본 프롬프트와 같은 구조(고정 오프닝 → 잘한 점 → 기대감 → 짧은 작별)를 유지한다.
+    """
+    return {
+        "child_message": (
+            f"해냈다! {player_name}, 드디어 물이 됐어! "
+            "끝까지 포기 안 하고 잘 해냈어! "
+            "다음엔 또 얼마나 잘할지 벌써 기대되는걸? "
+            f"그때 또 보자, {player_name}!"
+        ),
+        "guardian_summary": "하수처리 4단계(침전-미생물분해-소독-방류) 체험을 완료했습니다.",
+    }
+
 
 
 # ─────────────────────────────────────────────
@@ -386,24 +400,30 @@ def feedback(req: FeedbackRequest):
 
 이 기록을 보고 아래 JSON 형식으로만 답해줘 (다른 말 없이 JSON만):
 {{
-  "child_message": "아이용 마무리 멘트 — 이름을 부르며, 이 아이만의 플레이 특징(잘한 스테이지/아쉬운 스테이지)을 구체적으로 짚어서 칭찬+격려. 마지막에 '물의 순환' 이야기로 매듭. 3~4문장.",
+  "child_message": "아이용 마무리 멘트. 반드시 아래 순서와 규칙을 정확히 지켜서 하나로 이어진 문단으로 써줘:
+    1) 반드시 '해냈다! {req.playerName}, 드디어 물이 됐어!' 라는 문장으로 정확히 시작할 것 (토씨 하나도 바꾸지 말 것).
+    2) 이어서 플레이 기록 중 잘한 점만 딱 2가지 골라 짧게 칭찬할 것 (예: '거름망도 2개나 통과했고, 자외선 링에서 반응도 정말 빨랐어!'). 실패/아쉬운 점/못한 점은 절대 언급하지 말 것 — 코칭하거나 지적하는 뉘앙스를 완전히 배제할 것.
+    3) 그다음 다음 플레이에 대한 기대감을 담은 한 문장을 넣을 것 (예: '다음엔 또 얼마나 잘할지 벌써 기대되는걸?').
+    4) 마지막으로 짧은 작별 인사 한 문장으로 마무리할 것 (예: '그때 또 보자, {req.playerName}!'). 긴 비유나 서사(물의 순환 등)는 넣지 말고 간결하게.
+    전체 톤은 코칭이 아니라 순수한 칭찬과 응원. 총 4~5문장 이내.",
   "guardian_summary": "보호자용 요약 — 아이가 어떤 하수처리 개념을 체험/학습했는지 1~2문장, 존댓말."
 }}"""
     raw = call_solar(prompt, max_tokens=600, json_mode=True)
+    fallback = fallback_feedback(req.playerName)
 
     if raw is None:
-        result = dict(FALLBACK_FEEDBACK)
+        result = fallback
     else:
         try:
             result = json.loads(raw)
         except json.JSONDecodeError:
-            result = dict(FALLBACK_FEEDBACK)
+            result = fallback
 
-    child_msg = result.get("child_message", FALLBACK_FEEDBACK["child_message"])
+    child_msg = result.get("child_message", fallback["child_message"])
     audio_url = call_tts(child_msg)
     return {
         "child_message": child_msg,
-        "guardian_summary": result.get("guardian_summary", FALLBACK_FEEDBACK["guardian_summary"]),
+        "guardian_summary": result.get("guardian_summary", fallback["guardian_summary"]),
         "audioUrl": audio_url,
     }
 
