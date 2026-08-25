@@ -29,12 +29,16 @@ public class Stage3Manager : MonoBehaviour, IStageProgressProvider {
     [SerializeField] private Transform headTransform; // XR Origin의 Main Camera
     [SerializeField] private float clearUIDistance = 3f;
 
+    [Tooltip("클리어 UI를 보여준 뒤 다음 스테이지로 넘어가기까지의 여유 시간(초).")]
+    [SerializeField] private float clearDelay = 2f;
+
     private GameObject _clearUIInstance;
 
 
     /// <summary>
-    /// 현재 Stage3 진행도.
-    /// 0 = 0%, 1 = 100%
+    /// 현재 Stage3 진행도 (손목 UI가 보여주는 값).
+    /// 0 = 0%, 1 = 100%. 이번 스테이지에서 분해한 미생물 수 기준.
+    /// ClearStage()에서 저장하는 값도 이 값을 그대로 써야 손목 UI와 일치한다.
     /// </summary>
     public float NormalizedProgress {
         get {
@@ -97,15 +101,24 @@ public class Stage3Manager : MonoBehaviour, IStageProgressProvider {
         // 진행도 타이머 정지
         wristUIController?.StopProgressTimer();
 
-        // 정화도 저장
+        // 정화도 저장 - 손목 UI에 보이던 값(NormalizedProgress)을 그대로 저장한다.
+        // PurificationSystem.Purity(게임 시작부터 누적되는 전역 값)를 저장하면
+        // 손목 UI에 보이는 값과 달라지므로 여기서는 쓰지 않는다.
         if (PurificationSystem.Instance != null) {
-            PurificationSystem.Instance.SaveStagePurity(3);
+            PurificationSystem.Instance.SaveStagePurity(3, NormalizedProgress * 100f);
         }
 
         // 눈앞에 Clear UI 생성
         SpawnClearUI();
 
         Debug.Log("[Stage3Manager] Stage3 Clear");
+
+        // 클리어 UI를 잠깐 보여준 뒤 다음 스테이지로.
+        Invoke(nameof(AdvanceToNextStage), clearDelay);
+    }
+
+    private void AdvanceToNextStage() {
+        StageManager.Instance?.AdvanceStage();
     }
 
     private void SpawnClearUI() {

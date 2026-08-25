@@ -117,10 +117,20 @@ public class PurificationSystem : Singleton<PurificationSystem> {
     // ==================================================
 
     /// <summary>
-    /// 해당 스테이지 종료 시 현재 정화도를 저장한다.
+    /// 해당 스테이지 종료 시 현재 정화도(Purity)를 저장한다.
     /// stageNumber는 1 ~ 4.
     /// </summary>
     public void SaveStagePurity(int stageNumber) {
+        SaveStagePurity(stageNumber, Purity);
+    }
+
+    /// <summary>
+    /// 해당 스테이지 종료 시 정화도를 직접 지정해서 저장한다.
+    /// 스테이지가 자체적인 진행도 값(예: 손목 UI에 표시되는 값)을 따로 갖고 있어서
+    /// 그 값을 그대로 저장해야 할 때 사용. (예: Stage3Manager)
+    /// stageNumber는 1 ~ 4.
+    /// </summary>
+    public void SaveStagePurity(int stageNumber, float value) {
         int index = stageNumber - 1;
 
         if (index < 0 || index >= stagePurities.Length) {
@@ -133,7 +143,7 @@ public class PurificationSystem : Singleton<PurificationSystem> {
         }
 
         stagePurities[index] = Mathf.Clamp(
-            Purity,
+            value,
             0f,
             float.MaxValue
         );
