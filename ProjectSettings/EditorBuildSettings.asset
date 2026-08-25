@@ -29,6 +29,12 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/RealGame/Stage3.unity
     guid: 865897845df5ff14482bc205a3d74edd
+  - enabled: 1
+    path: Assets/Scenes/RealGame/End1Scene.unity
+    guid: e16c76bf7fefd1c42b70a97ff0400727
+  - enabled: 1
+    path: Assets/Scenes/RealGame/End2Scene.unity
+    guid: 1375d3c1423fa2d44a70503f0c85d5cb
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 4eb0a53a377e3b64a9366caf109e4332, type: 2}

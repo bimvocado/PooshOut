@@ -68,6 +68,7 @@
     <Compile Include="Assets\Scripts\Stage3\new\PlayerShooter.cs" />
     <Compile Include="Assets\Scripts\Stage1\PollutantObject.cs" />
     <Compile Include="Assets\Scripts\Player\CalibrationController.cs" />
+    <Compile Include="Assets\Scripts\Stage3\Stage3PlayerAlign.cs" />
     <Compile Include="Assets\Scripts\Core\TimedVFX.cs" />
     <Compile Include="Assets\Scripts\Stage1\PipeSegment.cs" />
     <Compile Include="Assets\Scripts\Stage4\Ring.cs" />

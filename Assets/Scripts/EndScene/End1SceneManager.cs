@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class End1SceneManager : MonoBehaviour {
     [Header("BGM")]
@@ -9,6 +10,11 @@ public class End1SceneManager : MonoBehaviour {
     [Header("첨벙 후 UI")]
     [SerializeField] private GameObject completeUI;
     [SerializeField] private float uiDelay = 2f;
+
+    [Header("다음 씬")]
+    [Tooltip("완료 UI(정화도 결과)를 보여준 뒤 다음 씬으로 넘어가기까지의 여유 시간(초).")]
+    [SerializeField] private float nextSceneDelay = 3f;
+    [SerializeField] private string nextSceneName = "End2Scene";
 
     private bool uiStarted;
 
@@ -67,5 +73,15 @@ public class End1SceneManager : MonoBehaviour {
         else {
             Debug.LogWarning("[End1SceneManager] Complete UI가 연결되지 않음");
         }
+
+        // 정화도 결과를 잠깐 보여준 뒤 다음 씬(순위표)으로.
+        yield return new WaitForSeconds(nextSceneDelay);
+
+        if (string.IsNullOrEmpty(nextSceneName)) {
+            Debug.LogWarning("[End1SceneManager] nextSceneName이 비어있어서 씬 전환 안 함");
+            yield break;
+        }
+
+        SceneManager.LoadScene(nextSceneName);
     }
 }
