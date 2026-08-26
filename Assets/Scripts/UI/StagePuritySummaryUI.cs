@@ -59,7 +59,7 @@ public class StagePuritySummaryUI : MonoBehaviour
             total += purity;
 
             TMP_Text[] texts = row.GetComponentsInChildren<TMP_Text>(true);
-            if (texts.Length > 0) texts[0].text = $"\uC2A4\uD14C\uC774\uC9C0{stageNumber}";
+            if (texts.Length > 0) texts[0].text = $"스테이지{stageNumber}";
             if (texts.Length > 1) texts[1].text = stageDetailText;
             if (texts.Length > 2) texts[2].text = $"{purity:F0}%";
         }

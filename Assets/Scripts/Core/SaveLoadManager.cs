@@ -149,7 +149,10 @@ public class SaveLoadManager : Singleton<SaveLoadManager>
 
     /// <summary>
     /// 서버(GET /leaderboard)에서 순위표를 받아와 callback으로 전달.
-    /// 서버 요청 실패 시 로컬에 저장된 순위표로 폴백.
+    /// 서버 요청 실패/파싱 실패 시 null을 전달한다 — 로컬에는 부스 테스트용
+    /// 지저분한 기록(테스트 이름, 정화도 0 등)이 남아있을 수 있어서 그걸 그대로
+    /// 화면에 노출하지 않고, 호출부(EndLeaderboardUI/StartLeaderboardUI)의
+    /// "비어있으면 더미로 대체" 로직이 항상 일관되게 동작하도록 한다.
     /// </summary>
     public void FetchLeaderboard(Action<List<PlayerData>> callback)
     {
@@ -165,16 +168,16 @@ public class SaveLoadManager : Singleton<SaveLoadManager>
 
             if (request.result != UnityWebRequest.Result.Success)
             {
-                Debug.LogWarning($"[SaveLoadManager] 서버 순위표 조회 실패, 로컬 데이터로 폴백: {request.error}");
-                callback?.Invoke(LoadLeaderboard().entries);
+                Debug.LogWarning($"[SaveLoadManager] 서버 순위표 조회 실패, 더미 데이터로 대체: {request.error}");
+                callback?.Invoke(null);
                 yield break;
             }
 
             LeaderboardData serverBoard = JsonUtility.FromJson<LeaderboardData>(request.downloadHandler.text);
             if (serverBoard?.entries == null)
             {
-                Debug.LogWarning("[SaveLoadManager] 서버 응답 파싱 실패, 로컬 데이터로 폴백");
-                callback?.Invoke(LoadLeaderboard().entries);
+                Debug.LogWarning("[SaveLoadManager] 서버 응답 파싱 실패, 더미 데이터로 대체");
+                callback?.Invoke(null);
                 yield break;
             }
 

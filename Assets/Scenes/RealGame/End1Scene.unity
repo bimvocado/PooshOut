@@ -5689,7 +5689,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 282648701558208900, guid: 34a7ccc8d109e0341bf2aad20299ac19, type: 3}
       propertyPath: m_text
-      value: 20%
+      value: 90%
       objectReference: {fileID: 0}
     - target: {fileID: 289532842617935781, guid: 34a7ccc8d109e0341bf2aad20299ac19, type: 3}
       propertyPath: m_AnchorMax.y
@@ -5818,6 +5818,10 @@ PrefabInstance:
     - target: {fileID: 2926300649161656927, guid: 34a7ccc8d109e0341bf2aad20299ac19, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3054216449172402814, guid: 34a7ccc8d109e0341bf2aad20299ac19, type: 3}
+      propertyPath: m_text
+      value: "454% \uD669\uAE08 \uBB3C\uBC29\uC6B8"
       objectReference: {fileID: 0}
     - target: {fileID: 3123832225918205665, guid: 34a7ccc8d109e0341bf2aad20299ac19, type: 3}
       propertyPath: m_AnchorMax.y
@@ -5837,7 +5841,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3304881481747279237, guid: 34a7ccc8d109e0341bf2aad20299ac19, type: 3}
       propertyPath: m_text
-      value: "\uC815\uD654\uB3C4"
+      value: "\uD558\uC218\uAD00 \uD30C\uC774\uD504  "
       objectReference: {fileID: 0}
     - target: {fileID: 3365070258571631379, guid: 34a7ccc8d109e0341bf2aad20299ac19, type: 3}
       propertyPath: m_AnchorMax.y
@@ -5921,7 +5925,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4658022066999196406, guid: 34a7ccc8d109e0341bf2aad20299ac19, type: 3}
       propertyPath: m_text
-      value: 60%
+      value: 70%
       objectReference: {fileID: 0}
     - target: {fileID: 4709864755612250257, guid: 34a7ccc8d109e0341bf2aad20299ac19, type: 3}
       propertyPath: m_Name
@@ -5977,11 +5981,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6192883994857884524, guid: 34a7ccc8d109e0341bf2aad20299ac19, type: 3}
       propertyPath: m_text
-      value: "\uC815\uD654\uB3C4"
+      value: "\uC5EC\uACFC\uC124\uBE44 "
       objectReference: {fileID: 0}
     - target: {fileID: 6466978850054327392, guid: 34a7ccc8d109e0341bf2aad20299ac19, type: 3}
       propertyPath: m_text
-      value: 48%
+      value: 168%
       objectReference: {fileID: 0}
     - target: {fileID: 6603290306211446488, guid: 34a7ccc8d109e0341bf2aad20299ac19, type: 3}
       propertyPath: m_AnchorMax.y
@@ -6125,7 +6129,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7968549072466407159, guid: 34a7ccc8d109e0341bf2aad20299ac19, type: 3}
       propertyPath: m_text
-      value: "\uC815\uD654\uB3C4"
+      value: "\uC720\uC785 \uD38C\uD504\uC7A5\n"
       objectReference: {fileID: 0}
     - target: {fileID: 8145160856601905925, guid: 34a7ccc8d109e0341bf2aad20299ac19, type: 3}
       propertyPath: m_AnchorMax.y
@@ -6145,11 +6149,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8614880645270329441, guid: 34a7ccc8d109e0341bf2aad20299ac19, type: 3}
       propertyPath: m_text
-      value: "\uC815\uD654\uB3C4"
+      value: "\uC0DD\uBB3C\uBC18\uC751\uC870\n"
       objectReference: {fileID: 0}
     - target: {fileID: 8917387172617576301, guid: 34a7ccc8d109e0341bf2aad20299ac19, type: 3}
       propertyPath: m_text
-      value: 70%
+      value: 126%
       objectReference: {fileID: 0}
     - target: {fileID: 8946514502642954572, guid: 34a7ccc8d109e0341bf2aad20299ac19, type: 3}
       propertyPath: m_AnchorMax.y
@@ -7081,6 +7085,7 @@ MonoBehaviour:
   bgmClip: {fileID: 0}
   completeUI: {fileID: 927860130}
   uiDelay: 2
+  pooshBotAnchor: {fileID: 0}
   nextSceneDelay: 3
   nextSceneName: End2Scene
 --- !u!114 &433312626
