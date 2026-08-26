@@ -4,7 +4,8 @@
 /// 스테이지 3 흐름 제어.
 /// 미생물 분해 수를 기준으로 진행도를 제공한다.
 /// </summary>
-public class Stage3Manager : MonoBehaviour, IStageProgressProvider {
+public class Stage3Manager : MonoBehaviour, IStageProgressProvider
+{
     [Header("Stage")]
     [SerializeField] private MicrobeSpawner microbeSpawner;
 
@@ -34,14 +35,22 @@ public class Stage3Manager : MonoBehaviour, IStageProgressProvider {
 
     private GameObject _clearUIInstance;
 
+    // LLM 마무리 피드백용 - 정화도 계산과는 별개로 순수 명중/빗나감 횟수와 최대 연속 명중만 관찰한다.
+    private int _hitCount;
+    private int _missCount;
+    private int _currentStreak;
+    private int _maxStreak;
+
 
     /// <summary>
     /// 현재 Stage3 진행도 (손목 UI가 보여주는 값).
     /// 0 = 0%, 1 = 100%. 이번 스테이지에서 분해한 미생물 수 기준.
     /// ClearStage()에서 저장하는 값도 이 값을 그대로 써야 손목 UI와 일치한다.
     /// </summary>
-    public float NormalizedProgress {
-        get {
+    public float NormalizedProgress
+    {
+        get
+        {
             if (microbeSpawner == null)
                 return 0f;
 
@@ -53,19 +62,52 @@ public class Stage3Manager : MonoBehaviour, IStageProgressProvider {
         }
     }
 
-    private void Start() {
+    private void OnEnable()
+    {
+        Bullet.OnMicrobeHit += HandleHit;
+        Bullet.OnMissedShot += HandleMiss;
+    }
+
+    private void OnDisable()
+    {
+        Bullet.OnMicrobeHit -= HandleHit;
+        Bullet.OnMissedShot -= HandleMiss;
+    }
+
+    private void HandleHit()
+    {
+        _hitCount++;
+        _currentStreak++;
+        if (_currentStreak > _maxStreak) _maxStreak = _currentStreak;
+    }
+
+    private void HandleMiss()
+    {
+        _missCount++;
+        _currentStreak = 0;
+    }
+
+    private void Start()
+    {
         StartStage();
     }
 
-    private void StartStage() {
+    private void StartStage()
+    {
         Debug.Log("[Stage3Manager] 스테이지 3 시작");
+
+        _hitCount = 0;
+        _missCount = 0;
+        _currentStreak = 0;
+        _maxStreak = 0;
 
         microbeSpawner?.StartSpawning();
 
         PlayBGM();
     }
 
-    private void PlayBGM() {
+    private void PlayBGM()
+    {
         if (bgmAudioSource == null || bgmClip == null)
             return;
 
@@ -76,7 +118,8 @@ public class Stage3Manager : MonoBehaviour, IStageProgressProvider {
         bgmAudioSource.Play();
     }
 
-    private void Update() {
+    private void Update()
+    {
         if (_cleared)
             return;
 
@@ -84,12 +127,14 @@ public class Stage3Manager : MonoBehaviour, IStageProgressProvider {
             return;
 
         // WristUI의 진행도가 100%인지 Stage3에서 직접 확인
-        if (wristUIController.IsProgressComplete) {
+        if (wristUIController.IsProgressComplete)
+        {
             ClearStage();
         }
     }
 
-    private void ClearStage() {
+    private void ClearStage()
+    {
         if (_cleared)
             return;
 
@@ -108,6 +153,11 @@ public class Stage3Manager : MonoBehaviour, IStageProgressProvider {
             PurificationSystem.Instance.SaveStagePurity(3, NormalizedProgress * 100f);
         }
 
+        // LLM 마무리 피드백용 로그. 순수 사실만 기록.
+        int totalShots = _hitCount + _missCount;
+        string note = $"버블건 {totalShots}번 쏴서 {_hitCount}번 명중, 최대 연속 명중 {_maxStreak}회";
+        PurificationSystem.Instance?.RecordStageLog(3, _hitCount, _missCount, note);
+
         // 눈앞에 Clear UI 생성
         SpawnClearUI();
 
@@ -121,7 +171,8 @@ public class Stage3Manager : MonoBehaviour, IStageProgressProvider {
         StageManager.Instance?.AdvanceStage();
     }
 
-    private void SpawnClearUI() {
+    private void SpawnClearUI()
+    {
         if (clearUIPrefab == null ||
             headTransform == null ||
             _clearUIInstance != null)

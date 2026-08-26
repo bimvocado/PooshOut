@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -309,5 +310,104 @@ public class LLMConnector : Singleton<LLMConnector>
     {
         public string reply;
         public string audioUrl;
+    }
+
+    // ─────────────────────────────────────────────
+    // ⑤ 마무리 피드백 (엔딩씬1에서 결과 보드 뜨는 순간 1회 호출)
+    // 서버 /feedback 스펙(main.py의 FeedbackRequest/StageLog)과 필드명을 정확히 맞춰야 함.
+    // ─────────────────────────────────────────────
+    private const string FeedbackEndpoint = SERVER_URL + "/feedback";
+
+    [Serializable]
+    private class ServerStageLog
+    {
+        public int stage;
+        public int success;
+        public int fail;
+        public string note;
+    }
+
+    [Serializable]
+    private class FeedbackRequestJson
+    {
+        public string playerName;
+        public int totalPurity;
+        public List<ServerStageLog> stages;
+    }
+
+    [Serializable]
+    public class FeedbackResponse
+    {
+        public string child_message;
+        public string guardian_summary;
+        public string audioUrl;
+    }
+
+    /// <summary>
+    /// 엔딩씬1에서 결과 보드가 뜨는 순간 1회 호출. PurificationSystem에 쌓여있는
+    /// 스테이지별 플레이 로그(StagePlayLog)를 그대로 서버로 넘겨서, LLM이 만든 통합
+    /// 피드백(고정 오프닝+칭찬+기대감+작별까지 하나로 이어진 문장) 음성을 받아온다.
+    /// </summary>
+    public void RequestFeedback(int totalPurity, List<StagePlayLog> logs, Action<FeedbackResponse> onResponse)
+    {
+        StartCoroutine(SendFeedbackRequest(totalPurity, logs, onResponse));
+    }
+
+    private IEnumerator SendFeedbackRequest(int totalPurity, List<StagePlayLog> logs, Action<FeedbackResponse> onResponse)
+    {
+        var requestData = new FeedbackRequestJson
+        {
+            playerName = GameManager.Instance != null && GameManager.Instance.HasPlayerName
+                ? GameManager.Instance.PlayerName
+                : "친구",
+            totalPurity = totalPurity,
+            stages = new List<ServerStageLog>(),
+        };
+
+        if (logs != null)
+        {
+            foreach (var log in logs)
+            {
+                requestData.stages.Add(new ServerStageLog
+                {
+                    stage = log.stage,
+                    success = log.success,
+                    fail = log.fail,
+                    note = log.note,
+                });
+            }
+        }
+
+        string jsonBody = JsonUtility.ToJson(requestData);
+
+        using (UnityWebRequest request = new UnityWebRequest(FeedbackEndpoint, "POST"))
+        {
+            byte[] bodyBytes = Encoding.UTF8.GetBytes(jsonBody);
+            request.uploadHandler = new UploadHandlerRaw(bodyBytes);
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Content-Type", "application/json");
+            // 마무리 피드백은 LLM+TTS를 실시간으로 거치므로 일반 /chat보다 여유 있게 잡는다.
+            request.timeout = 20;
+
+            yield return request.SendWebRequest();
+
+            if (request.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogError($"[LLMConnector] /feedback 요청 실패: {request.error}");
+                onResponse?.Invoke(null);
+                yield break;
+            }
+
+            try
+            {
+                FeedbackResponse response = JsonUtility.FromJson<FeedbackResponse>(request.downloadHandler.text);
+                onResponse?.Invoke(response);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[LLMConnector] /feedback 응답 파싱 실패: {e.Message}\n{request.downloadHandler.text}");
+                onResponse?.Invoke(null);
+            }
+        }
     }
 }
