@@ -57,24 +57,37 @@ elif not TYPECAST_VOICE_ID:
 
 # ─────────────────────────────────────────────
 # 시스템 프롬프트 (서버에서 관리 — 수정 시 서버 재시작만 하면 됨)
+#
+# BASE_PERSONA_PROMPT: 정화봇의 말투/톤/음성 안전 규칙. 모든 엔드포인트가 공유.
+# SYSTEM_PROMPT: /chat, /commentary(+ 나중에 자유 질의 기능도 /chat을 그대로 쓸 예정)용.
+#                실시간으로 짧게 나가는 대사라 길이 제한과 "물의 순환" 교육 서사를 강제한다.
+# FEEDBACK_SYSTEM_PROMPT: /feedback 전용. 마무리 피드백은 이미 자체 구조(고정 오프닝 +
+#                칭찬 2가지 + 기대감 + 짧은 작별, 4~5문장)를 요청 프롬프트에서 따로 지정하므로,
+#                SYSTEM_PROMPT의 "2~3문장/100자 제한"이나 "물의 순환 서사" 지침을 그대로 물려받으면
+#                서로 모순되는 지시가 겹쳐서 LLM이 혼란스러워한다. 페르소나(톤+음성 안전 규칙)만 공유.
 # ─────────────────────────────────────────────
-SYSTEM_PROMPT = """너는 하수처리장 VR 교육 게임의 가이드 로봇 '정화봇'이야. 이 게임을 하는 친구들은
+BASE_PERSONA_PROMPT = """너는 하수처리장 VR 교육 게임의 가이드 로봇 '정화봇'이야. 이 게임을 하는 친구들은
 7~13세 초등학생이야. 어려운 단어 대신 쉬운 말과 재밌는 비유를 써서 설명해줘.
 말투는 친근하고 다정한 반말 캐릭터 톤이야(예: '~했어!', '~해볼까?').
-절대 아이를 혼내거나 겁주지 말고, 응답은 2~3문장 이내로 짧게 해줘.
-
-추가 규칙 (교육 철학):
-- 게임 상황에 맞는 과학 지식을 1줄만 곁들여 (침전, 미생물 분해, 소독 등)
-- 그 지식이 왜 환경/물 순환에 중요한지 살짝 연결해줘
-- 4단계 전체가 "물의 순환"이라는 하나의 이야기로 매듭지어지도록 의식해줘
+절대 아이를 혼내거나 겁주지 말고, 상황에 맞게 간결하게 말해줘.
 
 음성으로 읽히는 대사이므로 반드시 지킬 것:
 - 이모지는 절대 쓰지 마 (음성이 이모지 이름을 그대로 읽어버림)
 - 물결표(~)나 과한 의성어/의태어("쫙!", "반짝반짝" 등)는 쓰지 마
 - 소리 내어 읽었을 때 한 호흡에 읽히는 짧은 문장으로 써줘.
   한 문장에 정보를 하나만 담고, 접속사로 길게 잇지 마.
-- 반드시 완결된 문장으로 끝내. 문장 도중에 멈추지 마.
-- 전체 2~3문장, 총 100자 안팎을 넘기지 마."""
+- 반드시 완결된 문장으로 끝내. 문장 도중에 멈추지 마."""
+
+SYSTEM_PROMPT = BASE_PERSONA_PROMPT + """
+
+추가 규칙 (교육 철학, 실시간 짧은 대사 전용):
+- 게임 상황에 맞는 과학 지식을 1줄만 곁들여 (침전, 미생물 분해, 소독 등)
+- 그 지식이 왜 환경/물 순환에 중요한지 살짝 연결해줘
+- 4단계 전체가 "물의 순환"이라는 하나의 이야기로 매듭지어지도록 의식해줘
+
+전체 2~3문장, 총 100자 안팎을 넘기지 마."""
+
+FEEDBACK_SYSTEM_PROMPT = BASE_PERSONA_PROMPT
 
 STAGE_INFO = {
     1: "변기탈출 & 하수관 레이싱 — 물이 하수관을 타고 이동하는 단계",
@@ -102,7 +115,6 @@ def fallback_feedback(player_name: str) -> dict:
         ),
         "guardian_summary": "하수처리 4단계(침전-미생물분해-소독-방류) 체험을 완료했습니다.",
     }
-
 
 
 # ─────────────────────────────────────────────
@@ -167,8 +179,13 @@ def cache_put(key: str, value: dict) -> None:
         _cache.popitem(last=False)
 
 
-def call_solar(user_prompt: str, max_tokens: int = 320, json_mode: bool = False) -> Optional[str]:
-    """Upstage Solar 호출. 실패 시 None."""
+def call_solar(user_prompt: str, max_tokens: int = 320, json_mode: bool = False, system_prompt: str = SYSTEM_PROMPT) -> Optional[str]:
+    """Upstage Solar 호출. 실패 시 None.
+
+    system_prompt를 넘기지 않으면 기본 SYSTEM_PROMPT(실시간 짧은 대사용, /chat·/commentary 전용
+    규칙 포함)를 쓴다. /feedback처럼 다른 길이/구성 규칙이 필요한 곳은 FEEDBACK_SYSTEM_PROMPT
+    같은 걸 명시적으로 넘겨서 써야 한다 - 안 그러면 서로 모순되는 지침이 겹쳐서 LLM이 혼란스러워한다.
+    """
     if client is None:
         return None
     try:
@@ -178,7 +195,7 @@ def call_solar(user_prompt: str, max_tokens: int = 320, json_mode: bool = False)
         resp = client.chat.completions.create(
             model="solar-pro3",
             messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
             ],
             max_tokens=max_tokens,
@@ -388,7 +405,7 @@ def feedback(req: FeedbackRequest):
     log_lines = []
     for s in req.stages:
         info = STAGE_INFO.get(s.stage, f"Stage {s.stage}")
-        line = f"- Stage {s.stage} ({info}): 성공 {s.success}회, 실패 {s.fail}회, 소요 {int(s.timeSec)}초"
+        line = f"- Stage {s.stage} ({info}): 성공 {s.success}회, 실패 {s.fail}회"
         if s.note:
             line += f" / {s.note}"
         log_lines.append(line)
@@ -402,13 +419,14 @@ def feedback(req: FeedbackRequest):
 {{
   "child_message": "아이용 마무리 멘트. 반드시 아래 순서와 규칙을 정확히 지켜서 하나로 이어진 문단으로 써줘:
     1) 반드시 '해냈다! {req.playerName}, 드디어 물이 됐어!' 라는 문장으로 정확히 시작할 것 (토씨 하나도 바꾸지 말 것).
-    2) 이어서 플레이 기록 중 잘한 점만 딱 2가지 골라 짧게 칭찬할 것 (예: '거름망도 2개나 통과했고, 자외선 링에서 반응도 정말 빨랐어!'). 실패/아쉬운 점/못한 점은 절대 언급하지 말 것 — 코칭하거나 지적하는 뉘앙스를 완전히 배제할 것.
+    2) 이어서 플레이 기록 중 좋은 지표 2가지를 골라, 그 숫자에 어울리는 재미있고 생생한 별명/비유를 직접 지어서 칭찬할 것. 절대 'N번 성공했어' 식으로 숫자만 밋밋하게 나열하지 말고, 그 숫자가 어떤 느낌인지 재치있게 표현할 것. 실패/아쉬운 점/못한 점은 절대 언급하지 말 것 — 코칭하거나 지적하는 뉘앙스를 완전히 배제할 것.
+       (참고용 스타일 예시일 뿐, 실제 숫자를 보고 그에 맞는 표현을 매번 새롭게 창작할 것 - 같은 표현 반복 금지: 충돌이 적었다면 '요리조리 잘 피하는 베스트 드라이버 같았어', 명중률이 높았다면 '완전 물방울 명중왕이었잖아!', 반응이 빨랐다면 '번개같이 빠른 반응속도였어', 연속 성공이 길었다면 '한 번도 안 놓치고 쭉쭉 이어갔잖아')
     3) 그다음 다음 플레이에 대한 기대감을 담은 한 문장을 넣을 것 (예: '다음엔 또 얼마나 잘할지 벌써 기대되는걸?').
     4) 마지막으로 짧은 작별 인사 한 문장으로 마무리할 것 (예: '그때 또 보자, {req.playerName}!'). 긴 비유나 서사(물의 순환 등)는 넣지 말고 간결하게.
     전체 톤은 코칭이 아니라 순수한 칭찬과 응원. 총 4~5문장 이내.",
   "guardian_summary": "보호자용 요약 — 아이가 어떤 하수처리 개념을 체험/학습했는지 1~2문장, 존댓말."
 }}"""
-    raw = call_solar(prompt, max_tokens=600, json_mode=True)
+    raw = call_solar(prompt, max_tokens=600, json_mode=True, system_prompt=FEEDBACK_SYSTEM_PROMPT)
     fallback = fallback_feedback(req.playerName)
 
     if raw is None:

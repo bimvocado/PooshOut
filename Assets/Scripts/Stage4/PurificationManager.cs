@@ -8,7 +8,8 @@ using UnityEngine.Events;
 /// 증감 시 전체 게임 공용 PurificationSystem.Instance에도 같은 양만큼 반영해서
 /// 엔딩(EndSceneManager)에서 저장되는 최종 정화도에 Stage4 기여분이 포함되게 한다.
 /// </summary>
-public class PurificationManager : MonoBehaviour, IStageProgressProvider {
+public class PurificationManager : MonoBehaviour, IStageProgressProvider
+{
     public static PurificationManager Instance { get; private set; }
 
     [Header("정화도 설정")]
@@ -57,9 +58,15 @@ public class PurificationManager : MonoBehaviour, IStageProgressProvider {
     private bool _hasReachedMax;
     private bool _cleared;
 
+    // LLM 마무리 피드백용 - 정화도 계산과는 별개로 순수 통과/놓침 횟수만 관찰한다.
+    private int _ringPassCount;
+    private int _ringMissCount;
 
-    private void Awake() {
-        if (Instance != null && Instance != this) {
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
             Destroy(gameObject);
             return;
         }
@@ -68,12 +75,37 @@ public class PurificationManager : MonoBehaviour, IStageProgressProvider {
     }
 
 
-    private void Start() {
+    private void OnEnable()
+    {
+        Ring.OnRingPassed += HandleRingPassed;
+        Ring.OnRingMissed += HandleRingMissed;
+    }
+
+    private void OnDisable()
+    {
+        Ring.OnRingPassed -= HandleRingPassed;
+        Ring.OnRingMissed -= HandleRingMissed;
+    }
+
+    private void HandleRingPassed()
+    {
+        _ringPassCount++;
+    }
+
+    private void HandleRingMissed()
+    {
+        _ringMissCount++;
+    }
+
+
+    private void Start()
+    {
         PlayBGM();
     }
 
 
-    private void Update() {
+    private void Update()
+    {
         if (_cleared)
             return;
 
@@ -81,7 +113,8 @@ public class PurificationManager : MonoBehaviour, IStageProgressProvider {
             return;
 
         // ★ WristUI의 진행도가 100%인지 직접 확인
-        if (wristUIController.IsProgressComplete) {
+        if (wristUIController.IsProgressComplete)
+        {
             ClearStage();
         }
     }
@@ -91,7 +124,8 @@ public class PurificationManager : MonoBehaviour, IStageProgressProvider {
     // 스테이지 클리어
     // ==================================================
 
-    private void ClearStage() {
+    private void ClearStage()
+    {
         if (_cleared)
             return;
 
@@ -101,7 +135,8 @@ public class PurificationManager : MonoBehaviour, IStageProgressProvider {
         wristUIController?.StopProgressTimer();
 
         // 링 생성 중지
-        if (ringSpawnerRoot != null) {
+        if (ringSpawnerRoot != null)
+        {
             ringSpawnerRoot.SetActive(false);
         }
 
@@ -109,12 +144,20 @@ public class PurificationManager : MonoBehaviour, IStageProgressProvider {
         StopIncreaseSound();
 
         // BGM 정지
-        if (bgmAudioSource != null) {
+        if (bgmAudioSource != null)
+        {
             bgmAudioSource.Stop();
         }
 
         // 정화도 저장
-        PurificationSystem.Instance?.SaveStagePurity(4);
+        // 정화도 저장 - Stage4 자체 진행도(CurrentPurification, 문 열림 판정에 쓰던 그 값)를
+        // 그대로 저장한다. 전역 PurificationSystem.Purity를 저장하면 Stage1~3에서 이미
+        // 쌓인 몫까지 섞여서 저장되므로(Stage3에서 실제로 겪은 문제와 동일한 유형) 여기서는 쓰지 않는다.
+        PurificationSystem.Instance?.SaveStagePurity(4, CurrentPurification);
+
+        // LLM 마무리 피드백용 로그. 순수 사실만 기록.
+        string note = $"자외선 링 {_ringPassCount + _ringMissCount}번 중 {_ringPassCount}번 통과";
+        PurificationSystem.Instance?.RecordStageLog(4, _ringPassCount, _ringMissCount, note);
 
         // Clear UI 생성
         SpawnClearUI();
@@ -126,7 +169,8 @@ public class PurificationManager : MonoBehaviour, IStageProgressProvider {
         );
     }
 
-    private void SpawnClearUI() {
+    private void SpawnClearUI()
+    {
         if (clearUIPrefab == null ||
             headTransform == null ||
             _clearUIInstance != null)
@@ -139,7 +183,8 @@ public class PurificationManager : MonoBehaviour, IStageProgressProvider {
         forward.y = 0f;
 
         // 혹시 완전히 위/아래를 보고 있는 경우 방어
-        if (forward.sqrMagnitude < 0.001f) {
+        if (forward.sqrMagnitude < 0.001f)
+        {
             forward = headTransform.parent != null
                 ? headTransform.parent.forward
                 : Vector3.forward;
@@ -184,7 +229,8 @@ public class PurificationManager : MonoBehaviour, IStageProgressProvider {
     // BGM
     // ==================================================
 
-    private void PlayBGM() {
+    private void PlayBGM()
+    {
         if (bgmAudioSource == null || bgmClip == null)
             return;
 
@@ -199,8 +245,10 @@ public class PurificationManager : MonoBehaviour, IStageProgressProvider {
     // IStageProgressProvider
     // ==================================================
 
-    public float NormalizedProgress {
-        get {
+    public float NormalizedProgress
+    {
+        get
+        {
             if (maxPurification <= 0f)
                 return 0f;
 
@@ -213,7 +261,8 @@ public class PurificationManager : MonoBehaviour, IStageProgressProvider {
     // 정화도 증가 / 감소
     // ==================================================
 
-    public void AddPurificationAmount(float amount) {
+    public void AddPurificationAmount(float amount)
+    {
         if (_cleared || amount <= 0f)
             return;
 
@@ -239,7 +288,8 @@ public class PurificationManager : MonoBehaviour, IStageProgressProvider {
         // 100을 "처음" 넘어갔을 때만 이벤트 발생
         if (!_hasReachedMax &&
             previousPurification < maxPurification &&
-            CurrentPurification >= maxPurification) {
+            CurrentPurification >= maxPurification)
+        {
             _hasReachedMax = true;
 
             onMaxPurification?.Invoke();
@@ -247,7 +297,8 @@ public class PurificationManager : MonoBehaviour, IStageProgressProvider {
     }
 
 
-    public void DecreasePurificationAmount(float amount) {
+    public void DecreasePurificationAmount(float amount)
+    {
         if (_hasReachedMax || amount <= 0f)
             return;
 
@@ -271,20 +322,24 @@ public class PurificationManager : MonoBehaviour, IStageProgressProvider {
     // 사운드
     // ==================================================
 
-    public void StopIncreaseSound() {
+    public void StopIncreaseSound()
+    {
         if (increaseAudioSource != null &&
-            increaseAudioSource.isPlaying) {
+            increaseAudioSource.isPlaying)
+        {
             increaseAudioSource.Stop();
         }
     }
 
 
-    private void PlayIncreaseSoundIfNeeded() {
+    private void PlayIncreaseSoundIfNeeded()
+    {
         if (increaseAudioSource == null ||
             increaseSound == null)
             return;
 
-        if (!increaseAudioSource.isPlaying) {
+        if (!increaseAudioSource.isPlaying)
+        {
             increaseAudioSource.clip = increaseSound;
             increaseAudioSource.loop = true;
             increaseAudioSource.Play();
@@ -296,12 +351,14 @@ public class PurificationManager : MonoBehaviour, IStageProgressProvider {
     // 디버그
     // ==================================================
 
-    private void OnGUI() {
+    private void OnGUI()
+    {
         if (!showDebugUI)
             return;
 
         GUIStyle style =
-            new GUIStyle(GUI.skin.label) {
+            new GUIStyle(GUI.skin.label)
+            {
                 fontSize = debugFontSize,
                 normal = { textColor = Color.white }
             };

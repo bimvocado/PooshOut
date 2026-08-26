@@ -18,6 +18,11 @@ public class Stage1Manager : MonoBehaviour, IStageProgressProvider
     private bool _subscribedToRailEnd;
     private bool _reachedEnd;
 
+    // LLM 마무리 피드백용 - 정화도 계산(BubbleItem이 직접 처리)과는 별개로,
+    // 순수하게 "몇 개 먹었는지" 관찰만 해서 옆에서 카운트한다.
+    private int _bubbleCount;
+    private int _trashCount;
+
     /// <summary>
     /// 현재 Stage1 진행도(레일 이동 거리 기준).
     /// 0 = 0%, 1 = 100%.
@@ -31,6 +36,8 @@ public class Stage1Manager : MonoBehaviour, IStageProgressProvider
     {
         if (StageManager.Instance != null)
             StageManager.Instance.OnStageChanged += HandleStageChanged;
+
+        BubbleItem.OnItemCollected += HandleItemCollected;
     }
 
     private void OnDisable()
@@ -38,11 +45,19 @@ public class Stage1Manager : MonoBehaviour, IStageProgressProvider
         if (StageManager.Instance != null)
             StageManager.Instance.OnStageChanged -= HandleStageChanged;
 
+        BubbleItem.OnItemCollected -= HandleItemCollected;
+
         if (railMover != null && _subscribedToRailEnd)
         {
             railMover.OnReachedEnd -= HandleRailEnd;
             _subscribedToRailEnd = false;
         }
+    }
+
+    private void HandleItemCollected(BubbleItem.ItemType itemType)
+    {
+        if (itemType == BubbleItem.ItemType.Bubble) _bubbleCount++;
+        else _trashCount++;
     }
 
     private void Start()
@@ -67,6 +82,8 @@ public class Stage1Manager : MonoBehaviour, IStageProgressProvider
     {
         Debug.Log("[Stage1Manager] 스테이지 1 시작");
         _reachedEnd = false;
+        _bubbleCount = 0;
+        _trashCount = 0;
 
         if (railMover != null)
         {
@@ -102,6 +119,11 @@ public class Stage1Manager : MonoBehaviour, IStageProgressProvider
         if (cleared)
         {
             PurificationSystem.Instance?.SaveStagePurity(StageNumber);
+
+            // LLM 마무리 피드백용 로그. "잘함/못함" 판단은 안 담고 순수 사실만 적는다.
+            string note = $"버블 {_bubbleCount}개 획득, 쓰레기 {_trashCount}개 접촉";
+            PurificationSystem.Instance?.RecordStageLog(StageNumber, _bubbleCount, _trashCount, note);
+
             StageManager.Instance?.AdvanceStage();
         }
         else
