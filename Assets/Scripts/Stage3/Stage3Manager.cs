@@ -149,13 +149,14 @@ public class Stage3Manager : MonoBehaviour, IStageProgressProvider
         // 정화도 저장 - 손목 UI에 보이던 값(NormalizedProgress)을 그대로 저장한다.
         // PurificationSystem.Purity(게임 시작부터 누적되는 전역 값)를 저장하면
         // 손목 UI에 보이는 값과 달라지므로 여기서는 쓰지 않는다.
-        if (PurificationSystem.Instance != null) {
+        if (PurificationSystem.Instance != null)
+        {
             PurificationSystem.Instance.SaveStagePurity(3, NormalizedProgress * 100f);
         }
 
         // LLM 마무리 피드백용 로그. 순수 사실만 기록.
         int totalShots = _hitCount + _missCount;
-        string note = $"버블건 {totalShots}번 쏴서 {_hitCount}번 명중, 최대 연속 명중 {_maxStreak}회";
+        string note = $"산소총 {totalShots}번 쏴서 {_hitCount}번 명중, 최대 연속 명중 {_maxStreak}회";
         PurificationSystem.Instance?.RecordStageLog(3, _hitCount, _missCount, note);
 
         // 눈앞에 Clear UI 생성
@@ -167,7 +168,8 @@ public class Stage3Manager : MonoBehaviour, IStageProgressProvider
         Invoke(nameof(AdvanceToNextStage), clearDelay);
     }
 
-    private void AdvanceToNextStage() {
+    private void AdvanceToNextStage()
+    {
         StageManager.Instance?.AdvanceStage();
     }
 
