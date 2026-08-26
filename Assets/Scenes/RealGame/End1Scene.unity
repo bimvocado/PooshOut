@@ -6041,6 +6041,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: UI-Finish-Score
       objectReference: {fileID: 0}
+    - target: {fileID: 4709864755612250257, guid: 34a7ccc8d109e0341bf2aad20299ac19, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5478461539719785438, guid: 34a7ccc8d109e0341bf2aad20299ac19, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -7195,9 +7199,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bgmAudioSource: {fileID: 430360992}
-  bgmClip: {fileID: 0}
+  bgmClip: {fileID: 8300000, guid: d66f82a47ff232c468c65c1474bcc37c, type: 3}
   completeUI: {fileID: 927860130}
   uiDelay: 2
+  stage1Text: {fileID: 0}
+  stage2Text: {fileID: 0}
+  stage3Text: {fileID: 0}
+  stage4Text: {fileID: 0}
+  totalPurityText: {fileID: 0}
+  gradeText: {fileID: 0}
   pooshBotAnchor: {fileID: 0}
   nextSceneDelay: 3
   nextSceneName: End2Scene
