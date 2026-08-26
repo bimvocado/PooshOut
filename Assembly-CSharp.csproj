@@ -69,12 +69,14 @@
     <Compile Include="Assets\Scripts\Stage1\PollutantObject.cs" />
     <Compile Include="Assets\Scripts\Player\CalibrationController.cs" />
     <Compile Include="Assets\Scripts\Stage3\Stage3PlayerAlign.cs" />
+    <Compile Include="Assets\Scripts\StartScene\StageSceneLoader.cs" />
     <Compile Include="Assets\Scripts\Core\TimedVFX.cs" />
     <Compile Include="Assets\Scripts\Stage1\PipeSegment.cs" />
     <Compile Include="Assets\Scripts\Stage4\Ring.cs" />
     <Compile Include="Assets\Scripts\Stage1\Stage1VFXManager.cs" />
     <Compile Include="Assets\Scripts\XR VR Input\XRInputHandler.cs" />
     <Compile Include="Assets\Scripts\Stage1\SpeedLineFlash.cs" />
+    <Compile Include="Assets\Scripts\AI\PooshBotDirector.cs" />
     <Compile Include="Assets\Scripts\EndScene\End1SceneManager.cs" />
     <Compile Include="Assets\Scripts\BlinkingUIImage.cs" />
     <Compile Include="Assets\Scripts\StageStartUIController.cs" />
@@ -91,17 +93,22 @@
     <Compile Include="Assets\Scripts\EndScene\CharacterControllerTest.cs" />
     <Compile Include="Assets\Scripts\Stage1\HandleController.cs" />
     <Compile Include="Assets\Scripts\Stage2\GateFlashTester.cs" />
+    <Compile Include="Assets\Scripts\AI\PooshLineBank.cs" />
     <Compile Include="Assets\Scripts\Core\SmokeTest.cs" />
     <Compile Include="Assets\Scripts\Stage3\new\MouseShootInput.cs" />
     <Compile Include="Assets\Scripts\Data\LeaderboardData.cs" />
     <Compile Include="Assets\Scripts\Core\StageManager.cs" />
     <Compile Include="Assets\Scripts\AI\PooshBotTalkTest.cs" />
+    <Compile Include="Assets\Scripts\AI\Stage2PooshTrigger.cs" />
+    <Compile Include="Assets\Scripts\AI\PooshBotPositionController.cs" />
     <Compile Include="Assets\Scripts\Stage3\new\MicrobeTarget.cs" />
     <Compile Include="Assets\Scripts\StartScene\LeverController.cs" />
     <Compile Include="Assets\Scripts\EndScene\WaterDrop.cs" />
     <Compile Include="Assets\Scripts\UI\StagePuritySummaryUI.cs" />
     <Compile Include="Assets\Scripts\StartScene\LeverFlushToStage1.cs" />
     <Compile Include="Assets\Scripts\Stage1\WaterSplashVFX.cs" />
+    <Compile Include="Assets\Scripts\AI\Stage1PooshTrigger.cs" />
+    <Compile Include="Assets\Scripts\AI\Stage3PooshTrigger.cs" />
     <Compile Include="Assets\Scripts\Core\ScoreManager.cs" />
     <Compile Include="Assets\Scripts\EndScene\EndSceneManager.cs" />
     <Compile Include="Assets\Scripts\Stage3\Stage3Manager.cs" />
@@ -131,7 +138,10 @@
     <Compile Include="Assets\Scripts\Stage4\old\RingGate.cs" />
     <Compile Include="Assets\Scripts\Stage3\new\MicrobeFloatMotion.cs" />
     <Compile Include="Assets\Scripts\Stage1\Stage1Manager.cs" />
+    <Compile Include="Assets\Scripts\StartScene\LeverStageStarter.cs" />
     <Compile Include="Assets\Scripts\XR VR Input\PoseDetector.cs" />
+    <Compile Include="Assets\Scripts\AI\Stage3PooshAnchor.cs" />
+    <Compile Include="Assets\Scripts\AI\Stage4PooshTrigger.cs" />
     <Compile Include="Assets\Scripts\Core\PurificationSystem.cs" />
     <Compile Include="Assets\Scripts\Stage4\DoorController.cs" />
     <Compile Include="Assets\Scripts\StepRotator.cs" />
@@ -144,11 +154,14 @@
     <Compile Include="Assets\Scripts\AI\PooshVoicePlayer.cs" />
     <Compile Include="Assets\Scripts\Stage1\PollutantSpawner.cs" />
     <Compile Include="Assets\Scripts\XR VR Input\JumpDetector.cs" />
+    <Compile Include="Assets\Scripts\Stage3\new\HandMaterialTransition.cs" />
     <Compile Include="Assets\Scripts\Core\GameManager.cs" />
     <Compile Include="Assets\Scripts\Core\IStageProgressProvider.cs" />
     <Compile Include="Assets\Scripts\Core\Singleton.cs" />
+    <Compile Include="Assets\Scripts\AI\PooshBotAnimator.cs" />
     <Compile Include="Assets\Scripts\Data\PlayerData.cs" />
     <Compile Include="Assets\Scripts\Stage2\PoseGateSpawner.cs" />
+    <Compile Include="Assets\Scripts\AI\StageDebugSetter.cs" />
     <Compile Include="Assets\Scripts\Stage3\new\IShootInput.cs" />
   </ItemGroup>
   <ItemGroup>

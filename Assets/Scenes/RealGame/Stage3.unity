@@ -930,6 +930,31 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &156591997 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: -671034993776734411, guid: 3410bbc10b0c18e4d9f857d9bc0bfb1e, type: 3}
+  m_PrefabInstance: {fileID: 1834224523}
+  m_PrefabAsset: {fileID: 0}
+--- !u!137 &156591999 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 9149781291621409692, guid: 3410bbc10b0c18e4d9f857d9bc0bfb1e, type: 3}
+  m_PrefabInstance: {fileID: 1834224523}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &156592000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 156591997}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5005330ef6f6f134fa8787f6ccd04dc2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  handRenderer: {fileID: 156591999}
+  waterHandMaterial: {fileID: 2100000, guid: 1aa12a1bf394913499b3df456d834442, type: 2}
+  stage3Manager: {fileID: 346570519}
 --- !u!4 &191168951 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 5bb292e0f1f4b654fb9787962727071c, type: 3}
@@ -6373,6 +6398,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ad6499b60a3c22d4781c507055bd2764, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  stageScenes:
+  - stage: 1
+    sceneName: Stage1
+  - stage: 2
+    sceneName: Stage2
+  - stage: 3
+    sceneName: Stage3
+  - stage: 4
+    sceneName: Stage4
+  initialStage: 1
 --- !u!114 &369491568
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7611,7 +7646,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 2296393078715663276, guid: a033ee017a7e88e46b40ddfddf2a0b5e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2089032089}
   m_SourcePrefab: {fileID: 100100000, guid: a033ee017a7e88e46b40ddfddf2a0b5e, type: 3}
 --- !u!4 &1105136256 stripped
 Transform:
@@ -9570,7 +9608,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: -671034993776734411, guid: 3410bbc10b0c18e4d9f857d9bc0bfb1e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 156592000}
   m_SourcePrefab: {fileID: 100100000, guid: 3410bbc10b0c18e4d9f857d9bc0bfb1e, type: 3}
 --- !u!1001 &1897527786
 PrefabInstance:
@@ -10306,6 +10347,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   xrOrigin: {fileID: 255470793}
   spawnPoint: {fileID: 1911816938}
+  maxWaitFrames: 10
 --- !u!4 &1992658628
 Transform:
   m_ObjectHideFlags: 0
@@ -10341,6 +10383,31 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 5bb292e0f1f4b654fb9787962727071c, type: 3}
   m_PrefabInstance: {fileID: 1970673575}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &2089032086 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2296393078715663276, guid: a033ee017a7e88e46b40ddfddf2a0b5e, type: 3}
+  m_PrefabInstance: {fileID: 1066345507}
+  m_PrefabAsset: {fileID: 0}
+--- !u!137 &2089032088 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 6128140153830238031, guid: a033ee017a7e88e46b40ddfddf2a0b5e, type: 3}
+  m_PrefabInstance: {fileID: 1066345507}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2089032089
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2089032086}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5005330ef6f6f134fa8787f6ccd04dc2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  handRenderer: {fileID: 2089032088}
+  waterHandMaterial: {fileID: 2100000, guid: 1aa12a1bf394913499b3df456d834442, type: 2}
+  stage3Manager: {fileID: 346570519}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
