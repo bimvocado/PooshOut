@@ -875,6 +875,8 @@ MonoBehaviour:
   totalValueText: {fileID: 0}
   stageDetailText: "\uC815\uD654\uB3C4"
   totalLabel: "\uD604\uC7AC \uC815\uD654\uB3C4"
+  overwriteStageLabels: 1
+  appendGradeToTotal: 0
 --- !u!1001 &266038503
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1025,7 +1027,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 388176299017867152, guid: c89b5d5de83b33249a725ae4d8e5ab98, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 0
+      value: 164.43
       objectReference: {fileID: 0}
     - target: {fileID: 388176299017867152, guid: c89b5d5de83b33249a725ae4d8e5ab98, type: 3}
       propertyPath: m_AnchoredPosition.x
@@ -1173,7 +1175,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3185311003688980948, guid: c89b5d5de83b33249a725ae4d8e5ab98, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 0
+      value: 268.41
       objectReference: {fileID: 0}
     - target: {fileID: 3185311003688980948, guid: c89b5d5de83b33249a725ae4d8e5ab98, type: 3}
       propertyPath: m_AnchoredPosition.x
@@ -1229,7 +1231,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6632748474467062556, guid: c89b5d5de83b33249a725ae4d8e5ab98, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 0
+      value: 363.77
       objectReference: {fileID: 0}
     - target: {fileID: 6632748474467062556, guid: c89b5d5de83b33249a725ae4d8e5ab98, type: 3}
       propertyPath: m_AnchoredPosition.x
@@ -1501,7 +1503,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gateSpawner: {fileID: 47814707}
-  clearDelay: 2
+  clearDelay: 8
   feedbackFlash: {fileID: 1137342615}
   mapUiPanel: {fileID: 320240372}
   mapWaitTimeout: 15
@@ -3809,6 +3811,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3304881481747279237, guid: 34a7ccc8d109e0341bf2aad20299ac19, type: 3}
+      propertyPath: m_text
+      value: "\uD558\uC218\uAD00 \uD30C\uC774\uD504 "
+      objectReference: {fileID: 0}
     - target: {fileID: 3365070258571631379, guid: 34a7ccc8d109e0341bf2aad20299ac19, type: 3}
       propertyPath: m_AnchorMax.y
       value: 1
@@ -4102,6 +4108,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: -66.04999
       objectReference: {fileID: 0}
+    - target: {fileID: 7968549072466407159, guid: 34a7ccc8d109e0341bf2aad20299ac19, type: 3}
+      propertyPath: m_text
+      value: "\uC720\uC785 \uD38C\uD504\uC7A5"
+      objectReference: {fileID: 0}
     - target: {fileID: 8145160856601905925, guid: 34a7ccc8d109e0341bf2aad20299ac19, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -4135,7 +4145,9 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 6071908867719356836, guid: 34a7ccc8d109e0341bf2aad20299ac19, type: 3}
+    - {fileID: 8519824863810679465, guid: 34a7ccc8d109e0341bf2aad20299ac19, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 4709864755612250257, guid: 34a7ccc8d109e0341bf2aad20299ac19, type: 3}

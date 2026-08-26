@@ -6255,7 +6255,7 @@ MonoBehaviour:
   clearUIPrefab: {fileID: 1015065494592970577, guid: bc21b40ecaeee194f8adca8b6073a67a, type: 3}
   headTransform: {fileID: 394572836}
   clearUIDistance: 3
-  clearDelay: 2
+  clearDelay: 8
 --- !u!4 &346570520
 Transform:
   m_ObjectHideFlags: 0

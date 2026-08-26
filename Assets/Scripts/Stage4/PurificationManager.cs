@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// 정화도를 관리하고,
@@ -52,6 +53,11 @@ public class PurificationManager : MonoBehaviour, IStageProgressProvider
 
     [Range(0f, 1f)]
     [SerializeField] private float bgmVolume = 0.5f;
+
+    [Header("다음 씬")]
+    [Tooltip("Clear UI를 보여준 뒤 다음 씬으로 넘어가기까지의 여유 시간(초).")]
+    [SerializeField] private float nextSceneDelay = 8f;
+    [SerializeField] private string nextSceneName = "End1Scene";
 
     public float CurrentPurification { get; private set; }
 
@@ -167,6 +173,20 @@ public class PurificationManager : MonoBehaviour, IStageProgressProvider
         Debug.Log(
             $"[PurificationManager] Stage Clear / 최종 정화도: {CurrentPurification}"
         );
+
+        // 클리어 UI를 잠깐 보여준 뒤 엔딩 씬으로.
+        Invoke(nameof(LoadNextScene), nextSceneDelay);
+    }
+
+    private void LoadNextScene()
+    {
+        if (string.IsNullOrEmpty(nextSceneName))
+        {
+            Debug.LogWarning($"{nameof(PurificationManager)}: nextSceneName이 비어있어서 씬 전환 안 함.");
+            return;
+        }
+
+        SceneManager.LoadScene(nextSceneName);
     }
 
     private void SpawnClearUI()
