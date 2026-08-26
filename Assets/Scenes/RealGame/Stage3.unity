@@ -6248,7 +6248,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   microbeSpawner: {fileID: 1977366654}
   bgmAudioSource: {fileID: 346570521}
-  bgmClip: {fileID: 0}
+  bgmClip: {fileID: 8300000, guid: 2d37bbefd9ff62d499775871e9f331cf, type: 3}
   bgmVolume: 0.819
   scorePerDecompose: 6
   wristUIController: {fileID: 1794878284}
