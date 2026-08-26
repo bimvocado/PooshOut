@@ -3827,7 +3827,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   railMover: {fileID: 585936249}
   moveLoopClip: {fileID: 8300000, guid: b4ed51e98520dc74e93dc30b3eefb0a1, type: 3}
-  moveVolume: 0.6
+  moveVolume: 0.22
   itemClip: {fileID: 8300000, guid: 14a65efcc399b6d4fac328da4d338849, type: 3}
   obstacleClip: {fileID: 8300000, guid: 7f597da70b73b584082a7983473f99e8, type: 3}
   wallHitClip: {fileID: 8300000, guid: 8a7b0c456e14dfd458651adb43c536e8, type: 3}
@@ -4972,7 +4972,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 388176299017867152, guid: c89b5d5de83b33249a725ae4d8e5ab98, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 164.43
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 388176299017867152, guid: c89b5d5de83b33249a725ae4d8e5ab98, type: 3}
       propertyPath: m_AnchoredPosition.x
@@ -5108,7 +5108,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3185311003688980948, guid: c89b5d5de83b33249a725ae4d8e5ab98, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 318.2
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3185311003688980948, guid: c89b5d5de83b33249a725ae4d8e5ab98, type: 3}
       propertyPath: m_AnchoredPosition.x
@@ -5160,7 +5160,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6632748474467062556, guid: c89b5d5de83b33249a725ae4d8e5ab98, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 363.77
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6632748474467062556, guid: c89b5d5de83b33249a725ae4d8e5ab98, type: 3}
       propertyPath: m_AnchoredPosition.x
