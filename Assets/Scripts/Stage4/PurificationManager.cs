@@ -55,7 +55,7 @@ public class PurificationManager : MonoBehaviour, IStageProgressProvider
 
     [Header("다음 씬")]
     [Tooltip("Clear UI를 보여준 뒤 다음 씬으로 넘어가기까지의 여유 시간(초).")]
-    [SerializeField] private float nextSceneDelay = 3f;
+    [SerializeField] private float nextSceneDelay = 8f;
     [SerializeField] private string nextSceneName = "End1Scene";
 
     public float CurrentPurification { get; private set; }
@@ -165,7 +165,7 @@ public class PurificationManager : MonoBehaviour, IStageProgressProvider
             $"[PurificationManager] Stage Clear / 최종 정화도: {CurrentPurification}"
         );
 
-        // 클리어 UI를 잠깐 보여준 뒤 다음 씬(엔딩씬1)으로. (채령님 원본 로직 - 씬 전환 담당)
+        // 클리어 UI를 잠깐 보여준 뒤 엔딩 씬으로.
         Invoke(nameof(LoadNextScene), nextSceneDelay);
     }
 

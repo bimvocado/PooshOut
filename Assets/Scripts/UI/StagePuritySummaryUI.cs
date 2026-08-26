@@ -15,6 +15,12 @@ public class StagePuritySummaryUI : MonoBehaviour
     [Header("Labels")]
     [SerializeField] private string stageDetailText = "Purity";
     [SerializeField] private string totalLabel = "Total";
+    [Tooltip("체크 해제하면 각 행의 라벨(가운데 텍스트)은 건드리지 않고 그대로 둔다. " +
+             "스테이지별로 이미 다른 이름(하수관 파이프/유입 펌프장/생물반응조/여과설비 등)을 " +
+             "직접 넣어둔 경우 이 옵션을 꺼서 라벨이 덮어써지지 않게 한다.")]
+    [SerializeField] private bool overwriteStageLabels = true;
+    [Tooltip("체크하면 합계 텍스트 뒤에 등급(ScoreManager.GetGrade)을 붙인다. 예: \"454% 일급수 황금 물방울\".")]
+    [SerializeField] private bool appendGradeToTotal = false;
 
     private void Awake()
     {
@@ -60,12 +66,17 @@ public class StagePuritySummaryUI : MonoBehaviour
 
             TMP_Text[] texts = row.GetComponentsInChildren<TMP_Text>(true);
             if (texts.Length > 0) texts[0].text = $"스테이지{stageNumber}";
-            if (texts.Length > 1) texts[1].text = stageDetailText;
+            if (overwriteStageLabels && texts.Length > 1) texts[1].text = stageDetailText;
             if (texts.Length > 2) texts[2].text = $"{purity:F0}%";
         }
 
         if (totalLabelText != null) totalLabelText.text = totalLabel;
-        if (totalValueText != null) totalValueText.text = $"{total:F0}%";
+        if (totalValueText != null)
+        {
+            totalValueText.text = appendGradeToTotal
+                ? $"{total:F0}% {ScoreManager.GetGrade(total)}"
+                : $"{total:F0}%";
+        }
     }
 
     private void ResolveReferences()

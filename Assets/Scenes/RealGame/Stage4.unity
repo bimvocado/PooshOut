@@ -5924,6 +5924,8 @@ MonoBehaviour:
   bgmClip: {fileID: 8300000, guid: 37a2c011037a0d644b84e30e2ea06f59, type: 3}
   ringSpawnerRoot: {fileID: 49364514}
   bgmVolume: 0.16
+  nextSceneDelay: 8
+  nextSceneName: End1Scene
 --- !u!4 &2005729069
 Transform:
   m_ObjectHideFlags: 0
