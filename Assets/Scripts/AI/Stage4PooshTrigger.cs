@@ -13,23 +13,16 @@ public class Stage4PooshTrigger : MonoBehaviour
     [SerializeField] private float passVoiceCooldown = 3f;
     [SerializeField] private float passVoiceProbability = 0.5f;
 
-    [Header("놓침(s4_miss) 반응")]
-    [SerializeField] private float missVoiceCooldown = 4f;
-    [SerializeField] private float missVoiceProbability = 0.4f;
-
     private float _lastPassVoiceTime = -999f;
-    private float _lastMissVoiceTime = -999f;
 
     private void OnEnable()
     {
         Ring.OnRingPassed += HandlePassed;
-        Ring.OnRingMissed += HandleMissed;
     }
 
     private void OnDisable()
     {
         Ring.OnRingPassed -= HandlePassed;
-        Ring.OnRingMissed -= HandleMissed;
     }
 
     private void Start()
@@ -57,15 +50,5 @@ public class Stage4PooshTrigger : MonoBehaviour
         _lastPassVoiceTime = Time.time;
         PooshBotAnimator.Instance?.PlayPraise(); // 칭찬 모션(Bye_2)
         PooshLineBank.Instance?.PlayLine("s4_pass");
-    }
-
-    private void HandleMissed()
-    {
-        if (Time.time - _lastMissVoiceTime < missVoiceCooldown) return;
-        if (Random.value > missVoiceProbability) return;
-
-        _lastMissVoiceTime = Time.time;
-        PooshBotAnimator.Instance?.StartCheerTalk(); // 격려 모션(Cheer)
-        PooshLineBank.Instance?.PlayLine("s4_miss");
     }
 }

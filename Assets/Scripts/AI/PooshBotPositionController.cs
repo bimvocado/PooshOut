@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 // 정화봇의 위치/노출 상태를 하나로 통합 관리.
 // PooshBotDirector가 상황(인트로/스테이지/엔딩)에 맞게 SetMode를 호출해서 전환한다.
@@ -36,6 +37,44 @@ public class PooshBotPositionController : MonoBehaviour
     private Mode _mode = Mode.Hidden;
 
     public Mode CurrentMode => _mode;
+
+    private void Awake()
+    {
+        RefreshCamera();
+    }
+
+    private void OnEnable()
+    {
+        // 이 오브젝트는 DontDestroyOnLoad로 씬이 바뀌어도 살아남는다. 근데 xrCamera가 가리키던
+        // "이전 씬의 카메라"는 그 씬과 함께 파괴되어 null이 되어버리므로, 새 씬이 로드될 때마다
+        // 그 씬의 카메라를 다시 찾아서 xrCamera를 새로 연결해줘야 한다. 이걸 안 해주면
+        // LateUpdate()의 "if (xrCamera == null) return;"에 걸려 위치 갱신이 멈추고,
+        // 정화봇 몸체는 마지막으로 있던(엉뚱한) 위치에 그대로 남아있게 된다
+        // (소리는 나는데 안 보이는 현상의 원인).
+        SceneManager.sceneLoaded += HandleSceneLoaded;
+    }
+
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= HandleSceneLoaded;
+    }
+
+    private void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        RefreshCamera();
+    }
+
+    private void RefreshCamera()
+    {
+        if (Camera.main != null)
+        {
+            xrCamera = Camera.main.transform;
+        }
+        else
+        {
+            Debug.LogWarning("[PooshBotPositionController] Camera.main을 찾지 못함 - 이 씬에 MainCamera 태그가 붙은 카메라가 있는지 확인 필요");
+        }
+    }
 
     // fixedPoint는 Mode.FixedPoint일 때만 사용. 그 외 모드에서는 null로 둬도 됨.
     public void SetMode(Mode mode, Transform fixedPoint = null)

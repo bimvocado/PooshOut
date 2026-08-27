@@ -6,21 +6,23 @@ using UnityEngine;
 using UnityEngine.Networking;
 
 /// <summary>
-/// FastAPI 서버의 POST /chat 엔드포인트를 호출해서 가이드 로봇 '정화봇'의 대사를 받아오는 커넥터.
-/// Upstage Solar API 호출과 API 키는 서버 쪽으로 옮겼음 — 클라이언트는 API 키를 전혀 갖지 않는다
-/// (Standalone APK 디컴파일로 키가 노출되는 문제 해결). 서버 스펙은 docs/server-api-spec.md 참고.
+/// FastAPI 서버와 통신하는 커넥터. 두 가지 역할만 남김:
+///   1. 자유 질문 (AskFreeQuestion) - 나중에 STT 붙여서 아이가 버튼 누르고 말로 물어보면
+///      호출할 예정. POST /chat 사용.
+///   2. 마무리 피드백 (RequestFeedback) - 엔딩씬1에서 결과 보드 뜨는 순간 1회 호출.
+///      POST /feedback 사용.
 ///
-/// 게임 이벤트 4종에 훅을 걸어 상황에 맞는 컨텍스트를 요청 본문의 context에 실어 보낸다:
-///   1. 스테이지 진입 (StageManager.OnStageChanged)
-///   2. 오염물 접촉    (PurificationSystem.OnPollutantContact)
-///   3. 자유 질문      (AskFreeQuestion, UI 버튼에서 호출)
-///   4. 스테이지 클리어 (StageManager.OnStageCleared)
+/// 원래 있던 자동 트리거 3종(스테이지 진입/오염물 접촉/스테이지 클리어)은 실사용 안 해서
+/// 제거함 - 해당 상황들은 전부 wav로 미리 뽑아둔 고정 멘트(PooshLineBank)로 대체됨.
+/// Upstage API 키는 서버 쪽에만 있음 - 클라이언트는 API 키를 전혀 갖지 않는다
+/// (Standalone APK 디컴파일로 키가 노출되는 문제 방지). 서버 스펙은 docs/server-api-spec.md 참고.
 /// </summary>
 public class LLMConnector : Singleton<LLMConnector>
 {
     // 서버 주소는 ServerConfig 한 곳에서만 관리 (LLMConnector/SaveLoadManager 공용).
     private const string SERVER_URL = ServerConfig.SERVER_URL;
     private const string ChatEndpoint = SERVER_URL + "/chat";
+    private const string FeedbackEndpoint = SERVER_URL + "/feedback";
 
     [Header("서버 요청 설정")]
     [Tooltip("연속 요청 사이 최소 간격(초). 어린이가 버튼을 연타해도 서버를 과호출하지 않도록 방지.")]
@@ -36,7 +38,7 @@ public class LLMConnector : Singleton<LLMConnector>
         "어라, 정화봇 연결이 잠깐 끊겼나 봐! 계속 탐험해볼까?",
     };
 
-    [Header("정화봇 성격 (시스템 프롬프트 기본값)")]
+    [Header("정화봇 성격 (자유 질문용 시스템 프롬프트)")]
     [TextArea(3, 6)]
     [SerializeField]
     private string personaPrompt =
@@ -46,80 +48,13 @@ public class LLMConnector : Singleton<LLMConnector>
         "말투는 친근하고 다정한 반말 캐스터 톤이야(예: '~했어!', '~해볼까?'). " +
         "절대 아이를 혼내거나 겁주지 말고, 응답은 2~3문장 이내로 짧게 해줘.";
 
-    [Header("스테이지별 원리 설명")]
-    [SerializeField]
-    private StagePrincipleInfo[] stagePrinciples =
-    {
-        new StagePrincipleInfo { stage = 1, stageName = "스크린/침사지", principle = "큰 쓰레기와 모래를 촘촘한 그물망으로 걸러내는 첫 번째 관문" },
-        new StagePrincipleInfo { stage = 2, stageName = "침전지", principle = "물보다 무거운 찌꺼기를 가만히 가라앉혀서 걸러내는 곳" },
-        new StagePrincipleInfo { stage = 3, stageName = "폭기조", principle = "산소를 넣어주면 착한 미생물들이 힘을 내서 남은 오염물을 분해하는 곳" },
-        new StagePrincipleInfo { stage = 4, stageName = "방류", principle = "깨끗해진 물을 마지막으로 소독한 뒤 강으로 돌려보내는 곳" },
-    };
-
     private float _lastRequestTime = -999f;
 
-    // ---------- 이벤트 훅 연결 ----------
+    // ─────────────────────────────────────────────
+    // ① 자유 질문 (나중에 STT 연동 예정 - 버튼 누르고 말하면 텍스트로 변환된 걸 여기로 전달)
+    // ─────────────────────────────────────────────
 
-    private void OnEnable()
-    {
-        if (StageManager.Instance != null)
-        {
-            StageManager.Instance.OnStageChanged += HandleStageEntered;
-            StageManager.Instance.OnStageCleared += HandleStageCleared;
-        }
-        if (PurificationSystem.Instance != null)
-        {
-            PurificationSystem.Instance.OnPollutantContact += HandlePollutantContact;
-        }
-    }
-
-    private void OnDisable()
-    {
-        if (StageManager.Instance != null)
-        {
-            StageManager.Instance.OnStageChanged -= HandleStageEntered;
-            StageManager.Instance.OnStageCleared -= HandleStageCleared;
-        }
-        if (PurificationSystem.Instance != null)
-        {
-            PurificationSystem.Instance.OnPollutantContact -= HandlePollutantContact;
-        }
-    }
-
-    private void Start()
-    {
-        // OnStageChanged는 "바뀔 때"만 울리므로, 시작 시점의 스테이지는 직접 안내해줌.
-        if (StageManager.Instance != null)
-        {
-            HandleStageEntered(StageManager.Instance.CurrentStage);
-        }
-    }
-
-    // ---------- 트리거 1: 스테이지 진입 ----------
-
-    private void HandleStageEntered(int stage)
-    {
-        RequestGuideSpeech(
-            BuildStageEnterContext(stage),
-            "지금 상황에 맞게 짧게 한마디 해줘.",
-            speech => Debug.Log($"[정화봇] {speech}"),
-            error => Debug.LogWarning($"[정화봇] 스테이지 안내 요청 실패: {error}"));
-    }
-
-    // ---------- 트리거 2: 오염물 접촉 ----------
-
-    private void HandlePollutantContact(string pollutantLabel)
-    {
-        RequestGuideSpeech(
-            BuildPollutantContactContext(pollutantLabel),
-            "지금 상황에 맞게 짧게 코칭해줘.",
-            speech => Debug.Log($"[정화봇] {speech}"),
-            error => Debug.LogWarning($"[정화봇] 오염물 코칭 요청 실패: {error}"));
-    }
-
-    // ---------- 트리거 3: 자유 질문 (버튼 입력) ----------
-
-    /// <summary>UI 버튼(질문 입력창의 "물어보기" 버튼 등)에서 호출. 어린이가 직접 입력한 질문을 그대로 전달.</summary>
+    /// <summary>UI 버튼("물어보기" 등)에서 호출. 어린이가 직접 입력(또는 STT로 변환)한 질문을 그대로 전달.</summary>
     public void AskFreeQuestion(string question, Action<string> onResponse, Action<string> onError = null)
     {
         if (string.IsNullOrWhiteSpace(question))
@@ -131,37 +66,6 @@ public class LLMConnector : Singleton<LLMConnector>
         RequestGuideSpeech(BuildFreeQuestionContext(), question, onResponse, onError);
     }
 
-    // ---------- 트리거 4: 스테이지 클리어 ----------
-
-    private void HandleStageCleared(int clearedStage)
-    {
-        RequestGuideSpeech(
-            BuildStageClearContext(clearedStage),
-            "지금 상황에 맞게 짧게 축하해줘.",
-            speech => Debug.Log($"[정화봇] {speech}"),
-            error => Debug.LogWarning($"[정화봇] 클리어 피드백 요청 실패: {error}"));
-    }
-
-    // ---------- 컨텍스트 조립 (게임 상황 → system prompt) ----------
-
-    private string BuildStageEnterContext(int stage)
-    {
-        StagePrincipleInfo info = FindStagePrinciple(stage);
-        string name = info != null ? info.stageName : $"{stage}번째 구역";
-        string principle = info != null ? info.principle : "이번 구역의 정화 원리";
-
-        return $"{personaPrompt}\n\n[상황] 플레이어가 방금 '{name}'({stage}번째 스테이지)에 들어왔어. " +
-               $"여기는 '{principle}'인 곳이야. 이 원리를 입장 멘트로 짧고 재미있게 설명해줘.";
-    }
-
-    private string BuildPollutantContactContext(string pollutantLabel)
-    {
-        string purityInfo = TryGetPurityText();
-
-        return $"{personaPrompt}\n\n[상황] 플레이어가 오염물 '{pollutantLabel}'에 닿아서 정화도가 깎였어{purityInfo}. " +
-               "왜 이게 물을 더럽히는지, 다음엔 어떻게 피하면 좋을지 혼내지 말고 다정하게 코칭해줘.";
-    }
-
     private string BuildFreeQuestionContext()
     {
         int stage = StageManager.Instance != null ? StageManager.Instance.CurrentStage : StageManager.FirstStage;
@@ -170,30 +74,7 @@ public class LLMConnector : Singleton<LLMConnector>
                "정화봇에게 궁금한 걸 자유롭게 물어봤어. 눈높이에 맞게 답해줘.";
     }
 
-    private string BuildStageClearContext(int clearedStage)
-    {
-        string purityInfo = TryGetPurityText();
-
-        return $"{personaPrompt}\n\n[상황] 플레이어가 {clearedStage}번째 스테이지를 클리어했어{purityInfo}. " +
-               "짧게 칭찬해주고, 다음엔 어떤 곳이 기다리고 있을지 기대감을 살짝 심어줘.";
-    }
-
-    private string TryGetPurityText()
-    {
-        if (PurificationSystem.Instance == null) return "";
-        return $" (현재 정화도 {PurificationSystem.Instance.Purity:0}%)";
-    }
-
-    private StagePrincipleInfo FindStagePrinciple(int stage)
-    {
-        foreach (StagePrincipleInfo info in stagePrinciples)
-        {
-            if (info.stage == stage) return info;
-        }
-        return null;
-    }
-
-    // ---------- API 요청 ----------
+    // ---------- API 요청 (자유 질문용 /chat) ----------
 
     private void RequestGuideSpeech(string context, string userMessage, Action<string> onResponse, Action<string> onError)
     {
@@ -288,14 +169,6 @@ public class LLMConnector : Singleton<LLMConnector>
             error => Debug.LogError($"[정화봇 에러] {error}"));
     }
 
-    [Serializable]
-    private class StagePrincipleInfo
-    {
-        public int stage;
-        public string stageName;
-        public string principle;
-    }
-
     // ---------- POST /chat JSON 스키마 (JsonUtility 직렬화용, 서버 스펙: docs/server-api-spec.md) ----------
 
     [Serializable]
@@ -313,10 +186,9 @@ public class LLMConnector : Singleton<LLMConnector>
     }
 
     // ─────────────────────────────────────────────
-    // ⑤ 마무리 피드백 (엔딩씬1에서 결과 보드 뜨는 순간 1회 호출)
+    // ② 마무리 피드백 (엔딩씬1에서 결과 보드 뜨는 순간 1회 호출)
     // 서버 /feedback 스펙(main.py의 FeedbackRequest/StageLog)과 필드명을 정확히 맞춰야 함.
     // ─────────────────────────────────────────────
-    private const string FeedbackEndpoint = SERVER_URL + "/feedback";
 
     [Serializable]
     private class ServerStageLog
@@ -325,6 +197,7 @@ public class LLMConnector : Singleton<LLMConnector>
         public int success;
         public int fail;
         public string note;
+        public float purity;
     }
 
     [Serializable]
@@ -339,8 +212,8 @@ public class LLMConnector : Singleton<LLMConnector>
     public class FeedbackResponse
     {
         public string child_message;
-        public string guardian_summary;
         public string audioUrl;
+        // guardian_summary는 서버에서 더 이상 안 보냄 (필요 없어져서 제거됨)
     }
 
     /// <summary>
@@ -374,6 +247,7 @@ public class LLMConnector : Singleton<LLMConnector>
                     success = log.success,
                     fail = log.fail,
                     note = log.note,
+                    purity = log.purity,
                 });
             }
         }

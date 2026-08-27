@@ -10,7 +10,8 @@ using UnityEngine;
 ///   198%처럼 표시되는 게 의도된 디자인)
 ///
 /// ※ 스테이지별 저장값 합산/전체 진행도 계산은 추후 구현 예정.
-public class PurificationSystem : Singleton<PurificationSystem> {
+public class PurificationSystem : Singleton<PurificationSystem>
+{
     [Header("정화도")]
     [SerializeField] private float startingPurity = 0f;
 
@@ -40,7 +41,8 @@ public class PurificationSystem : Singleton<PurificationSystem> {
     /// 인자: 오염물 라벨
     public event Action<string> OnPollutantContact;
 
-    protected override void Awake() {
+    protected override void Awake()
+    {
         base.Awake();
 
         Purity = Mathf.Max(0f, startingPurity);
@@ -51,12 +53,14 @@ public class PurificationSystem : Singleton<PurificationSystem> {
     // ==================================================
 
     /// 현재 정화도 증가.
-    public void Increase(float amount) {
+    public void Increase(float amount)
+    {
         SetPurity(Purity + amount);
     }
 
     /// 현재 정화도 감소.
-    public void Decrease(float amount) {
+    public void Decrease(float amount)
+    {
         SetPurity(Purity - amount);
     }
 
@@ -64,7 +68,8 @@ public class PurificationSystem : Singleton<PurificationSystem> {
     /// 접촉 이벤트 발생 후 정화도를 감소시킨다.
     public void ReportPollutantContact(
         string pollutantLabel,
-        float penalty) {
+        float penalty)
+    {
         OnPollutantContact?.Invoke(pollutantLabel);
 
         Decrease(penalty);
@@ -72,7 +77,8 @@ public class PurificationSystem : Singleton<PurificationSystem> {
 
     /// 현재 정화도를 직접 설정.
     /// 항상 0 이상으로 제한한다.
-    public void SetPurity(float value) {
+    public void SetPurity(float value)
+    {
         float clamped = Mathf.Max(0f, value);
 
         if (Mathf.Approximately(clamped, Purity))
@@ -85,13 +91,15 @@ public class PurificationSystem : Singleton<PurificationSystem> {
 
     /// 현재 정화도가 클리어 기준 이상인지 확인.
     /// Stage1Manager 등 기존 코드에서 사용.
-    public bool MeetsThreshold(float threshold) {
+    public bool MeetsThreshold(float threshold)
+    {
         return Purity >= threshold;
     }
 
     /// 현재 정화도를 초기 정화도로 되돌린다.
     /// 저장된 Stage 1~4 결과는 건드리지 않는다.
-    public void ResetPurity() {
+    public void ResetPurity()
+    {
         SetPurity(startingPurity);
     }
 
@@ -103,7 +111,8 @@ public class PurificationSystem : Singleton<PurificationSystem> {
     /// 해당 스테이지 종료 시 현재 정화도(Purity)를 저장한다.
     /// stageNumber는 1 ~ 4.
     /// </summary>
-    public void SaveStagePurity(int stageNumber) {
+    public void SaveStagePurity(int stageNumber)
+    {
         SaveStagePurity(stageNumber, Purity);
     }
 
@@ -113,10 +122,12 @@ public class PurificationSystem : Singleton<PurificationSystem> {
     /// 그 값을 그대로 저장해야 할 때 사용. (예: Stage3Manager)
     /// stageNumber는 1 ~ 4.
     /// </summary>
-    public void SaveStagePurity(int stageNumber, float value) {
+    public void SaveStagePurity(int stageNumber, float value)
+    {
         int index = stageNumber - 1;
 
-        if (index < 0 || index >= stagePurities.Length) {
+        if (index < 0 || index >= stagePurities.Length)
+        {
             Debug.LogWarning(
                 $"[PurificationSystem] 잘못된 스테이지 번호: {stageNumber}",
                 this
@@ -146,10 +157,12 @@ public class PurificationSystem : Singleton<PurificationSystem> {
     /// 저장된 스테이지 정화도를 반환한다.
     /// stageNumber는 1 ~ 4.
     /// 유효하지 않은 번호면 0을 반환.
-    public float GetStagePurity(int stageNumber) {
+    public float GetStagePurity(int stageNumber)
+    {
         int index = stageNumber - 1;
 
-        if (index < 0 || index >= stagePurities.Length) {
+        if (index < 0 || index >= stagePurities.Length)
+        {
             Debug.LogWarning(
                 $"[PurificationSystem] 잘못된 스테이지 번호: {stageNumber}",
                 this
@@ -168,6 +181,10 @@ public class PurificationSystem : Singleton<PurificationSystem> {
     /// 각 스테이지가 끝날 때 호출. 성공/실패 등 순수 숫자와 그걸 설명하는 객관적
     /// 사실(note)만 기록한다. "잘함/못함" 같은 평가 문구는 여기 담지 말 것 -
     /// 그 판단은 서버의 LLM이 숫자를 보고 내리도록 설계되어 있음.
+    /// 정화도(purity)는 이 함수를 부르기 직전에 이미 SaveStagePurity()로 저장해둔
+    /// stagePurities 배열 값을 그대로 가져와서 자동으로 같이 기록한다 - 각 스테이지
+    /// 매니저는 전부 SaveStagePurity → RecordStageLog 순서로 호출하고 있으므로,
+    /// 이 함수 시그니처를 안 바꿔도(호출부 수정 없이) 정화도가 같이 담긴다.
     /// stageNumber는 1 ~ 4.
     public void RecordStageLog(int stageNumber, int success, int fail, string note)
     {
@@ -179,15 +196,18 @@ public class PurificationSystem : Singleton<PurificationSystem> {
             return;
         }
 
+        float purity = stagePurities[index];
+
         stageLogs[index] = new StagePlayLog
         {
             stage = stageNumber,
             success = success,
             fail = fail,
             note = note,
+            purity = purity,
         };
 
-        Debug.Log($"[PurificationSystem] Stage {stageNumber} 플레이 로그 기록: 성공 {success}, 실패 {fail}, note=\"{note}\"", this);
+        Debug.Log($"[PurificationSystem] Stage {stageNumber} 플레이 로그 기록: 정화도 {purity}%, 성공 {success}, 실패 {fail}, note=\"{note}\"", this);
     }
 
     /// 엔딩씬1에서 LLM 마무리 피드백 요청 직전에 호출. 지금까지 기록된 스테이지
@@ -235,4 +255,5 @@ public class StagePlayLog
     public int success;
     public int fail;
     public string note;
+    public float purity; // 이 스테이지의 최종 정화도(%). 서버에서 상위 2개 스테이지를 고를 때 씀.
 }
