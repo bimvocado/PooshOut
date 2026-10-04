@@ -12,7 +12,7 @@ public class PooshBotAnimator : Singleton<PooshBotAnimator>
     private static readonly int UseCheerTalkHash = Animator.StringToHash("UseCheerTalk");
     private static readonly int IdleVarHash = Animator.StringToHash("IdleVar");
     private static readonly int Bye1Hash = Animator.StringToHash("Bye1");
-    private static readonly int Bye2Hash = Animator.StringToHash("Bye2");
+    private static readonly int IsPraisingHash = Animator.StringToHash("IsPraising");
 
     [Header("Idle 변주 (귀 쫑긋)")]
     [SerializeField] private bool autoIdleVariation = true;
@@ -21,6 +21,7 @@ public class PooshBotAnimator : Singleton<PooshBotAnimator>
 
     private Animator _animator;
     private float _nextIdleVarTime;
+    private bool _praiseRequested; // PlayPraise() 호출됨 - 음성이 끝날 때까지 IsPraising을 유지해야 함
 
     protected override void Awake()
     {
@@ -40,10 +41,16 @@ public class PooshBotAnimator : Singleton<PooshBotAnimator>
         bool talking = PooshVoicePlayer.Instance != null && PooshVoicePlayer.Instance.IsPlaying;
         _animator.SetBool(IsTalkingHash, talking);
 
-        // 말이 끝나면 격려 모드도 같이 꺼줌. 다음 대사부턴 다시 일반 Talk로 돌아감.
+        // 말이 끝나면 격려 모드/칭찬 모드도 같이 꺼줌. 다음 대사부턴 다시 일반 Talk로 돌아감.
         if (!talking)
         {
             _animator.SetBool(UseCheerTalkHash, false);
+
+            if (_praiseRequested)
+            {
+                _animator.SetBool(IsPraisingHash, false);
+                _praiseRequested = false;
+            }
         }
 
         if (autoIdleVariation && !talking && Time.unscaledTime >= _nextIdleVarTime)
@@ -64,10 +71,12 @@ public class PooshBotAnimator : Singleton<PooshBotAnimator>
         _animator.SetBool(UseCheerTalkHash, true);
     }
 
-    // 칭찬 멘트용 1회성 리액션 (윙크+만세)
+    // 칭찬 멘트용 리액션 (윙크+만세) - IsTalking처럼 음성이 재생되는 동안 계속 유지됨.
+    // (예전엔 SetTrigger라 Animator Controller의 짧은 트랜지션 시간만큼만 잠깐 보이고 끝나버렸음)
     public void PlayPraise()
     {
-        _animator.SetTrigger(Bye2Hash);
+        _praiseRequested = true;
+        _animator.SetBool(IsPraisingHash, true);
     }
 
     // 첫 인사 (윙크+한손 인사)

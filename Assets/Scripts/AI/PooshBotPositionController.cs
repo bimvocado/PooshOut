@@ -27,14 +27,23 @@ public class PooshBotPositionController : MonoBehaviour
     [SerializeField] private float topRightForward = 1.2f;
 
     [Header("공통 (VR 멀미 방지 - 값 너무 키우지 말 것)")]
-    [Tooltip("정면(Front) 등장 시 위치를 따라잡는 속도. TopRightFollow는 카트처럼 빠른 이동에서도 " +
+    [Tooltip("정면(Front) 등장 시, 그리고 TopRightFollow로 막 전환된 직후 잠깐 동안 위치를 따라잡는 속도. " +
+             "TopRightFollow 진입 전환이 끝난 뒤에는 카트처럼 빠른 이동에서도 " +
              "절대 안 뒤처지도록 아예 순간이동으로 처리하므로 이 값의 영향을 안 받음.")]
     [SerializeField] private float positionLerpSpeed = 10f;
     [Tooltip("고개 돌림에 맞춰 정화봇이 플레이어를 바라보는 회전 속도. 위치보다 느리게 유지해야 시선 돌릴 때 안 어지럽다.")]
     [SerializeField] private float rotationLerpSpeed = 3f;
     [SerializeField] private bool lookAtPlayer = true;
 
+    [Header("TopRightFollow 진입 전환")]
+    [Tooltip("다른 모드(Front, FixedPoint 등)에서 TopRightFollow로 막 전환된 직후에만 이 시간(초) 동안 " +
+             "순간이동 대신 Lerp로 부드럽게 따라잡는다. 캘리브레이션 직후 정면→오른쪽위 전환처럼, " +
+             "플레이어가 아직 빠르게 이동 중이 아닌 순간에 '뿅' 하고 튀는 느낌을 없애기 위함. " +
+             "스테이지 중 카트 추적에는 영향 없음(그 시점엔 이미 전환이 끝난 상태라 순간이동 유지).")]
+    [SerializeField] private float topRightEntryTransitionDuration = 0.6f;
+
     private Mode _mode = Mode.Hidden;
+    private float _topRightEntryTimer;
 
     public Mode CurrentMode => _mode;
 
@@ -79,6 +88,11 @@ public class PooshBotPositionController : MonoBehaviour
     // fixedPoint는 Mode.FixedPoint일 때만 사용. 그 외 모드에서는 null로 둬도 됨.
     public void SetMode(Mode mode, Transform fixedPoint = null)
     {
+        if (mode == Mode.TopRightFollow && _mode != Mode.TopRightFollow)
+        {
+            _topRightEntryTimer = topRightEntryTransitionDuration;
+        }
+
         _mode = mode;
         SetVisible(mode != Mode.Hidden);
 
@@ -114,10 +128,19 @@ public class PooshBotPositionController : MonoBehaviour
 
         if (_mode == Mode.TopRightFollow)
         {
-            // 카트/레일처럼 빠르게 움직이는 스테이지에서는 Lerp로는 항상 일정 거리만큼 뒤처지는
-            // 구조적 한계가 있어서, 위치는 아예 순간이동으로 매 프레임 딱 맞춰버린다.
-            // (위치가 카메라를 순간적으로 따라가는 건 화면 흔들림이 없어 멀미 유발 안 함 - 문제되는 건 회전.)
-            transform.position = targetPos;
+            if (_topRightEntryTimer > 0f)
+            {
+                // 다른 모드에서 막 전환된 직후 짧은 구간만 부드럽게 따라잡는다 (예: 캘리브레이션 직후 정면→오른쪽위).
+                transform.position = Vector3.Lerp(transform.position, targetPos, Time.unscaledDeltaTime * positionLerpSpeed);
+                _topRightEntryTimer -= Time.unscaledDeltaTime;
+            }
+            else
+            {
+                // 카트/레일처럼 빠르게 움직이는 스테이지에서는 Lerp로는 항상 일정 거리만큼 뒤처지는
+                // 구조적 한계가 있어서, 위치는 아예 순간이동으로 매 프레임 딱 맞춰버린다.
+                // (위치가 카메라를 순간적으로 따라가는 건 화면 흔들림이 없어 멀미 유발 안 함 - 문제되는 건 회전.)
+                transform.position = targetPos;
+            }
         }
         else
         {

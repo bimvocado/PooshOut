@@ -139,8 +139,10 @@ public class End1SceneManager : MonoBehaviour
             Debug.Log($"[End1SceneManager] 피드백 수신: {feedback.child_message}");
             PooshVoicePlayer.Instance?.PlayFromUrl(feedback.audioUrl);
 
-            yield return null; // 재생 시작 전 한 프레임은 IsPlaying이 false일 수 있음
-            yield return new WaitUntil(() => PooshVoicePlayer.Instance == null || !PooshVoicePlayer.Instance.IsPlaying);
+            // IsPlaying이 아니라 IsBusy로 기다려야 한다 - 다운로드 중(재생 시작 전)에는 IsPlaying이
+            // 이미 false라서, IsPlaying으로 기다리면 다운로드가 끝나기도 전에 새치기로 통과해버린다
+            // (정화봇이 거의 안 보이고 다음 씬으로 먼저 넘어간 뒤 음성만 뒤늦게 재생되던 버그의 원인).
+            yield return new WaitUntil(() => PooshVoicePlayer.Instance == null || !PooshVoicePlayer.Instance.IsBusy);
         }
         else
         {

@@ -5907,7 +5907,7 @@ MonoBehaviour:
   stableSpeedThreshold: 0.05
   maxWaitTime: 10
   minValidHeight: 1
-  maxValidHeight: 1.7
+  maxValidHeight: 1.8
   fallbackHeight: 1.3
 --- !u!4 &1470402369
 Transform:
@@ -6246,6 +6246,66 @@ CapsuleCollider:
   m_Height: 3.1956134
   m_Direction: 2
   m_Center: {x: 0, y: 0, z: 0.5}
+--- !u!1 &1961376517
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1961376519}
+  - component: {fileID: 1961376518}
+  m_Layer: 0
+  m_Name: LLMconnector
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1961376518
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1961376517}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 81207c0c9b9a0d34a9cef176230c7b75, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  requestCooldown: 3
+  requestTimeoutSeconds: 10
+  offlineFallbackMessages:
+  - "\uC9C0\uAE08\uC740 \uC815\uD654\uBD07\uC774 \uC2E0\uD638\uAC00 \uC548 \uC7A1\uD600\uC11C
+    \uB9D0\uC744 \uBABB \uD574\uC918! \uC870\uAE08\uB9CC \uAE30\uB2E4\uB824\uC904\uB798?"
+  - "\uC5B4\uB77C, \uC815\uD654\uBD07 \uC5F0\uACB0\uC774 \uC7A0\uAE50 \uB04A\uACBC\uB098
+    \uBD10! \uACC4\uC18D \uD0D0\uD5D8\uD574\uBCFC\uAE4C?"
+  personaPrompt: "\uB108\uB294 \uD558\uC218\uCC98\uB9AC\uC7A5 VR \uAD50\uC721 \uAC8C\uC784\uC758
+    \uAC00\uC774\uB4DC \uB85C\uBD07 '\uC815\uD654\uBD07'\uC774\uC57C. \uC774 \uAC8C\uC784\uC744
+    \uD558\uB294 \uCE5C\uAD6C\uB4E4\uC740 7~13\uC138 \uCD08\uB4F1\uD559\uC0DD\uC774\uC57C.
+    \uC5B4\uB824\uC6B4 \uB2E8\uC5B4 \uB300\uC2E0 \uC26C\uC6B4 \uB9D0\uACFC \uC7AC\uBBF8\uC788\uB294
+    \uBE44\uC720\uB97C \uC368\uC11C \uC124\uBA85\uD574\uC918. \uB9D0\uD22C\uB294
+    \uCE5C\uADFC\uD558\uACE0 \uB2E4\uC815\uD55C \uBC18\uB9D0 \uCE90\uC2A4\uD130 \uD1A4\uC774\uC57C(\uC608:
+    '~\uD588\uC5B4!', '~\uD574\uBCFC\uAE4C?'). \uC808\uB300 \uC544\uC774\uB97C \uD63C\uB0B4\uAC70\uB098
+    \uAC81\uC8FC\uC9C0 \uB9D0\uACE0, \uC751\uB2F5\uC740 2~3\uBB38\uC7A5 \uC774\uB0B4\uB85C
+    \uC9E7\uAC8C \uD574\uC918."
+--- !u!4 &1961376519
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1961376517}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -23.3, y: 8.22, z: -52.05}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2022820467 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8821623529969584324, guid: 320dfb4a601d1f54c8873ba4d14acb83, type: 3}
@@ -6305,6 +6365,34 @@ PrefabInstance:
       propertyPath: topRightRight
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 4618647311612747459, guid: 08f2527e479b7f249886856400e55912, type: 3}
+      propertyPath: lineSets.Array.data[47].key
+      value: s1_bubble
+      objectReference: {fileID: 0}
+    - target: {fileID: 4618647311612747459, guid: 08f2527e479b7f249886856400e55912, type: 3}
+      propertyPath: lineSets.Array.data[47].clips.Array.size
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4618647311612747459, guid: 08f2527e479b7f249886856400e55912, type: 3}
+      propertyPath: 'lineSets.Array.data[47].clips.Array.data[0]'
+      value: 
+      objectReference: {fileID: 8300000, guid: 17b652cc727783f44b0c41720e5c1666, type: 3}
+    - target: {fileID: 4618647311612747459, guid: 08f2527e479b7f249886856400e55912, type: 3}
+      propertyPath: 'lineSets.Array.data[47].clips.Array.data[1]'
+      value: 
+      objectReference: {fileID: 8300000, guid: 9935227aa40124445a878d4371e05872, type: 3}
+    - target: {fileID: 4618647311612747459, guid: 08f2527e479b7f249886856400e55912, type: 3}
+      propertyPath: 'lineSets.Array.data[47].clips.Array.data[2]'
+      value: 
+      objectReference: {fileID: 8300000, guid: a0e6cba75dd444844b9ac42eb60da0f8, type: 3}
+    - target: {fileID: 4618647311612747459, guid: 08f2527e479b7f249886856400e55912, type: 3}
+      propertyPath: 'lineSets.Array.data[47].clips.Array.data[3]'
+      value: 
+      objectReference: {fileID: 8300000, guid: dce4231ed91449548811b5fb1e8f5da0, type: 3}
+    - target: {fileID: 4618647311612747459, guid: 08f2527e479b7f249886856400e55912, type: 3}
+      propertyPath: 'lineSets.Array.data[47].clips.Array.data[4]'
+      value: 
+      objectReference: {fileID: 8300000, guid: a16954f471d3a0243a5836b95c3affcc, type: 3}
     - target: {fileID: 7548776160977138609, guid: 08f2527e479b7f249886856400e55912, type: 3}
       propertyPath: calibrationController
       value: 
@@ -6380,3 +6468,4 @@ SceneRoots:
   - {fileID: 1470402369}
   - {fileID: 1444246609}
   - {fileID: 1104791786}
+  - {fileID: 1961376519}

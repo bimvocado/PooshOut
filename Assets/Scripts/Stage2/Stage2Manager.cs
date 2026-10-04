@@ -51,9 +51,11 @@ public class Stage2Manager : MonoBehaviour, IStageProgressProvider
 
     /// <summary>
     /// 현재 Stage2 정화도(점수).
-    /// PurificationSystem.Purity는 이미 0~100으로 클램프되어 있지만,
-    /// 게이트 점수 합계가 100을 넘도록 설계돼 있어도(100+N) 게이지는 100%에서 멈추도록
-    /// 여기서 한 번 더 0~1로 클램프한다.
+    /// PurificationSystem.Purity는 스테이지 구분 없이 계속 쌓이는 전역 누적값이라
+    /// (상한 없음 - 완주 보너스 등으로 100을 넘도록 의도적으로 열어둠), 그 값을 그대로 쓰면
+    /// 이전 스테이지에서 이미 100을 넘겨놨을 때 Stage2가 시작하자마자 게이지가 100%로 고정되고
+    /// 더 이상 안 올라가는 문제가 있었음. 그래서 스테이지 시작 시점(_purityAtStageStart) 대비
+    /// 이번 스테이지에서 실제로 오른 만큼(델타)만 0~1로 클램프해서 보여준다.
     /// 0 = 0%, 1 = 100%(또는 그 이상 점수를 받았어도 게이지는 가득 참)
     /// </summary>
     public float NormalizedProgress
@@ -61,7 +63,7 @@ public class Stage2Manager : MonoBehaviour, IStageProgressProvider
         get
         {
             if (PurificationSystem.Instance == null) return 0f;
-            return Mathf.Clamp01(PurificationSystem.Instance.Purity / 100f);
+            return Mathf.Clamp01((PurificationSystem.Instance.Purity - _purityAtStageStart) / 100f);
         }
     }
 

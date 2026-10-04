@@ -30,6 +30,12 @@ public class PooshVoicePlayer : Singleton<PooshVoicePlayer>
     // PooshBotAnimator가 IsTalking을 판단할 때 이걸 봄
     public bool IsPlaying => _audioSource != null && _audioSource.isPlaying;
 
+    /// PlayFromUrl 호출 직후부터 다운로드+재생이 완전히 끝날 때까지 true.
+    /// IsPlaying과 달리 "다운로드 대기 중이라 아직 재생 시작 전"인 구간도 포함한다 -
+    /// 이 구분이 없으면 호출 직후 새치기로 "이미 다 끝남"으로 오판해서 다음 로직(정화봇 퇴장,
+    /// 다음 씬 전환 등)이 다운로드가 끝나기도 전에 먼저 진행돼버리는 문제가 있었음(End1Scene에서 실제로 겪음).
+    public bool IsBusy { get; private set; }
+
     protected override void Awake()
     {
         base.Awake();
@@ -49,6 +55,7 @@ public class PooshVoicePlayer : Singleton<PooshVoicePlayer>
     {
         if (string.IsNullOrEmpty(url)) return;
         StopAllCoroutines();
+        IsBusy = true;
         StartCoroutine(DownloadAndPlay(url));
     }
 
@@ -58,6 +65,7 @@ public class PooshVoicePlayer : Singleton<PooshVoicePlayer>
     {
         if (clip == null) return;
         StopAllCoroutines();
+        IsBusy = false; // PlayFromUrl의 다운로드 코루틴을 끊었을 수 있으니 그 대기 상태도 같이 해제
         if (_audioSource.isPlaying) _audioSource.Stop();
         _audioSource.clip = clip;
         _audioSource.Play();
@@ -73,6 +81,7 @@ public class PooshVoicePlayer : Singleton<PooshVoicePlayer>
             if (request.result != UnityWebRequest.Result.Success)
             {
                 Debug.LogWarning($"[PooshVoicePlayer] 음성 다운로드 실패 (텍스트만 표시됨): {request.error}\nURL: {url}");
+                IsBusy = false;
                 yield break;
             }
 
@@ -80,12 +89,16 @@ public class PooshVoicePlayer : Singleton<PooshVoicePlayer>
             if (clip == null || clip.length <= 0f)
             {
                 Debug.LogWarning($"[PooshVoicePlayer] 오디오 클립 변환 실패 (형식 불일치일 수 있음. 현재 설정: {audioType})");
+                IsBusy = false;
                 yield break;
             }
 
             if (_audioSource.isPlaying) _audioSource.Stop();
             _audioSource.clip = clip;
             _audioSource.Play();
+
+            yield return new WaitWhile(() => _audioSource.isPlaying);
+            IsBusy = false;
         }
     }
 
@@ -96,5 +109,6 @@ public class PooshVoicePlayer : Singleton<PooshVoicePlayer>
         {
             _audioSource.Stop();
         }
+        IsBusy = false;
     }
 }

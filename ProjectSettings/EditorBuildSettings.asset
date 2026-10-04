@@ -5,30 +5,21 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 0
-    path: Assets/Scenes/SampleScene.unity
-    guid: 00000000000000000000000000000000
   - enabled: 1
-    path: Assets/Scenes/RealGame/Stage1.unity
-    guid: 6fc3b43e42bb4304b9f561f99484077e
-  - enabled: 0
-    path: Assets/Scenes/3_Chaeryoung.unity
-    guid: 00000000000000000000000000000000
-  - enabled: 1
-    path: Assets/Scenes/RealGame/Stage4.unity
-    guid: 54d20c2542c543d43a363b88ffc36d80
-  - enabled: 0
     path: Assets/Scenes/RealGame/StartScene.unity
     guid: 4005deb80aa07964f84d062d1bc03e75
   - enabled: 1
-    path: Assets/Scenes/CalibrationTestScene.unity
-    guid: 15dc39815a01e1d48b4054a7e9fcbb3b
+    path: Assets/Scenes/RealGame/Stage1.unity
+    guid: 6fc3b43e42bb4304b9f561f99484077e
   - enabled: 1
     path: Assets/Scenes/RealGame/Stage2.unity
     guid: 693fa3777d3349a4f8b18a631cc1b4f7
   - enabled: 1
     path: Assets/Scenes/RealGame/Stage3.unity
     guid: 865897845df5ff14482bc205a3d74edd
+  - enabled: 1
+    path: Assets/Scenes/RealGame/Stage4.unity
+    guid: 54d20c2542c543d43a363b88ffc36d80
   - enabled: 1
     path: Assets/Scenes/RealGame/End1Scene.unity
     guid: e16c76bf7fefd1c42b70a97ff0400727
