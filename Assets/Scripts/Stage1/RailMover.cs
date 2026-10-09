@@ -32,6 +32,9 @@ public class RailMover : MonoBehaviour, IStageProgressProvider
     [SerializeField] private float rotationSmoothing = 6f; // 시점 회전 스무딩 (코너 멀미 방지)
     [SerializeField] private float railHeight = 0f;        // 웨이포인트 높이 대신 항상 이 Y값에서 진행
 
+    [Tooltip("초당 forwardSpeed 증가량. 2초당 1씩 빨라지게 하려면 0.5. 0이면 가속 없음.")]
+    [SerializeField] private float speedRampPerSecond = 0.5f;
+
     [Header("CharacterController 기본값 (플레이어 캡슐 크기)")]
     [SerializeField] private float defaultRadius = 0.3f;
     [SerializeField] private float defaultHeight = 1.7f;
@@ -182,6 +185,8 @@ public class RailMover : MonoBehaviour, IStageProgressProvider
     private void Update()
     {
         if (!IsMoving || _samples.Count < 2) return;
+
+        if (speedRampPerSecond != 0f) forwardSpeed += speedRampPerSecond * Time.deltaTime;
 
         _distanceTraveled += forwardSpeed * Time.deltaTime;
 
