@@ -38,13 +38,24 @@ public class Stage2Manager : MonoBehaviour, IStageProgressProvider
     private bool _stageCompleted;
     private bool _gatesStarted;
 
+    // LLM 마무리 피드백용 - 정화도 계산과는 별개로 순수 성공 횟수만 관찰해서 카운트한다.
+    private int _successCount;
+
+    // 최종 저장값 계산용 - "이 스테이지에서 실제로 오른 정화도"만 뽑아내려고, 시작 시점의
+    // 전역 Purity를 기억해뒀다가 끝날 때 차이(델타)를 구한다. Stage1에서 넘어온 몫이
+    // 그대로 섞여 저장되는 문제(Stage3에서 실제로 겪었던 것과 같은 유형)를 막기 위함.
+    // 게이트 하나당 정확히 몇 점인지 몰라도(나중에 값이 바뀌어도) 항상 정확하게 계산된다.
+    private float _purityAtStageStart;
+
     public event Action OnStageCompleted;
 
     /// <summary>
     /// 현재 Stage2 정화도(점수).
-    /// PurificationSystem.Purity는 이미 0~100으로 클램프되어 있지만,
-    /// 게이트 점수 합계가 100을 넘도록 설계돼 있어도(100+N) 게이지는 100%에서 멈추도록
-    /// 여기서 한 번 더 0~1로 클램프한다.
+    /// PurificationSystem.Purity는 스테이지 구분 없이 계속 쌓이는 전역 누적값이라
+    /// (상한 없음 - 완주 보너스 등으로 100을 넘도록 의도적으로 열어둠), 그 값을 그대로 쓰면
+    /// 이전 스테이지에서 이미 100을 넘겨놨을 때 Stage2가 시작하자마자 게이지가 100%로 고정되고
+    /// 더 이상 안 올라가는 문제가 있었음. 그래서 스테이지 시작 시점(_purityAtStageStart) 대비
+    /// 이번 스테이지에서 실제로 오른 만큼(델타)만 0~1로 클램프해서 보여준다.
     /// 0 = 0%, 1 = 100%(또는 그 이상 점수를 받았어도 게이지는 가득 참)
     /// </summary>
     public float NormalizedProgress
@@ -52,7 +63,7 @@ public class Stage2Manager : MonoBehaviour, IStageProgressProvider
         get
         {
             if (PurificationSystem.Instance == null) return 0f;
-            return Mathf.Clamp01(PurificationSystem.Instance.Purity / 100f);
+            return Mathf.Clamp01((PurificationSystem.Instance.Purity - _purityAtStageStart) / 100f);
         }
     }
 
@@ -104,6 +115,8 @@ public class Stage2Manager : MonoBehaviour, IStageProgressProvider
         _gatesFinished = false;
         _stageCompleted = false;
         _gatesStarted = false;
+        _successCount = 0;
+        _purityAtStageStart = PurificationSystem.Instance != null ? PurificationSystem.Instance.Purity : 0f;
 
         if (mapUiPanel != null)
         {
@@ -184,6 +197,7 @@ public class Stage2Manager : MonoBehaviour, IStageProgressProvider
     private void HandleGateResolved(bool success)
     {
         _resolvedGateCount++;
+        if (success) _successCount++;
 
         if (feedbackFlash != null)
         {
@@ -194,13 +208,25 @@ public class Stage2Manager : MonoBehaviour, IStageProgressProvider
         CheckStageDone();
     }
 
-    private void CheckStageDone() {
+    private void CheckStageDone()
+    {
         if (_stageCompleted) return;
         if (!_gatesFinished || _resolvedGateCount < _totalGateCount) return;
 
         _stageCompleted = true;
 
-        PurificationSystem.Instance?.SaveStagePurity(2);
+        // 정화도 저장 - 이 스테이지에서 실제로 오른 만큼(델타)만 저장한다.
+        // 전역 Purity를 그대로 저장하면 이전 스테이지에서 넘어온 몫까지 섞여서 저장된다
+        // (Stage3에서 실제로 겪었던 것과 같은 유형의 문제).
+        float stageScore = PurificationSystem.Instance != null
+            ? PurificationSystem.Instance.Purity - _purityAtStageStart
+            : 0f;
+        PurificationSystem.Instance?.SaveStagePurity(2, stageScore);
+
+        // LLM 마무리 피드백용 로그. 순수 사실만 기록 (12개 고정이라 숫자 자체로 이미 명확함).
+        int failCount = _totalGateCount - _successCount;
+        string note = $"거름망 {_totalGateCount}개 중 {_successCount}개 통과";
+        PurificationSystem.Instance?.RecordStageLog(2, _successCount, failCount, note);
 
         Debug.Log("[Stage2Manager] 모든 게이트 판정 완료");
 

@@ -10,15 +10,22 @@ using UnityEngine;
 /// </summary>
 public static class ScoreManager
 {
-    public const float GoldThreshold = 90f;
+    public const float GoldThreshold = 400f;
+    public const float FirstGradeThreshold = 200f;
 
-    public const string GradeGold = "일급수 황금 물방울";
-    public const string GradeArisu = "아리수 물방울";
+    public const string GradeGold = "황금 물방울";
+    public const string GradeFirst = "일급수 물방울";
+    public const string GradeSecond = "이급수 물방울";
 
-    /// <summary>정화도로 등급 문자열 반환.</summary>
+    /// <summary>
+    /// 정화도로 등급 문자열 반환.
+    /// 400 이상 = 황금 물방울, 200~400 = 일급수 물방울, 0~200 = 이급수 물방울.
+    /// </summary>
     public static string GetGrade(float purity)
     {
-        return purity >= GoldThreshold ? GradeGold : GradeArisu;
+        if (purity >= GoldThreshold) return GradeGold;
+        if (purity >= FirstGradeThreshold) return GradeFirst;
+        return GradeSecond;
     }
 
     /// <summary>최종 점수 계산. 지금은 정화도가 곧 점수(단일 기준).</summary>

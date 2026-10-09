@@ -121,6 +121,8 @@ MonoBehaviour:
   totalValueText: {fileID: 0}
   stageDetailText: "\uC815\uD654\uB3C4"
   totalLabel: "\uD604\uC7AC \uC815\uD654\uB3C4"
+  overwriteStageLabels: 1
+  appendGradeToTotal: 0
 --- !u!1001 &7532809368290371527
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -284,6 +286,10 @@ PrefabInstance:
     - target: {fileID: 3123832225918205665, guid: 34a7ccc8d109e0341bf2aad20299ac19, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3304881481747279237, guid: 34a7ccc8d109e0341bf2aad20299ac19, type: 3}
+      propertyPath: m_text
+      value: "\uD558\uC218\uAD00 \uD30C\uC774\uD504 "
       objectReference: {fileID: 0}
     - target: {fileID: 3365070258571631379, guid: 34a7ccc8d109e0341bf2aad20299ac19, type: 3}
       propertyPath: m_AnchorMax.y
@@ -573,6 +579,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: -66.04999
       objectReference: {fileID: 0}
+    - target: {fileID: 7968549072466407159, guid: 34a7ccc8d109e0341bf2aad20299ac19, type: 3}
+      propertyPath: m_text
+      value: "\uC720\uC785 \uD38C\uD504\uC7A5\n"
+      objectReference: {fileID: 0}
     - target: {fileID: 8145160856601905925, guid: 34a7ccc8d109e0341bf2aad20299ac19, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -588,6 +598,10 @@ PrefabInstance:
     - target: {fileID: 8145160856601905925, guid: 34a7ccc8d109e0341bf2aad20299ac19, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8614880645270329441, guid: 34a7ccc8d109e0341bf2aad20299ac19, type: 3}
+      propertyPath: m_text
+      value: "\uC5EC\uACFC \uC124\uBE44"
       objectReference: {fileID: 0}
     - target: {fileID: 8946514502642954572, guid: 34a7ccc8d109e0341bf2aad20299ac19, type: 3}
       propertyPath: m_AnchorMax.y

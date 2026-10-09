@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 /// 게임 시작 시 1회 실행하는 키 캘리브레이션.
 ///
@@ -21,14 +20,22 @@ using UnityEngine.SceneManagement;
 ///   이후 다른 스테이지 씬으로 넘어가면, 그 씬의 HeadTracker.Start()가
 ///   GameManager에서 이 값을 읽어와서 재캘리브레이션 없이 그대로 사용함.
 ///
-/// ⚠️ TEMP: autoLoadNextScene 관련 부분은 실기기 테스트(CalibrationTestScene → HeeWonScene)용 임시 코드.
-///   나중에 진짜 게임 흐름(타이틀→캘리브레이션→Stage1...)이 StageManager 등으로 짜이면
-///   이 스위치를 끄거나 이 블록을 지우면 됨.
+/// (예전에 있던 autoLoadNextScene 자동 씬 전환 테스트 코드는 제거함 - 이제 진짜 게임 흐름
+///  [PooshBotDirector.IntroSequence → StageSceneLoader]이 씬 전환을 전담하므로, 이 스크립트가
+///  임의로 다른 씬을 불러오면 그 흐름과 충돌한다.)
 public class CalibrationController : MonoBehaviour
 {
     [Header("참조")]
     [SerializeField] private Transform hmdTransform;   // XR Origin 하위 Main Camera
     [SerializeField] private HeadTracker headTracker;  // BaselineHeight를 보관하는 쪽
+
+    [Header("XR Origin 오프셋 보정")]
+    [Tooltip("Floor 모드는 카메라의 world Y를 그대로 키로 쓰는데, XR Origin이나 그 자식(Camera Offset 등)에 " +
+             "Y축 오프셋이 남아있으면(예: Device 모드였을 때 수동으로 넣어둔 눈높이 보정값) 그만큼 키가 " +
+             "부풀려져 측정된다. 여기에 XR Origin(XR Rig) Transform을 연결하면 InverseTransformPoint로 " +
+             "그 전체 오프셋 체인(XR Origin + Camera Offset 등 중간 계층 전부)을 한 번에 상쇄하고 계산한다. " +
+             "비워두면 예전처럼 world Y를 그대로 사용.")]
+    [SerializeField] private Transform xrOriginForOffsetCorrection;
 
     [Header("측정 설정")]
     [Tooltip("이 시간(초) 동안 HMD가 안정 상태로 유지되어야 측정 성공")]
@@ -48,16 +55,6 @@ public class CalibrationController : MonoBehaviour
     [Tooltip("측정 실패 시 사용할 아동 표준 키")]
     [SerializeField] private float fallbackHeight = 1.3f;
 
-    [Header("⚠️ TEMP - 실기기 테스트용 자동 씬 전환 (나중에 제거/교체 예정)")]
-    [Tooltip("체크하면 캘리브레이션 완료 후 자동으로 다음 씬으로 전환함. 최종 흐름 붙기 전까지만 사용.")]
-    [SerializeField] private bool autoLoadNextScene = true;
-
-    [Tooltip("전환할 씬 이름 (Build Settings에 등록되어 있어야 함)")]
-    [SerializeField] private string nextSceneName = "HeeWonScene";
-
-    [Tooltip("완료 텍스트를 보여줄 시간(초). 이 시간 지난 뒤 씬 전환.")]
-    [SerializeField] private float sceneLoadDelay = 2f;
-
     // 측정 결과
     public float CalibratedHeight { get; private set; }
     public bool IsCalibrated { get; private set; }
@@ -70,9 +67,25 @@ public class CalibrationController : MonoBehaviour
     private Vector3 _lastPosition;
     private float _debugLogTimer;
 
-    /// 외부(게임 시작 매니저 등)에서 호출.
+    /// XR Origin 기준 로컬 Y값 = 바닥 기준 실제 키. InverseTransformPoint를 쓰면 XR Origin 자신의
+    /// 오프셋뿐 아니라 그 밑의 Camera Offset 등 중간 계층에 남아있는 오프셋까지 한 번에 다 상쇄된다.
+    /// (단순히 XR Origin.position.y만 빼면 Camera Offset처럼 중간에 낀 오프셋은 못 잡아냄 - 이번에 실제로 겪은 문제)
+    /// xrOriginForOffsetCorrection이 비어있으면 예전처럼 world Y 그대로.
+    private float GetFloorRelativeHeight()
+    {
+        if (xrOriginForOffsetCorrection == null)
+        {
+            return hmdTransform.position.y;
+        }
+        return xrOriginForOffsetCorrection.InverseTransformPoint(hmdTransform.position).y;
+    }
+
+    /// 외부(게임 시작 매니저 등)에서 호출. 이전에 이미 측정한 적 있어도 항상 새로 측정한다
+    /// (IsCalibrated가 true로 남아있으면 CalibrationRoutine의 while 루프가 안 돌아서
+    /// 아무 일도 안 일어나는 채로 조용히 끝나버리는 문제가 있었음 - 여기서 리셋해서 방지).
     public void StartCalibration()
     {
+        IsCalibrated = false;
         StopAllCoroutines();
         StartCoroutine(CalibrationRoutine());
     }
@@ -105,12 +118,11 @@ public class CalibrationController : MonoBehaviour
                 float speed = (hmdTransform.position - _lastPosition).magnitude / Mathf.Max(Time.deltaTime, 1e-5f);
                 _lastPosition = hmdTransform.position;
 
-                // ⚠️ TEMP DEBUG: 0.3초마다 실시간 Y값/속도 출력 (원인 파악되면 지울 것)
                 _debugLogTimer += Time.deltaTime;
                 if (_debugLogTimer >= 0.3f)
                 {
                     _debugLogTimer = 0f;
-                    Debug.Log($"[CalibDebug] hmd.localPos.y={hmdTransform.localPosition.y:F3}, hmd.worldPos.y={hmdTransform.position.y:F3}, XROrigin.y={hmdTransform.root.position.y:F3}, speed={speed:F3}");
+                    Debug.Log($"[CalibDebug] hmd.localPos.y={hmdTransform.localPosition.y:F3}, hmd.worldPos.y={hmdTransform.position.y:F3}, XROrigin.y={hmdTransform.root.position.y:F3}, corrected={GetFloorRelativeHeight():F3}, speed={speed:F3}");
                 }
 
                 if (speed < stableSpeedThreshold)
@@ -118,7 +130,7 @@ public class CalibrationController : MonoBehaviour
                     stableTimer += Time.deltaTime;
                     if (stableTimer >= requiredStableDuration)
                     {
-                        measured = hmdTransform.position.y;
+                        measured = GetFloorRelativeHeight();
                         measuredOk = true;
                         break;
                     }
@@ -170,37 +182,12 @@ public class CalibrationController : MonoBehaviour
 
         Debug.Log($"[Calibration] 완료 - 키={CalibratedHeight:F2}m{(isFallback ? " (폴백)" : "")}");
         OnCalibrationDone?.Invoke(CalibratedHeight);
-
-        if (autoLoadNextScene)
-        {
-            StartCoroutine(LoadNextSceneAfterDelay());
-        }
-    }
-
-    private IEnumerator LoadNextSceneAfterDelay()
-    {
-        Debug.Log($"[Calibration] {sceneLoadDelay}초 후 '{nextSceneName}' 씬으로 전환 (테스트용)");
-        yield return new WaitForSeconds(sceneLoadDelay);
-
-        if (string.IsNullOrEmpty(nextSceneName))
-        {
-            Debug.LogWarning("[Calibration] nextSceneName이 비어있어서 씬 전환 안 함");
-            yield break;
-        }
-
-        SceneManager.LoadScene(nextSceneName);
     }
 
     /// 플레이 도중 재측정이 필요할 때(헤드셋 밀림 등) 외부에서 호출.
     public void Recalibrate()
     {
         IsCalibrated = false;
-        StartCalibration();
-    }
-
-    /// 테스트용: 씬 시작 시 자동으로 캘리브레이션 시작.
-    private void Start()
-    {
         StartCalibration();
     }
 }

@@ -2,13 +2,14 @@
 출똥! 하수처리장 대탐험 — 정화봇 FastAPI 서버
 실행: uvicorn main:app --host 0.0.0.0 --port 8000
 필요: pip install fastapi uvicorn openai python-dotenv requests
-API 키: .env 파일에 UPSTAGE_API_KEY, HUMELO_API_KEY 넣기 (코드에 하드코딩 금지)
+API 키: .env 파일에 UPSTAGE_API_KEY, TYPECAST_API_KEY 넣기 (코드에 하드코딩 금지)
 """
 
 import os
 import re
 import json
 import uuid
+import random
 import hashlib
 import requests
 from collections import OrderedDict
@@ -31,7 +32,6 @@ TYPECAST_MODEL = os.getenv("TYPECAST_MODEL", "ssfm-v30")
 TYPECAST_EMOTION = os.getenv("TYPECAST_EMOTION", "normal")
 
 # Unity(Quest 실기기)에서 접근할 주소. 부스/실기기에서는 서버 PC의 IP로 바꿔야 함.
-# 예: PUBLIC_BASE_URL=http://192.168.0.10:8000
 PUBLIC_BASE_URL = os.getenv("PUBLIC_BASE_URL", "http://localhost:8000")
 
 # 생성된 음성 파일을 저장/서빙할 폴더
@@ -56,74 +56,70 @@ elif not TYPECAST_VOICE_ID:
 
 
 # ─────────────────────────────────────────────
-# 시스템 프롬프트 (서버에서 관리 — 수정 시 서버 재시작만 하면 됨)
+# 시스템 프롬프트
 # ─────────────────────────────────────────────
-SYSTEM_PROMPT = """너는 하수처리장 VR 교육 게임의 가이드 로봇 '정화봇'이야. 이 게임을 하는 친구들은
+BASE_PERSONA_PROMPT = """너는 하수처리장 VR 교육 게임의 가이드 로봇 '정화봇'이야. 이 게임을 하는 친구들은
 7~13세 초등학생이야. 어려운 단어 대신 쉬운 말과 재밌는 비유를 써서 설명해줘.
 말투는 친근하고 다정한 반말 캐릭터 톤이야(예: '~했어!', '~해볼까?').
-절대 아이를 혼내거나 겁주지 말고, 응답은 2~3문장 이내로 짧게 해줘.
-
-추가 규칙 (교육 철학):
-- 게임 상황에 맞는 과학 지식을 1줄만 곁들여 (침전, 미생물 분해, 소독 등)
-- 그 지식이 왜 환경/물 순환에 중요한지 살짝 연결해줘
-- 4단계 전체가 "물의 순환"이라는 하나의 이야기로 매듭지어지도록 의식해줘
+절대 아이를 혼내거나 겁주지 말고, 상황에 맞게 간결하게 말해줘.
 
 음성으로 읽히는 대사이므로 반드시 지킬 것:
 - 이모지는 절대 쓰지 마 (음성이 이모지 이름을 그대로 읽어버림)
 - 물결표(~)나 과한 의성어/의태어("쫙!", "반짝반짝" 등)는 쓰지 마
 - 소리 내어 읽었을 때 한 호흡에 읽히는 짧은 문장으로 써줘.
   한 문장에 정보를 하나만 담고, 접속사로 길게 잇지 마.
-- 반드시 완결된 문장으로 끝내. 문장 도중에 멈추지 마.
-- 전체 2~3문장, 총 100자 안팎을 넘기지 마."""
+- 반드시 완결된 문장으로 끝내. 문장 도중에 멈추지 마."""
+
+SYSTEM_PROMPT = BASE_PERSONA_PROMPT + """
+
+추가 규칙 (교육 철학, 실시간 짧은 대사 전용):
+- 게임 상황에 맞는 과학 지식을 1줄만 곁들여 (침전, 미생물 분해, 소독 등)
+- 그 지식이 왜 환경/물 순환에 중요한지 살짝 연결해줘
+- 4단계 전체가 "물의 순환"이라는 하나의 이야기로 매듭지어지도록 의식해줘
+
+전체 2~3문장, 총 100자 안팎을 넘기지 마."""
+
+FEEDBACK_SYSTEM_PROMPT = BASE_PERSONA_PROMPT
 
 STAGE_INFO = {
-    1: "변기탈출 & 하수관 레이싱 — 물이 하수관을 타고 이동하는 단계",
-    2: "거름망 포즈 통과 & 침전 — 큰 찌꺼기를 거르고 무거운 것을 가라앉히는 단계",
-    3: "미생물 팡팡 — 미생물이 오염물을 분해하는 단계",
-    4: "하이테크 소독 & 한강 방류 — 소독 후 깨끗한 물을 강으로 보내는 단계",
+    1: "하수관 레이싱 — 하수관을 타고 이동하며 맑은 버블을 먹고 쓰레기를 피하는 단계",
+    2: "거름망 통과 — 다가오는 거름망 구멍 모양에 맞춰 몸으로 포즈를 만들어 통과하는 단계",
+    3: "미생물 깨우기 — 산소총을 쏴서 잠자는 미생물을 깨워 오염물을 분해시키는 단계",
+    4: "자외선 소독 — 위에서 내려오는 자외선 링 안으로 들어가 소독받는 단계",
 }
 
-# 폴백 멘트 (LLM 실패 시)
-FALLBACK_COMMENTARY = "지금까지 정말 잘하고 있어! 남은 게이트도 힘내서 통과해보자!"
-FALLBACK_FEEDBACK = {
-    "child_message": "오늘 정말 잘했어! 네 덕분에 물이 깨끗해졌어. 다음에 또 만나자!",
-    "guardian_summary": "하수처리 4단계(침전-미생물분해-소독-방류) 체험을 완료했습니다.",
-}
+# 폴백 멘트 (자유 질의용 /chat 엔드포인트에서 AI 오류 시 비상용 대사)
+FALLBACK_COMMENTARY = "음, 지금 소리가 잘 안들려! 궁금한 건 잠시 뒤에 다시 물어봐 줘!"
+
+
+def fallback_feedback(player_name: str) -> dict:
+    return {
+        "child_message": (
+            f"{player_name}, 해냈네! 드디어 깨끗한 물이 되었어. "
+            "끝까지 정말 잘했어! "
+            "이제 자연으로 돌아갈 시간이야. 돌고 돌아서 우리 꼭 다시 만나자, 안녕!"
+        ),
+    }
 
 
 # ─────────────────────────────────────────────
 # 유틸
 # ─────────────────────────────────────────────
 def clamp_sentences(text: str, max_sentences: int = 3) -> str:
-    """
-    문장 단위로 자른다. 글자 수로 자르면 말이 중간에 끊기므로 절대 그렇게 하지 않는다.
-
-    - 문장부호(. ! ? …)로 끝나는 완결 문장만 남긴다.
-    - max_tokens에 걸려 잘린 마지막 조각(문장부호 없이 끝난 부분)은 통째로 버린다.
-      TTS가 "물이 깨끗해지려면 미" 같은 토막을 읽는 사고를 막기 위함.
-    - 완결 문장이 하나도 없으면(=전체가 잘린 경우) 원문을 그대로 돌려준다.
-      이땐 폴백 멘트보다는 있는 그대로 내보내는 편이 낫다.
-    """
     text = text.strip()
     if not text:
         return text
 
-    # 문장부호 뒤에서 끊되, 부호는 문장에 남긴다
     parts = re.findall(r"[^.!?…]+[.!?…]+", text)
     if not parts:
-        return text  # 완결 문장이 아예 없음 → 원문 유지
+        return text
 
     kept = " ".join(p.strip() for p in parts[:max_sentences])
     return kept.strip()
 
 
 # ─────────────────────────────────────────────
-# 응답 캐시 (지연시간 대책)
-#
-# 부스에서는 아이가 바뀌어도 "스테이지 진입/클리어" 멘트는 같은 상황에서 반복된다.
-# 첫 아이가 한 번 생성하면 그 뒤로는 캐시에서 즉시 꺼내 쓰므로 대기 시간이 0에 가까워진다.
-# 마무리 피드백처럼 플레이 로그가 매번 다른 요청은 자연히 캐시에 걸리지 않으므로
-# "AI가 매번 새로 만든다"는 성격도 그대로 유지된다.
+# 응답 캐시
 # ─────────────────────────────────────────────
 _cache: "OrderedDict[str, dict]" = OrderedDict()
 CACHE_MAX = 128
@@ -139,22 +135,20 @@ def cache_get(key: str) -> Optional[dict]:
         return None
     hit = _cache.get(key)
     if hit is not None:
-        _cache.move_to_end(key)  # 최근 사용으로 갱신
-        print("[캐시] 적중 — 즉시 응답")
+        _cache.move_to_end(key)
     return hit
 
 
 def cache_put(key: str, value: dict) -> None:
     if not CACHE_ENABLED or value.get("audioUrl") is None:
-        return  # 음성 생성이 실패한 응답은 캐시하지 않는다
+        return
     _cache[key] = value
     _cache.move_to_end(key)
     while len(_cache) > CACHE_MAX:
         _cache.popitem(last=False)
 
 
-def call_solar(user_prompt: str, max_tokens: int = 320, json_mode: bool = False) -> Optional[str]:
-    """Upstage Solar 호출. 실패 시 None."""
+def call_solar(user_prompt: str, max_tokens: int = 320, json_mode: bool = False, system_prompt: str = SYSTEM_PROMPT) -> Optional[str]:
     if client is None:
         return None
     try:
@@ -164,7 +158,7 @@ def call_solar(user_prompt: str, max_tokens: int = 320, json_mode: bool = False)
         resp = client.chat.completions.create(
             model="solar-pro3",
             messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
             ],
             max_tokens=max_tokens,
@@ -179,11 +173,6 @@ def call_solar(user_prompt: str, max_tokens: int = 320, json_mode: bool = False)
 
 
 def sanitize_for_tts(text: str) -> str:
-    """
-    TTS로 보내기 전 텍스트 정제.
-    이모지를 그대로 보내면 "눈웃음"처럼 이름을 읽어버려서 반드시 제거해야 함.
-    화면에 표시되는 원본 reply는 건드리지 않고, 음성용 텍스트만 정제한다.
-    """
     emoji_pattern = re.compile(
         "["
         "\U0001F300-\U0001FAFF"
@@ -202,26 +191,17 @@ def sanitize_for_tts(text: str) -> str:
     return text.strip()
 
 
-# Typecast 클라이언트는 서버 시작 시 한 번만 만들어 재사용한다.
 _typecast_client = None
-
 
 def _get_typecast():
     global _typecast_client
     if _typecast_client is None and TYPECAST_API_KEY:
-        from typecast import Typecast   # 서버 기동 속도를 위해 지연 임포트
+        from typecast import Typecast
         _typecast_client = Typecast(api_key=TYPECAST_API_KEY)
     return _typecast_client
 
 
 def call_tts(text: str, emotion: Optional[str] = None) -> Optional[str]:
-    """
-    Typecast로 음성 생성 → 로컬 wav 저장 후 URL 반환. 실패 시 None(텍스트만 표시).
-
-    emotion을 넘기지 않으면 TYPECAST_EMOTION(기본 normal)을 쓴다.
-    프리셋마다 음높이가 달라서 섞어 쓰면 대사마다 목소리 톤이 오락가락하므로,
-    사전 생성한 고정 멘트와 같은 프리셋 하나로 통일하는 것을 권장한다.
-    """
     if not TYPECAST_API_KEY or not TYPECAST_VOICE_ID:
         return None
 
@@ -240,7 +220,6 @@ def call_tts(text: str, emotion: Optional[str] = None) -> Optional[str]:
             model=TYPECAST_MODEL,
             voice_id=TYPECAST_VOICE_ID,
             prompt=Prompt(emotion_preset=preset),
-            # 사전 생성한 고정 멘트와 음량을 맞춰야 같은 캐릭터처럼 들린다.
             output=Output(audio_format="wav", target_lufs=-14.0),
         ))
 
@@ -256,12 +235,12 @@ def call_tts(text: str, emotion: Optional[str] = None) -> Optional[str]:
 
 
 # ─────────────────────────────────────────────
-# ① 기존 스펙 호환: POST /chat (팀장 LLMConnector가 이미 이 형식으로 호출 중)
+# ① 자유 질의용 호환: POST /chat (나중을 위해 유지)
 # ─────────────────────────────────────────────
 class ChatRequest(BaseModel):
     message: str
     context: Optional[str] = ""
-    playerName: Optional[str] = ""   # 아이가 고른 닉네임 (호명용, 없으면 생략)
+    playerName: Optional[str] = ""
 
 
 @app.post("/chat")
@@ -285,81 +264,15 @@ def chat(req: ChatRequest):
 
 
 # ─────────────────────────────────────────────
-# ② Stage 2 중간 해설 (중계 스타일, 1회 호출)
-# ─────────────────────────────────────────────
-class Progress(BaseModel):
-    """스테이지 공통 진행 상황. 4개 스테이지 모두 '시도 → 성공/실패' 구조라 이 형태로 통일된다."""
-    total: int = 0          # 이 스테이지의 전체 시도 횟수
-    attempted: int = 0      # 지금까지 시도한 횟수
-    succeeded: int = 0
-    failed: int = 0
-    streak: int = 0         # 현재 연속 성공 수
-
-
-class CommentaryRequest(BaseModel):
-    eventType: str = "PROGRESS"   # STAGE_ENTER | PROGRESS | MISTAKE | STAGE_CLEAR
-    stage: int = 1
-    playerName: Optional[str] = ""
-    purity: int = 0               # 현재 정화도. 캐시 적중률을 위해 20단위 반올림해서 보내길 권장
-    progress: Progress = Progress()
-    detail: Optional[str] = ""    # 스테이지별 자유 문자열
-                                  #  Stage1: "물티슈"  Stage2: "TPose"
-                                  #  Stage3: "미생물 3마리"  Stage4: "C3, 1.2초 (빠름)"
-
-
-@app.post("/commentary")
-def commentary(req: CommentaryRequest):
-    key = _cache_key(
-        "commentary", req.eventType, str(req.stage), req.playerName or "",
-        str(req.purity), req.progress.model_dump_json(), req.detail or "",
-    )
-    cached = cache_get(key)
-    if cached:
-        return cached
-
-    stage_desc = STAGE_INFO.get(req.stage, "")
-    p = req.progress
-
-    name_line = f"플레이어 이름은 '{req.playerName}'이야.\n" if req.playerName else ""
-    detail_line = f"세부 상황: {req.detail}\n" if req.detail else ""
-
-    if req.eventType == "STAGE_ENTER":
-        situation = f"아이가 방금 {stage_desc}에 들어왔어. 이 단계가 뭘 하는 곳인지 짧게 안내해줘."
-    elif req.eventType == "STAGE_CLEAR":
-        situation = (f"아이가 {stage_desc}를 클리어했어. "
-                     f"{p.total}번 중 {p.succeeded}번 성공했어. "
-                     "방금 배운 원리를 짧게 정리하고 칭찬해줘.")
-    elif req.eventType == "MISTAKE":
-        situation = "아이가 방금 실패했어. 혼내지 말고 다정하게 격려해줘."
-    else:  # PROGRESS
-        situation = (f"아이가 {stage_desc}를 플레이 중이야. "
-                     f"{p.attempted}번 시도해서 {p.succeeded}번 성공, {p.failed}번 실패. "
-                     f"현재 {p.streak}연속 성공 중이야. "
-                     "스포츠 중계 캐스터처럼 이 흐름을 짚어주면서 응원해줘. "
-                     "숫자를 자연스럽게 녹여서 '진짜 지켜보고 있다'는 느낌이 나게 해줘.")
-
-    prompt = f"{name_line}{detail_line}{situation}"
-    reply = call_solar(prompt, max_tokens=280)
-    if reply is None:
-        reply = FALLBACK_COMMENTARY
-    reply = clamp_sentences(reply, 3)
-    audio_url = call_tts(reply)
-
-    result = {"reply": reply, "audioUrl": audio_url}
-    cache_put(key, result)
-    return result
-
-
-# ─────────────────────────────────────────────
-# ③ 마무리 피드백 (게임 종료 시 1회 — 핵심 기능)
+# ② 마무리 피드백 (게임 종료 시 1회 — 핵심 기능)
 # ─────────────────────────────────────────────
 class StageLog(BaseModel):
     stage: int
     timeSec: float = 0
     success: int = 0
     fail: int = 0
-    note: Optional[str] = ""   # 스테이지별 자유 메모. AI가 플레이 패턴을 해석하는 핵심 재료.
-                               # 예: "TPose 2회 실패", "평균 반응 1.8초, 먼 칸에서 주로 놓침"
+    note: Optional[str] = ""
+    purity: float = 0  # 이 스테이지의 최종 정화도(%). 상위 2개를 고르는 기준.
 
 
 class FeedbackRequest(BaseModel):
@@ -369,57 +282,95 @@ class FeedbackRequest(BaseModel):
     stages: list[StageLog] = []
 
 
+def _pick_top_two_stages(stages: list[StageLog]) -> list[StageLog]:
+    """
+    칭찬할 스테이지 2개를 정렬해서 고른다.
+    1순위: 정화도(purity) 높은 순
+    2순위(정화도 동점): success(성공 횟수) 많은 순
+    3순위(그것도 동점): 랜덤
+    나머지 스테이지는 LLM 프롬프트에서 아예 안 보이게 제외한다 -
+    LLM이 "이건 낮아 보이는데 왜 칭찬하지" 하고 헷갈리지 않도록.
+    """
+    shuffled = stages.copy()
+    random.shuffle(shuffled)  # 3순위(랜덤) 처리 - 동점일 때 순서를 미리 섞어둠
+    ranked = sorted(shuffled, key=lambda s: (s.purity, s.success), reverse=True)
+    return ranked[:2]
+
+
 @app.post("/feedback")
 def feedback(req: FeedbackRequest):
+    top_stages = _pick_top_two_stages(req.stages)
+
+    # 1. LLM에게 줄 데이터를 여기서 완전히 세탁합니다. (Stage 단어, 설명문 싹 제거)
+    ACTION_NAMES = {
+        1: "하수관 이동",
+        2: "거름망 통과",
+        3: "산소총 쏘기",
+        4: "자외선 링 통과"
+    }
+
     log_lines = []
-    for s in req.stages:
-        info = STAGE_INFO.get(s.stage, f"Stage {s.stage}")
-        line = f"- Stage {s.stage} ({info}): 성공 {s.success}회, 실패 {s.fail}회, 소요 {int(s.timeSec)}초"
-        if s.note:
-            line += f" / {s.note}"
+    for s in top_stages:
+        action = ACTION_NAMES.get(s.stage, "플레이")
+        # 오직 행동 이름과 note(실제 수치)만 넘깁니다.
+        line = f"상황: {action} / 기록: {s.note}"
         log_lines.append(line)
     log_text = "\n".join(log_lines)
 
-    prompt = f"""'{req.playerName}'(이)가 게임을 완료했어. 최종 정화도는 {req.totalPurity}%야.
-플레이 기록:
+    # 2. 프롬프트도 훨씬 단순하고 강력하게 바꿉니다.
+    prompt = f"""'{req.playerName}'(이)가 게임을 완료했어.
+아래는 가장 잘한 2가지 행동의 기록이야:
 {log_text}
 
-이 기록을 보고 아래 JSON 형식으로만 답해줘 (다른 말 없이 JSON만):
+이 기록을 보고 아래 JSON 형식으로만 답해줘:
 {{
-  "child_message": "아이용 마무리 멘트 — 이름을 부르며, 이 아이만의 플레이 특징(잘한 스테이지/아쉬운 스테이지)을 구체적으로 짚어서 칭찬+격려. 마지막에 '물의 순환' 이야기로 매듭. 3~4문장.",
-  "guardian_summary": "보호자용 요약 — 아이가 어떤 하수처리 개념을 체험/학습했는지 1~2문장, 존댓말."
+  "child_message": "아이용 마무리 멘트. 아래 규칙을 정확히 지켜서 하나의 문단으로 써줘:
+    1) 시작 (토씨 하나도 바꾸지 말 것): '{req.playerName}, 해냈네! 드디어 깨끗한 물이 되었어. 얼마나 깨끗해졌는지 볼까?'
+    2) 이어서 위의 '상황'과 '기록'에 적힌 내용만 사용해서 칭찬할 것. 
+       - 기계적인 단어(Stage 등) 금지. 오직 주어진 기록을 바탕으로 씩씩하게 칭찬할 것.
+       - 문장 끝맺음 주의: 모든 문장을 '~했어!'로만 끝내면 어색하므로 절대 반복하지 말 것. 단, 끝맺음을 다양하게 하려다가 앞뒤 문장의 주어와 서술어를 억지로 섞어서 문법이 깨지면 절대 안 됨 (예: '실력도 소독됐어'는 틀린 문장 - 소독되는 건 실력이 아니라 사람/물임). 자연스러운 게 최우선이고, 자연스럽다면 같은 어미(예: '~했어!')를 두 번 써도 상관없음.
+       - 전체 시도/발사/기회 횟수(분모)는 절대 언급하지 말 것. 오직 성공한 횟수(성공 결과)만 말할 것 (예: '35번 쏴서 28번 명중했어' 처럼 전체 횟수를 대는 것 금지, '28번이나 명중했어' 처럼 성공 결과만 말할 것. '자외선 링 48번 중 18번이나 들어갔어'도 금지, '자외선 링도 18번이나 딱 맞춰 들어갔어' 처럼 쓸 것).
+       - '~잖아'라는 어미는 쓰지 말 것 - 이미 상대가 알고 있는 사실을 재확인시켜줄 때 쓰는 말투라, 지금처럼 정화봇이 새로운 결과를 처음 알려주는 상황에는 안 맞음. 대신 '~어!', '~네!', '~던데!' 처럼 자연스럽게 쓸 것.
+       - 각 스테이지 칭찬을 '그래서 정화도가 높게 나왔다'는 결과로 자연스럽게 이어서 마무리할 것 (정화도의 정확한 %는 화면에 이미 떠 있으니 숫자로 다시 읽어줄 필요는 없고, '정화도가 높게 나왔어', '정화도가 쭉쭉 올랐네' 처럼 인과관계만 짚어주면 됨).
+       - 스테이지별로 표현할 때 참고할 것:
+         · 하수관 이동(버블/쓰레기): 핸들을 틀어서 버블 쪽으로 가거나 쓰레기를 피하는 능동적 조작. '~개나 먹었어', '~번 피했어' 처럼 자연스럽게 쓸 것.
+         · 거름망 통과, 산소총 쏘기: 몸을 움직이거나 조준해서 하는 능동적 행동. '~번 시도해서', '~번이나 맞혔어' 같은 표현 자연스럽게 사용 가능 (단, 전체 시도 횟수는 위 규칙대로 언급 금지).
+         · 자외선 링 통과: 링이 16개 타일 중 랜덤한 곳에 떨어지고, 떨어지는 순간에야 어디인지 알 수 있어서 빠르게 반응해서 이동해야 하는 것. '~번 시도해서'라는 표현은 쓰지 말고(조준해서 맞춘 게 아니라 반응 속도의 결과이므로), '~번이나 딱 맞춰 들어갔어' 처럼 쓸 것.
+       - 말투 예시 (이 흐름을 참고하되 그대로 베끼지 말고, 각 문장이 각자 완결된 문법으로 끝나도록 할 것): '산소총으로 28번이나 명중시켰고, 최대 6번 연속으로 맞혀서 그런지 정화도가 높게 나왔어! 자외선 링도 18번이나 딱 맞춰 들어가서 정화도가 쭉쭉 올랐네!'
+       - 절대 없는 내용을 지어내거나 과학 원리를 덧붙여 설명하지 말 것. 
+    3) 기대감 (토씨 하나도 바꾸지 말 것): '다음엔 또 얼마나 잘할지 벌써 기대되는걸?'
+    4) 끝 (토씨 하나도 바꾸지 말 것): '이제 자연으로 돌아갈 시간이야. 돌고 돌아서 우리 꼭 다시 만나자, 안녕!'
+    5) 특수기호나 이모티콘 절대 금지. 총 4~5문장 이내."
 }}"""
-    raw = call_solar(prompt, max_tokens=600, json_mode=True)
+    raw = call_solar(prompt, max_tokens=600, json_mode=True, system_prompt=FEEDBACK_SYSTEM_PROMPT)
+    fallback = fallback_feedback(req.playerName)
 
     if raw is None:
-        result = dict(FALLBACK_FEEDBACK)
+        result = fallback
     else:
         try:
             result = json.loads(raw)
         except json.JSONDecodeError:
-            result = dict(FALLBACK_FEEDBACK)
+            result = fallback
 
-    child_msg = result.get("child_message", FALLBACK_FEEDBACK["child_message"])
+    child_msg = result.get("child_message", fallback["child_message"])
     audio_url = call_tts(child_msg)
+    
     return {
         "child_message": child_msg,
-        "guardian_summary": result.get("guardian_summary", FALLBACK_FEEDBACK["guardian_summary"]),
         "audioUrl": audio_url,
     }
 
 
 # ─────────────────────────────────────────────
-# ④ 리더보드 (파일 저장 — 서버 재시작해도 기록 유지됨)
+# ③ 리더보드
 # ─────────────────────────────────────────────
 class LeaderboardEntry(BaseModel):
-    playerName: str      # 아이가 고른 닉네임 (번호 없이, 예: "똥순이")
+    playerName: str
     purity: float
     grade: str = ""
 
 
-# 리더보드를 JSON 파일로 저장. 서버 프로세스가 재시작돼도 이 파일에서 다시 읽어온다.
-# (호스팅 환경이 컨테이너를 통째로 새로 만드는 경우 — 예: 무료 플랜 재배포 — 에는
-#  디스크 자체가 초기화될 수 있으니 완전한 영구 저장이 필요하면 별도 DB/퍼시스턴트 디스크 필요)
 LEADERBOARD_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "leaderboard.json")
 
 
@@ -447,7 +398,6 @@ _leaderboard: list[dict] = _load_leaderboard()
 
 
 def _make_display_name(base_name: str) -> str:
-    """같은 닉네임을 고른 사람이 여럿일 때 뒤에 번호를 붙여 구분한다. (똥순이 → 똥순이2 → 똥순이3)"""
     count = sum(1 for e in _leaderboard if e.get("playerName") == base_name)
     return base_name if count == 0 else f"{base_name}#{count + 1}"
 
@@ -475,17 +425,13 @@ def get_leaderboard():
 
 @app.delete("/leaderboard/all")
 def delete_leaderboard_all():
-    """리더보드 전체 초기화. 더미데이터 정리 등 관리 목적으로만 사용."""
     _leaderboard.clear()
     _save_leaderboard()
     return {"success": True}
 
 
-# 주의: 이 라우트는 반드시 "/leaderboard/all" 보다 아래에 있어야 한다.
-# 순서가 바뀌면 DELETE /leaderboard/all 요청도 name="all"로 여기서 잡아먹혀버린다.
 @app.delete("/leaderboard/{name}")
 def delete_leaderboard_entry(name: str):
-    """특정 닉네임(playerName 또는 displayName) 기록 삭제. 중복 번호가 붙은 기록도 함께 지워진다."""
     before = len(_leaderboard)
     _leaderboard[:] = [
         e for e in _leaderboard
@@ -497,7 +443,7 @@ def delete_leaderboard_entry(name: str):
 
 
 # ─────────────────────────────────────────────
-# 헬스체크 (Unity에서 서버 살아있는지 확인용)
+# 헬스체크
 # ─────────────────────────────────────────────
 @app.get("/")
 def health():
