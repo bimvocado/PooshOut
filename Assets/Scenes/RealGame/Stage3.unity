@@ -9234,8 +9234,8 @@ MonoBehaviour:
   progressText: {fileID: 1431299781}
   progressGauge: {fileID: 834665541}
   totalStageTime: 60
-  activateAngleThreshold: 60
-  deactivateAngleThreshold: 100
+  activateAngleThreshold: 120
+  deactivateAngleThreshold: 150
   invertDetection: 0
 --- !u!114 &1794878285
 MonoBehaviour:
