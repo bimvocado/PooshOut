@@ -3316,15 +3316,6 @@ MonoBehaviour:
   - {fileID: 1485083445}
   - {fileID: 2104587321}
   - {fileID: 1159974458}
-  - {fileID: 996629427}
-  - {fileID: 778154910}
-  - {fileID: 2141638846}
-  - {fileID: 449951890}
-  - {fileID: 1292810008}
-  - {fileID: 1863772066}
-  - {fileID: 631810998}
-  - {fileID: 907253807}
-  - {fileID: 893920105}
   railMover: {fileID: 585936249}
 --- !u!114 &585936249
 MonoBehaviour:
@@ -3344,6 +3335,7 @@ MonoBehaviour:
   lateralSpeed: 4
   rotationSmoothing: 6
   railHeight: 0.5
+  speedRampPerSecond: 0.3
   defaultRadius: 1
   defaultHeight: 0.5
   defaultCenter: {x: 0, y: 0.85, z: 0}
@@ -5086,17 +5078,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3050230057820246844, guid: a277fa413eabe6541be6db61023160d9, type: 3}
   m_PrefabInstance: {fileID: 992629886}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &996629427 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8510808962580687719, guid: 44aa223c44c141b4083ba9934707e0bd, type: 3}
-  m_PrefabInstance: {fileID: 1233274691}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2777103d068a4224db6afcd415cfcfaf, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!4 &996629430 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3397183685451776102, guid: 44aa223c44c141b4083ba9934707e0bd, type: 3}
