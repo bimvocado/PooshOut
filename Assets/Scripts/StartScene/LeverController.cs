@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Events;
 using System.Collections;
 
 public class LeverController : MonoBehaviour {
@@ -11,6 +12,10 @@ public class LeverController : MonoBehaviour {
     [SerializeField] private float clickAngle = 45f;
     [SerializeField] private float rotateTime = 0.2f;
     [SerializeField] private float stayTime = 0.1f;
+
+    [Header("이벤트")]
+    [Tooltip("레버가 당겨질 때(클릭될 때) 1회 호출됨.")]
+    public UnityEvent OnLeverPulled;
 
     private Quaternion originalRotation;
     private bool isHovered;
@@ -57,8 +62,10 @@ public class LeverController : MonoBehaviour {
     }
 
     public void Click() {
-        if (!isRotating)
+        if (!isRotating) {
             StartCoroutine(RotateAnimation());
+            OnLeverPulled?.Invoke();
+        }
     }
 
     private IEnumerator RotateAnimation() {

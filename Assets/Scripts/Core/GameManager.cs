@@ -10,6 +10,42 @@ using UnityEngine;
 ///   각 씬의 HeadTracker가 여기서 값을 읽어가는 방식으로 재사용함.
 public class GameManager : Singleton<GameManager>
 {
+    // ─────────────────────────────────────────────
+    // 씬별 개별 빌드 촬영용 - 기기 저장소(PlayerPrefs)에 값을 남겨서,
+    // 앱을 완전히 새로 빌드/재설치해도(같은 패키지 이름 전제) 이전 실행에서 남긴
+    // 캘리브레이션/닉네임 값을 자동으로 이어받게 한다.
+    //
+    // 정상적인 실제 플레이(부스 운영)에서는 ResetCalibration()/ResetPlayerName()이
+    // 다음 플레이어를 위해 호출될 때 이 저장값도 같이 지워지므로, 실제 서비스 동작에는
+    // 영향을 주지 않는다 - 오직 "앱을 껐다가 다시 켰는데 리셋을 안 한 경우"에만
+    // 이전 값이 남아있어 촬영 편의를 위해 유지되는 것.
+    // ─────────────────────────────────────────────
+    private const string PrefKeyHeight = "PooshOut_CalibratedHeight";
+    private const string PrefKeyPlayerName = "PooshOut_PlayerName";
+
+    protected override void Awake()
+    {
+        base.Awake();
+        LoadPersistedValuesIfAny();
+    }
+
+    private void LoadPersistedValuesIfAny()
+    {
+        if (PlayerPrefs.HasKey(PrefKeyHeight))
+        {
+            CalibratedHeight = PlayerPrefs.GetFloat(PrefKeyHeight);
+            IsHeightCalibrated = true;
+            Debug.Log($"[GameManager] 이전 실행에서 저장된 캘리브레이션 값 복원 = {CalibratedHeight:F2}m");
+        }
+
+        if (PlayerPrefs.HasKey(PrefKeyPlayerName))
+        {
+            PlayerName = PlayerPrefs.GetString(PrefKeyPlayerName);
+            HasPlayerName = !string.IsNullOrEmpty(PlayerName);
+            Debug.Log($"[GameManager] 이전 실행에서 저장된 칭호 복원 = {PlayerName}");
+        }
+    }
+
     // 게임의 큰 흐름 상태
     public enum GameState
     {
@@ -57,6 +93,9 @@ public class GameManager : Singleton<GameManager>
         IsHeightCalibrated = true;
         Debug.Log($"[GameManager] 캘리브레이션 값 저장 = {CalibratedHeight:F2}m");
         OnHeightCalibrated?.Invoke(height);
+
+        PlayerPrefs.SetFloat(PrefKeyHeight, height);
+        PlayerPrefs.Save();
     }
 
     /// 다음 플레이어를 위해 리셋 (부스에서 다음 사람 플레이 시작할 때 호출).
@@ -64,6 +103,7 @@ public class GameManager : Singleton<GameManager>
     {
         IsHeightCalibrated = false;
         CalibratedHeight = 0f;
+        PlayerPrefs.DeleteKey(PrefKeyHeight);
     }
 
     // --- 선택된 칭호(플레이어 이름) (씬 전환에도 유지됨) ---
@@ -84,6 +124,9 @@ public class GameManager : Singleton<GameManager>
         HasPlayerName = !string.IsNullOrEmpty(name);
         Debug.Log($"[GameManager] 플레이어 칭호 저장 = {PlayerName}");
         OnPlayerNameSet?.Invoke(PlayerName);
+
+        PlayerPrefs.SetString(PrefKeyPlayerName, name);
+        PlayerPrefs.Save();
     }
 
     /// 다음 플레이어를 위해 리셋 (부스에서 다음 사람 플레이 시작할 때 호출).
@@ -91,5 +134,6 @@ public class GameManager : Singleton<GameManager>
     {
         PlayerName = string.Empty;
         HasPlayerName = false;
+        PlayerPrefs.DeleteKey(PrefKeyPlayerName);
     }
 }

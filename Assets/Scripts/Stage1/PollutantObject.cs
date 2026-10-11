@@ -17,6 +17,9 @@ public class PollutantObject : MonoBehaviour
 
     private bool _hit;
 
+    /// 오염물 접촉 시 발행. 풀링되는 오브젝트라 static 이벤트 하나로 외부에서 전부 구독 가능.
+    public static event System.Action<PollutantType> OnPollutantHit;
+
     private void Reset()
     {
         GetComponent<Collider>().isTrigger = true;
@@ -28,6 +31,8 @@ public class PollutantObject : MonoBehaviour
         _hit = true;
 
         Debug.Log($"[PollutantObject] 플레이어 충돌 감지: {name} ({type})");
+
+        OnPollutantHit?.Invoke(type);
 
         PurificationSystem.Instance?.ReportPollutantContact(type.ToString(), purityPenalty);
         if (hitSfx != null) AudioManager.Instance?.PlaySfx(hitSfx);

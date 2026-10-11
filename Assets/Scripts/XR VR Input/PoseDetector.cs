@@ -43,6 +43,11 @@ public class PoseDetector : MonoBehaviour
     [Tooltip("손이 몸(머리 중심선) 기준 수평으로 이만큼 떨어져 있으면 Extended로 판정")]
     [SerializeField] private float extendedMinDistanceFromCenter = 0.4f;
 
+    [Tooltip("Extended로 인정하는 손의 최대 처짐 깊이(머리보다 이만큼 아래까지만 허용). " +
+             "가만히 서서 팔을 늘어뜨리면 손이 골반/허벅지 높이(머리보다 한참 아래)까지 내려가는데, " +
+             "이 조건이 없으면 그 상태도 수평거리만으로 Extended로 오판정됨 - 실제로 겪은 버그.")]
+    [SerializeField] private float extendedMaxDropBelowHead = 0.45f;
+
     [Header("아동 체형 보정")]
     [SerializeField] private float referenceAdultHeight = 1.65f;
     [SerializeField] private float minScaleRatio = 0.6f;
@@ -66,10 +71,14 @@ public class PoseDetector : MonoBehaviour
             return ArmState.Up;
         }
 
-        // 2순위: 손이 몸 중심선(머리 XZ 기준)에서 수평으로 충분히 떨어져 있으면 Extended
+        // 2순위: 손이 몸 중심선(머리 XZ 기준)에서 수평으로 충분히 떨어져 있고,
+        // 동시에 어깨 높이 근처(머리보다 너무 아래로 처지지 않음)일 때만 Extended.
+        // 높이 조건이 없으면 팔을 늘어뜨린 상태(손이 골반 높이까지 처짐)도
+        // 수평거리만으로 Extended로 오판정된다(가만히 서 있는데 T포즈 성공 처리되던 버그).
         float horizontalDistance = new Vector2(handPos.x - headPos.x, handPos.z - headPos.z).magnitude;
         float adjustedMinDistance = extendedMinDistanceFromCenter * scaleRatio;
-        if (horizontalDistance >= adjustedMinDistance)
+        float adjustedMaxDrop = extendedMaxDropBelowHead * scaleRatio;
+        if (horizontalDistance >= adjustedMinDistance && verticalOffset >= -adjustedMaxDrop)
         {
             return ArmState.Extended;
         }

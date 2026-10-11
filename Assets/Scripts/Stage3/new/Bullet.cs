@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 /// <summary>
 /// 실제로 날아가는 총알.
@@ -17,6 +18,15 @@ public class Bullet : MonoBehaviour {
     [SerializeField] private Vector3 modelRotationOffset = Vector3.zero;
 
     private Rigidbody _rb;
+    private bool _resultReported;
+
+    // 명중 이벤트 - Stage3PooshTrigger(멘트)와 Stage3Manager(통계) 둘 다 구독.
+    public static event Action OnMicrobeHit;
+
+    // 빗나감 이벤트 - 통계(Stage3Manager, "발사 수" 계산)용으로만 존재.
+    // Stage3PooshTrigger는 빗나갈 때마다 멘트를 하지 않기로 했으므로 이 이벤트를 구독하지 않음 -
+    // 이건 그 결정과 무관하게 "총 몇 발 쐈는지"를 세기 위한 순수 관찰용 이벤트.
+    public static event Action OnMissedShot;
 
     private void Awake() {
         _rb = GetComponent<Rigidbody>();
@@ -45,8 +55,29 @@ public class Bullet : MonoBehaviour {
         Debug.Log($"[Bullet] MicrobeTarget 찾음? {target != null}");
         if (target != null) {
             target.Hit();
+            ReportResult(hit: true);
+        }
+        else {
+            // 미생물이 아닌 다른 것(벽 등)에 맞은 경우도 "빗나감"으로 취급
+            ReportResult(hit: false);
         }
 
         Destroy(gameObject);
+    }
+
+    private void OnDestroy()
+    {
+        // 아무것도 안 맞고 lifeTime이 지나 자동 파괴된 경우도 "빗나감"
+        if (!_resultReported)
+        {
+            ReportResult(hit: false);
+        }
+    }
+
+    private void ReportResult(bool hit)
+    {
+        _resultReported = true;
+        if (hit) OnMicrobeHit?.Invoke();
+        else OnMissedShot?.Invoke();
     }
 }

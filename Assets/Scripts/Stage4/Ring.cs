@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 /// <summary>
 /// 링 프리팹에 붙는 스크립트.
@@ -9,7 +10,8 @@
 /// 3. 착지 이펙트/사운드 재생
 /// 4. Destroy
 /// </summary>
-public class Ring : MonoBehaviour {
+public class Ring : MonoBehaviour
+{
     [Header("낙하 설정")]
     [SerializeField] private float fallSpeed = 2f;
 
@@ -35,17 +37,27 @@ public class Ring : MonoBehaviour {
     private TileController _targetTile;
     private bool _hasLanded;
 
-    private void Awake() {
+    // 정화봇 반응용 static 이벤트. 링이 계속 새로 생성/파괴되므로 인스턴스별 구독 대신
+    // 이 static 이벤트 하나만 구독하면 Stage4PooshTrigger가 모든 링의 결과를 다 받을 수 있음.
+    // 원래 있던 "플레이어가 타일 위에 있었는지" 판정(IsPlayerOnTile)에 딱 이 알림 두 줄만 얹은 것 - 새 판정 로직 아님.
+    public static event Action OnRingPassed;   // 착지 시점에 플레이어가 그 타일 위에 있었음(통과 성공)
+    public static event Action OnRingMissed;   // 착지 시점에 플레이어가 그 타일 위에 없었음(놓침)
+
+    private void Awake()
+    {
         // Inspector에서 연결하지 않아도
         // 같은 오브젝트의 AudioSource를 자동으로 찾음
-        if (audioSource == null) {
+        if (audioSource == null)
+        {
             audioSource = GetComponent<AudioSource>();
         }
     }
 
-    private void Start() {
+    private void Start()
+    {
         // 링이 생성되는 순간 낙하 사운드 시작
-        if (audioSource != null && fallSound != null) {
+        if (audioSource != null && fallSound != null)
+        {
             audioSource.clip = fallSound;
 
             // 낙하하는 동안 반복 재생
@@ -55,11 +67,13 @@ public class Ring : MonoBehaviour {
         }
     }
 
-    public void Init(TileController targetTile) {
+    public void Init(TileController targetTile)
+    {
         _targetTile = targetTile;
     }
 
-    private void Update() {
+    private void Update()
+    {
         if (_hasLanded)
             return;
 
@@ -68,7 +82,8 @@ public class Ring : MonoBehaviour {
             Vector3.down * fallSpeed * Time.deltaTime;
     }
 
-    private void OnTriggerEnter(Collider other) {
+    private void OnTriggerEnter(Collider other)
+    {
         if (_hasLanded)
             return;
 
@@ -80,24 +95,34 @@ public class Ring : MonoBehaviour {
         HandleLanding();
     }
 
-    private void HandleLanding() {
+    private void HandleLanding()
+    {
         // =========================
         // 낙하 사운드 정지
         // =========================
-        if (audioSource != null) {
+        if (audioSource != null)
+        {
             audioSource.Stop();
             audioSource.loop = false;
         }
 
         // =========================
-        // 정화도 처리
+        // 정화도 처리 (기존 로직 그대로, 성공 시에만 이벤트 한 줄 추가)
         // =========================
-        if (_targetTile != null) {
-            if (_targetTile.IsPlayerOnTile) {
+        if (_targetTile != null)
+        {
+            if (_targetTile.IsPlayerOnTile)
+            {
                 PurificationManager.Instance?
                     .AddPurificationAmount(
                         purificationRewardOnLand
                     );
+
+                OnRingPassed?.Invoke();
+            }
+            else
+            {
+                OnRingMissed?.Invoke();
             }
 
             _targetTile.SetLit(false);
@@ -106,7 +131,8 @@ public class Ring : MonoBehaviour {
         // =========================
         // 착지 이펙트
         // =========================
-        if (landEffectPrefab != null) {
+        if (landEffectPrefab != null)
+        {
             Instantiate(
                 landEffectPrefab,
                 transform.position,
@@ -117,7 +143,8 @@ public class Ring : MonoBehaviour {
         // =========================
         // 착지 사운드
         // =========================
-        if (landSound != null) {
+        if (landSound != null)
+        {
             AudioSource.PlayClipAtPoint(
                 landSound,
                 transform.position
@@ -129,13 +156,15 @@ public class Ring : MonoBehaviour {
         // =========================
         Collider col = GetComponent<Collider>();
 
-        if (col != null) {
+        if (col != null)
+        {
             col.enabled = false;
         }
 
         Renderer rend = GetComponent<Renderer>();
 
-        if (rend != null) {
+        if (rend != null)
+        {
             rend.enabled = false;
         }
 

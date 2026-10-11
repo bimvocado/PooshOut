@@ -5,7 +5,8 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.XR.Interaction.Toolkit.UI;
 
-public class StartSceneManager : MonoBehaviour {
+public class StartSceneManager : MonoBehaviour
+{
     [Header("12개 칭호 오브젝트")]
     [SerializeField] private List<GameObject> titleObjects = new();
 
@@ -31,11 +32,13 @@ public class StartSceneManager : MonoBehaviour {
     private readonly Dictionary<TMP_Text, Coroutine> scaleCoroutines = new();
 
 
-    private void Awake() {
+    private void Awake()
+    {
         SetupTitleObjects();
     }
 
-    private void Start() {
+    private void Start()
+    {
         if (leaderboardUI == null)
             leaderboardUI = FindFirstObjectByType<StartLeaderboardUI>();
 
@@ -43,8 +46,10 @@ public class StartSceneManager : MonoBehaviour {
     }
 
 
-    private void SetupTitleObjects() {
-        foreach (GameObject obj in titleObjects) {
+    private void SetupTitleObjects()
+    {
+        foreach (GameObject obj in titleObjects)
+        {
             if (obj == null)
                 continue;
 
@@ -52,7 +57,8 @@ public class StartSceneManager : MonoBehaviour {
             // titleObjects에는 반드시 각각의 NameButton을 넣어야 함.
             TMP_Text titleText = obj.GetComponentInChildren<TMP_Text>(true);
 
-            if (titleText == null) {
+            if (titleText == null)
+            {
                 Debug.LogWarning($"{obj.name} 안에 TMP_Text가 없습니다.");
                 continue;
             }
@@ -74,76 +80,77 @@ public class StartSceneManager : MonoBehaviour {
     // ==================================================
 
     private void SetupPointerEvents(GameObject obj)
-{
-    GameObject currentObj = obj;
-
-    EventTrigger trigger = currentObj.GetComponent<EventTrigger>();
-
-    if (trigger == null)
-        trigger = currentObj.AddComponent<EventTrigger>();
-
-    if (trigger.triggers == null)
-        trigger.triggers = new List<EventTrigger.Entry>();
-
-
-    // VR Ray Hover Enter
-    EventTrigger.Entry enterEntry = new EventTrigger.Entry
     {
-        eventID = EventTriggerType.PointerEnter
-    };
+        GameObject currentObj = obj;
 
-    enterEntry.callback.AddListener((data) =>
-    {
-        // 마우스 무시하고 XR Ray만 받기
-        if (data is not TrackedDeviceEventData)
-            return;
+        EventTrigger trigger = currentObj.GetComponent<EventTrigger>();
 
-        OnHoverEnter(currentObj);
-    });
+        if (trigger == null)
+            trigger = currentObj.AddComponent<EventTrigger>();
 
-    trigger.triggers.Add(enterEntry);
+        if (trigger.triggers == null)
+            trigger.triggers = new List<EventTrigger.Entry>();
 
 
-    // VR Ray Hover Exit
-    EventTrigger.Entry exitEntry = new EventTrigger.Entry
-    {
-        eventID = EventTriggerType.PointerExit
-    };
+        // VR Ray Hover Enter
+        EventTrigger.Entry enterEntry = new EventTrigger.Entry
+        {
+            eventID = EventTriggerType.PointerEnter
+        };
 
-    exitEntry.callback.AddListener((data) =>
-    {
-        if (data is not TrackedDeviceEventData)
-            return;
+        enterEntry.callback.AddListener((data) =>
+        {
+            // 마우스 무시하고 XR Ray만 받기
+            if (data is not TrackedDeviceEventData)
+                return;
 
-        OnHoverExit(currentObj);
-    });
+            OnHoverEnter(currentObj);
+        });
 
-    trigger.triggers.Add(exitEntry);
+        trigger.triggers.Add(enterEntry);
 
 
-    // VR Ray Click
-    EventTrigger.Entry clickEntry = new EventTrigger.Entry
-    {
-        eventID = EventTriggerType.PointerClick
-    };
+        // VR Ray Hover Exit
+        EventTrigger.Entry exitEntry = new EventTrigger.Entry
+        {
+            eventID = EventTriggerType.PointerExit
+        };
 
-    clickEntry.callback.AddListener((data) =>
-    {
-        if (data is not TrackedDeviceEventData)
-            return;
+        exitEntry.callback.AddListener((data) =>
+        {
+            if (data is not TrackedDeviceEventData)
+                return;
 
-        SelectTitle(currentObj);
-    });
+            OnHoverExit(currentObj);
+        });
 
-    trigger.triggers.Add(clickEntry);
-}
+        trigger.triggers.Add(exitEntry);
+
+
+        // VR Ray Click
+        EventTrigger.Entry clickEntry = new EventTrigger.Entry
+        {
+            eventID = EventTriggerType.PointerClick
+        };
+
+        clickEntry.callback.AddListener((data) =>
+        {
+            if (data is not TrackedDeviceEventData)
+                return;
+
+            SelectTitle(currentObj);
+        });
+
+        trigger.triggers.Add(clickEntry);
+    }
 
 
     // ==================================================
     // Hover
     // ==================================================
 
-    private void OnHoverEnter(GameObject obj) {
+    private void OnHoverEnter(GameObject obj)
+    {
         if (!objectTexts.TryGetValue(obj, out TMP_Text titleText))
             return;
 
@@ -157,7 +164,8 @@ public class StartSceneManager : MonoBehaviour {
     }
 
 
-    private void OnHoverExit(GameObject obj) {
+    private void OnHoverExit(GameObject obj)
+    {
         if (!objectTexts.TryGetValue(obj, out TMP_Text titleText))
             return;
 
@@ -174,7 +182,8 @@ public class StartSceneManager : MonoBehaviour {
     // 선택
     // ==================================================
 
-    private void SelectTitle(GameObject obj) {
+    private void SelectTitle(GameObject obj)
+    {
         if (!objectTexts.TryGetValue(obj, out TMP_Text titleText))
             return;
 
@@ -187,6 +196,9 @@ public class StartSceneManager : MonoBehaviour {
 
         // GameManager(Singleton)에 저장 - 씬이 바뀌어도 유지되어 엔딩에서 PlayerData로 사용됨.
         GameManager.Instance?.SetPlayerName(selectedTitle);
+
+        // 정화봇 등장 - 정면 인사 -> 캘리브레이션 안내 -> 오른쪽 위로 이동
+        PooshBotDirector.Instance?.PlayIntro();
     }
 
 
@@ -196,8 +208,10 @@ public class StartSceneManager : MonoBehaviour {
 
     private void StartScaleAnimation(
         TMP_Text text,
-        Vector3 targetScale) {
-        if (scaleCoroutines.TryGetValue(text, out Coroutine coroutine)) {
+        Vector3 targetScale)
+    {
+        if (scaleCoroutines.TryGetValue(text, out Coroutine coroutine))
+        {
             if (coroutine != null)
                 StopCoroutine(coroutine);
         }
@@ -211,14 +225,16 @@ public class StartSceneManager : MonoBehaviour {
 
     private IEnumerator ScaleRoutine(
         TMP_Text text,
-        Vector3 targetScale) {
+        Vector3 targetScale)
+    {
         RectTransform rect = text.rectTransform;
 
         while (
             Vector3.Distance(
                 rect.localScale,
                 targetScale
-            ) > 0.01f) {
+            ) > 0.01f)
+        {
             rect.localScale = Vector3.Lerp(
                 rect.localScale,
                 targetScale,

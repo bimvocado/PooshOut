@@ -242,6 +242,9 @@ public class PoseGate : MonoBehaviour
 
     public void SetRequiredPose(PoseDetector.PoseType pose) => requiredPose = pose;
 
+    /// 이 게이트가 요구하는 포즈. 정화봇이 실패 시 포즈별 맞춤 멘트를 고를 때 사용.
+    public PoseDetector.PoseType RequiredPose => requiredPose;
+
     /// <summary>스포너가 런타임에 씬의 PoseDetector를 연결해줄 때 사용. 프리팹 애셋 자체는 씬 오브젝트를 참조 못 하므로 필수.</summary>
     public void SetPoseDetector(PoseDetector detector) => poseDetector = detector;
 
